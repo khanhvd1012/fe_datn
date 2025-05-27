@@ -1,6 +1,4 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+
 import './App.css'
 import { Route, Routes } from 'react-router-dom'
 import ClientLayout from './layouts/clients/ClientLayout'
@@ -20,7 +18,7 @@ function App() {
         </Route>
         <Route path='/admin' element={<AdminLayout />}>
           <Route index element={< DashBoard />}></Route>
-          <Route path='/products' element={<ListProduct/>}></Route>
+          <Route path='products' element={<ListProduct/>}></Route>
         </Route>
          <Route path="/login" element={<Login/>} />
         <Route path="/register" element={<Register />} />
