@@ -31,9 +31,9 @@ export const addProduct = async (product: IProduct) => {
         throw error;
     }
 }
-export const updateProduct = async (product: IProduct) => {
+export const updateProduct = async (id: string, product: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>>) => {
     try {
-        const response = await axios.put(`${API_URL}/products/${product._id}`, product);
+        const response = await axios.put(`${API_URL}/products/${id}`, product);
         return response.data
     } catch (error) {
         console.error("Error mutation:", error);
