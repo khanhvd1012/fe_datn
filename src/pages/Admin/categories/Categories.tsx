@@ -1,12 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Drawer, Empty, message, Popconfirm, Skeleton, Table, Typography } from 'antd';
+import { Button, Empty, message, Popconfirm, Skeleton, Table } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ICategory } from '../../../interface/category';
 import { useCategories, useDeleteCategory } from '../../../hooks/useCategories';
-
-const { Title } = Typography;
+import DrawerCategory from '../../../hooks/drawer/DrawerCategory';
 
 const Categories = () => {
   const queryClient = useQueryClient();
@@ -57,7 +56,7 @@ const Categories = () => {
       key: "description",
     },
     {
-      title: "Logo",
+      title: "Hình ảnh",
       dataIndex: "logo_image",
       key: "logo_image",
       render: (logo: string) => (
@@ -119,53 +118,15 @@ const Categories = () => {
         }}
       />
 
-      <Drawer
-        title={<Title level={4}>{selectedCategory?.name}</Title>}
-        placement="right"
-        width={500}
+      <DrawerCategory
+        visible={isDrawerVisible}
+        category={selectedCategory}
+        loading={drawerLoading}
         onClose={() => {
           setIsDrawerVisible(false);
           setSelectedCategory(null);
         }}
-        open={isDrawerVisible}
-      >
-        {drawerLoading ? (
-          <Skeleton active />
-        ) : selectedCategory && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <strong>Mô tả:</strong>
-              <p>{selectedCategory.description}</p>
-            </div>
-
-            <div>
-              <strong>Logo:</strong>
-              <div style={{ marginTop: '8px' }}>
-                <img
-                  src={selectedCategory.logo_image}
-                  alt={selectedCategory.name}
-                  style={{ width: '100%', maxHeight: '200px', objectFit: 'contain' }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <strong>Sản phẩm:</strong>
-              <p>{selectedCategory.products?.length || 0} sản phẩm trong danh mục này</p>
-            </div>
-
-            <div>
-              <strong>Ngày tạo:</strong>
-              <p>{new Date(selectedCategory.createdAt!).toLocaleDateString()}</p>
-            </div>
-
-            <div>
-              <strong>Cập nhật lần cuối:</strong>
-              <p>{new Date(selectedCategory.updatedAt!).toLocaleDateString()}</p>
-            </div>
-          </div>
-        )}
-      </Drawer>
+      />
     </div>
   );
 };

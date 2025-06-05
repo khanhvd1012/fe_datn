@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
-import { Button, Drawer, Empty, message, Popconfirm, Skeleton, Table, Typography } from 'antd';
+import { useState } from 'react';
+import { Button, Empty, message, Popconfirm, Skeleton, Table } from 'antd';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IBrand } from '../../../interface/brand';
 import { useBrands, useDeleteBrand } from '../../../hooks/useBrands';
-
-const { Title } = Typography;
+import DrawerBrand from '../../../hooks/drawer/DrawerBrand';
 
 const Brands = () => {
   const queryClient = useQueryClient();
@@ -53,7 +52,7 @@ const Brands = () => {
 
   const columns = [
     {
-      title: "Tên",
+      title: "Tên thương hiệu",
       dataIndex: "name",
       key: "name",
     },
@@ -71,13 +70,13 @@ const Brands = () => {
       ),
     },
     {
-      title: "Số Sản Phẩm",
+      title: "Số lượng sản phẩm",
       dataIndex: "products",
       key: "products",
       render: (products: string[]) => products?.length || 0,
     },
     {
-      title: "Thao Tác",
+      title: "Thao tác",
       key: "actions",
       render: (_: any, brand: IBrand) => (
         <div style={{ display: 'flex', gap: '8px' }}>
@@ -125,53 +124,15 @@ const Brands = () => {
         }}
       />
 
-      <Drawer
-        title={<Title level={4}>{selectedBrand?.name}</Title>}
-        placement="right"
-        width={500}
+      <DrawerBrand
+        visible={isDrawerVisible}
+        brand={selectedBrand} 
+        loading={drawerLoading}
         onClose={() => {
           setIsDrawerVisible(false);
-          setSelectedBrand(null);
+          setSelectedBrand(null); 
         }}
-        open={isDrawerVisible}
-      >
-        {drawerLoading ? (
-          <Skeleton active />
-        ) : selectedBrand && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <strong>Mô tả:</strong>
-              <p>{selectedBrand.description}</p>
-            </div>
-
-            <div>
-              <strong>Logo:</strong>
-              <div style={{ marginTop: '8px' }}>
-                <img
-                  src={selectedBrand.logo_image}
-                  alt={selectedBrand.name}
-                  style={{ width: '100%', maxHeight: '200px', objectFit: 'contain' }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <strong>Sản phẩm:</strong>
-              <p>{selectedBrand.products?.length || 0} sản phẩm trong thương hiệu này</p>
-            </div>
-
-            <div>
-              <strong>Ngày tạo:</strong>
-              <p>{new Date(selectedBrand.createdAt!).toLocaleDateString()}</p>
-            </div>
-
-            <div>
-              <strong>Cập nhật lần cuối:</strong>
-              <p>{new Date(selectedBrand.updatedAt!).toLocaleDateString()}</p>
-            </div>
-          </div>
-        )}
-      </Drawer>
+      />
     </div>
   );
 };

@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Drawer, Empty, message, Popconfirm, Skeleton, Table, Tag, Typography, Select, Space, Input, Dropdown } from 'antd';
+import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag, Select, Space, Input, Dropdown } from 'antd';
 import { useState } from 'react';
 import type { IProduct } from '../../../interface/product';
 import type { ICategory } from '../../../interface/category';
@@ -9,8 +9,8 @@ import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlin
 import { useProducts, useDeleteProduct } from '../../../hooks/useProducts';
 import { useCategories } from '../../../hooks/useCategories';
 import { useBrands } from '../../../hooks/useBrands';
+import DrawerProduct from '../../../hooks/drawer/DrawerProduct';
 
-const { Title } = Typography;
 
 const Products = () => {
   const queryClient = useQueryClient();
@@ -42,14 +42,14 @@ const Products = () => {
     if (filters.maxPrice && product.price > Number(filters.maxPrice)) {
       return false;
     }
-    if (filters.category && typeof product.category === 'object' && 
-        product.category !== null && 'name' in product.category && 
-        product.category._id !== filters.category) {
+    if (filters.category && typeof product.category === 'object' &&
+      product.category !== null && 'name' in product.category &&
+      product.category._id !== filters.category) {
       return false;
     }
-    if (filters.brand && typeof product.brand === 'object' && 
-        product.brand !== null && 'name' in product.brand && 
-        product.brand._id !== filters.brand) {
+    if (filters.brand && typeof product.brand === 'object' &&
+      product.brand !== null && 'name' in product.brand &&
+      product.brand._id !== filters.brand) {
       return false;
     }
     if (filters.status && product.status !== filters.status) {
@@ -165,7 +165,7 @@ const Products = () => {
       dataIndex: "price",
       key: "price",
       render: (price: number) => `${price?.toFixed(2)} đ`
-    }, 
+    },
     {
       title: (
         <Space size="middle">
@@ -195,7 +195,7 @@ const Products = () => {
         </Space>
       ),
       dataIndex: "brand",
-      key: "brand",      
+      key: "brand",
       render: (brand: IProduct['brand']) => {
         if (typeof brand === 'object' && brand !== null && 'name' in brand) {
           return brand.name;
@@ -307,7 +307,7 @@ const Products = () => {
           </Dropdown>
         </Space>
       ),
-      dataIndex: "status", 
+      dataIndex: "status",
       key: "status",
       render: (status: string) => {
         const color = status === 'inStock' ? 'success' : 'error';
@@ -342,7 +342,8 @@ const Products = () => {
 
   return (
     <div>
-      {contextHolder}      <div style={{ marginBottom: 16 }}>
+      {contextHolder}
+      <div style={{ marginBottom: 16 }}>
         <Link to="/admin/products/create">
           <Button type="primary">Thêm sản phẩm mới</Button>
         </Link>
@@ -361,135 +362,15 @@ const Products = () => {
         }}
       />
 
-      <Drawer
-        title={<Title level={4}>{selectedProduct?.name}</Title>}
-        placement="right"
-        width={600}
+      <DrawerProduct
+        visible={isDrawerVisible}
+        product={selectedProduct}
+        loading={drawerLoading}
         onClose={() => {
           setIsDrawerVisible(false);
           setSelectedProduct(null);
         }}
-        open={isDrawerVisible}
-      >
-        {drawerLoading ? (
-          <Skeleton active paragraph={{ rows: 10 }} />
-        ) : selectedProduct && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <strong>Hình ảnh:</strong>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap' }}>
-                {selectedProduct.images && selectedProduct.images.length > 0 ? (
-                  selectedProduct.images.map((image, index) => (
-                    <img 
-                      key={index} 
-                      src={image} 
-                      alt={`Sản phẩm ${index + 1}`} 
-                      style={{ 
-                        width: 120, 
-                        height: 120, 
-                        objectFit: 'cover', 
-                        borderRadius: '8px',
-                        border: '1px solid #f0f0f0'
-                      }} 
-                    />
-                  ))
-                ) : (
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có ảnh" />
-                )}
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <strong>Giá:</strong>
-                <p style={{ margin: '8px 0', fontSize: '16px' }}>{selectedProduct.price?.toFixed(2)} đ</p>
-              </div>
-
-              <div>
-                <strong>Trạng thái:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  <Tag color={selectedProduct.status === 'inStock' ? 'success' : 'error'}>
-                    {selectedProduct.status === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
-                  </Tag>
-                </p>
-              </div>
-              
-              <div>
-                <strong>Thương hiệu:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  {typeof selectedProduct.brand === 'object' && selectedProduct.brand !== null && 'name' in selectedProduct.brand
-                    ? selectedProduct.brand.name
-                    : 'Chưa có thương hiệu'}
-                </p>
-              </div>
-              
-              <div>
-                <strong>Danh mục:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  {typeof selectedProduct.category === 'object' && selectedProduct.category !== null && 'name' in selectedProduct.category
-                    ? selectedProduct.category.name
-                    : 'Chưa phân loại'}
-                </p>
-              </div>
-
-              <div>
-                <strong>Giới tính:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  <Tag color={
-                    selectedProduct.gender === 'male' ? 'blue' :
-                    selectedProduct.gender === 'female' ? 'pink' : 'green'
-                  }>
-                    {selectedProduct.gender === 'male' ? 'NAM' :
-                     selectedProduct.gender === 'female' ? 'NỮ' : 'UNISEX'}
-                  </Tag>
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <strong>Mô tả:</strong>
-              <p style={{ margin: '8px 0', whiteSpace: 'pre-wrap' }}>{selectedProduct.description}</p>
-            </div>
-
-            <div>
-              <strong>Biến thể:</strong>
-              <div style={{ marginTop: '8px' }}>
-                {selectedProduct.variants && selectedProduct.variants.length > 0 ? (
-                  <div style={{ 
-                    backgroundColor: '#f5f5f5',
-                    padding: '12px',
-                    borderRadius: '8px',
-                    maxHeight: '200px',
-                    overflowY: 'auto'
-                  }}>
-                    <pre style={{ margin: 0, fontSize: '13px' }}>
-                      {JSON.stringify(selectedProduct.variants, null, 2)}
-                    </pre>
-                  </div>
-                ) : (
-                  <Empty description="Không có biến thể" />
-                )}
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <strong>Ngày tạo:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  {new Date(selectedProduct.createdAt!).toLocaleString()}
-                </p>
-              </div>
-
-              <div>
-                <strong>Cập nhật lần cuối:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  {new Date(selectedProduct.updatedAt!).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </Drawer>
+      />
     </div>
   );
 };
