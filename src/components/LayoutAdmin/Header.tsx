@@ -29,7 +29,8 @@ const Headers = () => {
     ];
 
     return (
-        <Header style={{ 
+        <Header 
+        style={{ 
             padding: '0 24px', 
             background: colorBgContainer, 
             display: 'flex', 
