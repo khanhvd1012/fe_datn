@@ -1,9 +1,60 @@
-import React from 'react'
+// Header.tsx
+import React, { useState } from 'react';
+import { UserOutlined, SearchOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import {
+  HeaderTop,
+  HeaderMain,
+  Logo,
+  NavMenu,
+  NavItem,
+  IconGroup,
+  Icon,
+  HamburgerIcon
+} from './style';
 
-const Header = () => {
+const Header: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleMenu = () => {
+    setIsOpen(prev => !prev);
+  };
+
   return (
-    <div>Header</div>
-  )
-}
+    <>
+      <HeaderTop>
+        MIỄN PHÍ VẬN CHUYỂN VỚI ĐƠN HÀNG NỘI THÀNH &gt; 300K - ĐỔI TRẢ TRONG 30 NGÀY - ĐẢM BẢO CHẤT LƯỢNG
+      </HeaderTop>
 
-export default Header
+      <HeaderMain>
+        <Logo>
+          SNEAKER<span>TREND</span>
+        </Logo>
+
+
+        <NavMenu isOpen={isOpen}>
+          <NavItem onClick={toggleMenu}>TRANG CHỦ</NavItem>
+          <NavItem onClick={toggleMenu}>BỘ SƯU TẬP</NavItem>
+          <NavItem onClick={toggleMenu}>SẢN PHẨM</NavItem>
+          <NavItem onClick={toggleMenu}>GIỚI THIỆU</NavItem>
+          <NavItem onClick={toggleMenu}>BLOG</NavItem>
+          <NavItem onClick={toggleMenu}>LIÊN HỆ</NavItem>
+        </NavMenu>
+
+        <IconGroup>
+          <Icon><UserOutlined /></Icon>
+          <Icon><SearchOutlined /></Icon>
+          <Icon><ShoppingCartOutlined /></Icon>
+        </IconGroup>
+
+        <HamburgerIcon onClick={toggleMenu} isOpen={isOpen}>
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </HamburgerIcon>
+      </HeaderMain>
+    </>
+  );
+};
+
+export default Header;
