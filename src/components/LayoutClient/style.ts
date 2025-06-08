@@ -10,7 +10,7 @@ export const HeaderTop = styled.div`
   color: white;
   font-size: 11px;
   text-align: center;
-  padding: 6px 0;
+  padding: 6px 0px;
 `;
 
 export const HeaderMain = styled.div`

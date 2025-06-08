@@ -3,6 +3,7 @@ import Header from './Header'
 import Footer from './Footer'
 import { Outlet } from 'react-router-dom'
 import Slideshow from './SlideShow'
+import Gallery from './Gallery'
 
 const IndexClient = () => {
     return (
@@ -10,6 +11,7 @@ const IndexClient = () => {
             <Header />
             <Slideshow/>
             <Outlet />
+            <Gallery/>
             <Footer />
         </div>
     )
