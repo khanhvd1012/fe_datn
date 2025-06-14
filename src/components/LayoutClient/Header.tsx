@@ -11,6 +11,7 @@ import {
   Icon,
   HamburgerIcon
 } from './style';
+import { NavLink } from 'react-router-dom';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,12 +33,12 @@ const Header: React.FC = () => {
 
 
         <NavMenu isOpen={isOpen}>
-          <NavItem onClick={toggleMenu}>TRANG CHỦ</NavItem>
-          <NavItem onClick={toggleMenu}>BỘ SƯU TẬP</NavItem>
-          <NavItem onClick={toggleMenu}>SẢN PHẨM</NavItem>
-          <NavItem onClick={toggleMenu}>GIỚI THIỆU</NavItem>
-          <NavItem onClick={toggleMenu}>BLOG</NavItem>
-          <NavItem onClick={toggleMenu}>LIÊN HỆ</NavItem>
+          <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>
+          <NavItem onClick={toggleMenu}><NavLink to="/collection">BỘ SƯU TẬP</NavLink></NavItem>
+          <NavItem onClick={toggleMenu}><NavLink to="/products">SẢN PHẨM</NavLink></NavItem>
+          <NavItem onClick={toggleMenu}><NavLink to="/about">GIỚI THIỆU</NavLink></NavItem>
+          <NavItem onClick={toggleMenu}><NavLink to="/blog">BLOG</NavLink></NavItem>
+          <NavItem onClick={toggleMenu}><NavLink to="/contact">LIÊN HỆ</NavLink></NavItem>
         </NavMenu>
 
         <IconGroup>
