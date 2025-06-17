@@ -1,5 +1,5 @@
 // Import các icon và components cần thiết từ antd và react-router-dom
-import { DashboardOutlined, ShoppingOutlined, AppstoreOutlined, TagsOutlined, UserOutlined, ShoppingCartOutlined, CommentOutlined, HomeOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
+import { DashboardOutlined, ShoppingOutlined, AppstoreOutlined, TagsOutlined, UserOutlined, ShoppingCartOutlined, CommentOutlined, HomeOutlined, EditOutlined, PlusOutlined, BgColorsOutlined } from '@ant-design/icons';
 import Sider from 'antd/es/layout/Sider'
 import { Breadcrumb, Layout, Menu, theme } from 'antd'
 import { Content } from 'antd/es/layout/layout'
@@ -31,6 +31,12 @@ import CreateEmployee from '../../pages/Admin/users/employee/CreateEmployee';
 import EditEmployee from '../../pages/Admin/users/employee/EditEmployee';
 import Employee from '../../pages/Admin/users/employee/Employee';
 import Footers from './Footer';
+import Sizes from '../../pages/Admin/sizes/Sizes';
+import CreateSize from '../../pages/Admin/sizes/CreateSize';
+import EditSize from '../../pages/Admin/sizes/EditSize';
+import Colors from '../../pages/Admin/colors/Colors';
+import CreateColor from '../../pages/Admin/colors/CreateColor';
+import EditColor from '../../pages/Admin/colors/EditColor';
 
 
 
@@ -41,7 +47,6 @@ const IndexAdmin = () => {
     
     // Tạo breadcrumb items dựa trên đường dẫn hiện tại
     const getBreadcrumbItems = () => {
-        // Bỏ qua admin trong đường dẫn
         const pathSnippets = location.pathname.split('/').filter(i => i && i !== 'admin');
         const items: { title: React.ReactNode }[] = [];
         
@@ -82,6 +87,9 @@ const IndexAdmin = () => {
                 case 'edit':
                     icon = <EditOutlined />;
                     break;
+                case 'colors':
+                    icon = <BgColorsOutlined />;
+                    break;
                 default:
                     icon = null;
             }
@@ -111,21 +119,24 @@ const IndexAdmin = () => {
                 {/* Sidebar có thể collapse */}
                 <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
                     <div className="demo-logo-vertical" />
-                    {/* Menu chính của admin với các chức năng */}
+                    {/* Menu chính của admin với các chức năng */}                    
                     <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline"
                         items={[
                             // Dashboard
                             {
-                                key: "1",
+                                key: "dashboard",
                                 label: <Link to="/admin/dashboard">Dashboard</Link>,
                                 icon: <DashboardOutlined />,
                             },
                             // Quản lý sản phẩm
                             { key: "2", label: <Link to="/admin/products">Products</Link>, icon: <ShoppingOutlined /> },
                             // Quản lý danh mục
-                            { key: "3", label: <Link to="/admin/categories">Categories</Link>, icon: <AppstoreOutlined /> },
-                            // Quản lý thương hiệu
-                            { key: "4", label: <Link to="/admin/brands">Brands</Link>, icon: <TagsOutlined /> },
+                            { key: "3", label: <Link to="/admin/categories">Categories</Link>, icon: <AppstoreOutlined /> },                            // Quản lý thương hiệu
+                            { key: "brands", label: <Link to="/admin/brands">Brands</Link>, icon: <TagsOutlined /> },
+                            // Quản lý size
+                            { key: "sizes", label: <Link to="/admin/sizes">Sizes</Link>, icon: <TagsOutlined /> },
+                            // Quản lý màu sắc
+                            { key: "colors", label: <Link to="/admin/colors">Colors</Link>, icon: <BgColorsOutlined /> },
                             // Quản lý người dùng với submenu
                             {
                                 key: "5", label: <Link to="/admin/users">Users</Link>, icon: <UserOutlined />,
@@ -186,13 +197,25 @@ const IndexAdmin = () => {
                                     <Route path='' element={<Categories />} />
                                     <Route path="create" element={<CreateCategories />} />
                                     <Route path="edit/:id" element={<EditCategories />} />
-                                </Route>
-
-                                {/* Routes quản lý thương hiệu */}
+                                </Route>                                {/* Routes quản lý thương hiệu */}
                                 <Route path="brands">
                                     <Route path="" element={<Brands />} />
                                     <Route path="create" element={<CreateBrand />} />
                                     <Route path="edit/:id" element={<EditBrand />} />
+                                </Route>
+
+                                {/* Routes quản lý size */}
+                                <Route path="sizes">
+                                    <Route path="" element={<Sizes />} />
+                                    <Route path="add" element={<CreateSize />} />
+                                    <Route path="edit/:id" element={<EditSize />} />
+                                </Route>
+
+                                {/* Routes quản lý màu sắc */}
+                                <Route path="colors">
+                                    <Route path="" element={<Colors />} />
+                                    <Route path="add" element={<CreateColor />} />
+                                    <Route path="edit/:id" element={<EditColor />} />
                                 </Route>
 
                                 {/* Routes quản lý người dùng */}
