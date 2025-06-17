@@ -24,7 +24,14 @@ export const getById = async (id: string) => {
 }
 export const addProduct = async (product: IProduct) => {
     try {
-        const response = await axios.post(`${API_URL}/products`, product);
+        // Ensure sizes is always an array of IDs
+        const productData = {
+            ...product,
+            sizes: Array.isArray(product.sizes)
+                ? product.sizes.map(size => typeof size === 'object' ? size._id : size)
+                : []
+        };
+        const response = await axios.post(`${API_URL}/products`, productData);
         return response.data
     } catch (error) {
         console.error("Error mutation:", error);
@@ -33,7 +40,16 @@ export const addProduct = async (product: IProduct) => {
 }
 export const updateProduct = async (id: string, product: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>>) => {
     try {
-        const response = await axios.put(`${API_URL}/products/${id}`, product);
+        // Ensure sizes is always an array of IDs
+        const productData = {
+            ...product,
+            sizes: product.sizes
+                ? (Array.isArray(product.sizes)
+                    ? product.sizes.map(size => typeof size === 'object' ? size._id : size)
+                    : [])
+                : []
+        };
+        const response = await axios.put(`${API_URL}/products/${id}`, productData);
         return response.data
     } catch (error) {
         console.error("Error mutation:", error);

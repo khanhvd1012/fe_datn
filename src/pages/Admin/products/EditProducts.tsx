@@ -8,6 +8,7 @@ import { useState, useEffect } from 'react';
 import { useProduct, useUpdateProduct } from '../../../hooks/useProducts';
 import { useCategories } from '../../../hooks/useCategories';
 import { useBrands } from '../../../hooks/useBrands';
+import { useSizes } from '../../../hooks/useSizes';
 
 const EditProducts = () => {
   const { id } = useParams();
@@ -18,7 +19,6 @@ const EditProducts = () => {
   const [images, setImages] = useState<string[]>([]);
   // Fetch product data with enabled condition
   const { data: product, isLoading: productLoading } = useProduct(String(id));
-
   // Fetch categories and brands for dropdowns
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: brands, isLoading: brandsLoading } = useBrands();
@@ -28,7 +28,7 @@ const EditProducts = () => {
 
   // Set initial form values when product data is loaded
   useEffect(() => {
-    if (product) {
+  if (product) {
       const formValues = {
         name: product.name,
         description: product.description,
@@ -37,6 +37,7 @@ const EditProducts = () => {
         gender: product.gender,
         status: product.status,
         price: product.price,
+        sizes: product.sizes,
         variants: product.variants,
         images: product.images?.join(', ')
       };
@@ -175,6 +176,13 @@ const EditProducts = () => {
               <Select.Option value="female">Nữ</Select.Option>
               <Select.Option value="unisex">Unisex</Select.Option>
             </Select>
+          </Form.Item>
+
+          <Form.Item
+            label="Kích thước"
+            name="sizes"
+            rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
+          >
           </Form.Item>
 
           <Form.Item
