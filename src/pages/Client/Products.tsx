@@ -1,8 +1,11 @@
 import React from 'react'
+import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
 
 const Products = () => {
   return (
-    <div>Products</div>
+    <div style={{}}>
+      <Breadcrumb current="Sản phẩm" />
+    </div>
   )
 }
 

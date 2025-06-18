@@ -1,18 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 
 const Contact = () => {
   return (
     <div style={{ padding: '40px', fontFamily: '"Quicksand", sans-serif', backgroundColor: '#fff' }}>
-      {/* Breadcrumb */}
-      <div style={{ marginBottom: '20px', fontSize: '14px', color: '#888' }}>
-        <Link to="/" style={{ color: '#bbb', textDecoration: 'none', fontWeight: 500 }}>
-          Trang chủ
-        </Link>
-        <span style={{ margin: '0 8px' }}>/</span>
-        <span style={{ color: '#000', fontWeight: 600 }}>Liên hệ</span>
+      <div>
+        <Breadcrumb current="Liên hệ" />
       </div>
-
       <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
         {/* Left: Google Map */}
         <div style={{ flex: '2 1 60%', minWidth: '300px' }}>

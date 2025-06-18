@@ -1,8 +1,11 @@
 import React from 'react'
+import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
 
 const Collection = () => {
   return (
-    <div>Collection</div>
+   <div style={{}}>
+      <Breadcrumb current="Bộ sưu tập" />
+    </div>
   )
 }
 
