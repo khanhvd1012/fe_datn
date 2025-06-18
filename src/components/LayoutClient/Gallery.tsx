@@ -8,18 +8,22 @@ const Section = styled.section`
 `;
 
 const Title = styled.h2`
-  font-size: 24px;
+  font-size: 20px; /* nhỏ hơn */
   margin-bottom: 16px;
-  font-weight: 500;
+  font-weight: 600;
   position: relative;
+  display: inline-block;
+  text-align: center;
+  
 
   &::after {
     content: "";
-    display: block;
-    width: 60px;
+    position: absolute;
+    bottom: -6px;
+    left: 25%;
+    width: 50%;
     height: 2px;
     background-color: #000;
-    margin: 8px auto 0;
   }
 `;
 
@@ -50,7 +54,7 @@ const Gallery: React.FC = () => {
 
   return (
     <Section>
-      <Title>Khách hàng và Runner Inn</Title>
+      <Title>Khách hàng và SneakerTrend</Title>
       <ImageGrid>
         {images.map((src, index) => (
           <GridImage key={index} src={src} alt={`Gallery image ${index + 1}`} />
