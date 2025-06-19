@@ -28,7 +28,7 @@ export const Logo = styled.div`
   font-size: 24px;
   font-weight: bold;
   color: black;
-
+  margin-left:50px;
   span {
     background-color: #2e57a5;
     color: white;
@@ -59,25 +59,26 @@ export const NavMenu = styled.ul<ResponsiveProps>`
     display: none;
 
     ${props =>
-      props.isOpen &&
-      css`
+    props.isOpen &&
+    css`
         display: flex;
       `}
   }
 `;
 
 export const NavItem = styled.li`
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
 
   @media (max-width: 767px) {
-    font-size: 16px;
+    font-size: 18px;
     padding: 8px 0;
   }
 
   &:hover {
     color: #2e57a5;
+    text-decoration: underline;
   }
 `;
 
@@ -85,9 +86,9 @@ export const IconGroup = styled.div`
   display: flex;
   gap: 16px;
   align-items: center;
-
+   margin-right:50px;
   .anticon {
-    font-size: 18px;
+    font-size: 13px;
     cursor: pointer;
   }
 
@@ -102,7 +103,6 @@ export const Icon = styled.div`
   font-size: 16px;
   cursor: pointer;
   color: black;
-
   &:hover {
     color: #2e57a5;
   }
