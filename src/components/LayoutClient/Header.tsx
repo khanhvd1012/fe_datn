@@ -1,6 +1,10 @@
 // Header.tsx
 import React, { useState } from 'react';
-import { UserOutlined, SearchOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import {
+  UserOutlined,
+  SearchOutlined,
+  ShoppingCartOutlined,
+} from '@ant-design/icons';
 import {
   HeaderTop,
   HeaderMain,
@@ -9,15 +13,18 @@ import {
   NavItem,
   IconGroup,
   Icon,
-  HamburgerIcon
+  HamburgerIcon,
 } from './style';
 import { Link, NavLink } from 'react-router-dom';
+import SideCart from '../../pages/Client/SideCart';
+
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   const toggleMenu = () => {
-    setIsOpen(prev => !prev);
+    setIsOpen((prev) => !prev);
   };
 
   return (
@@ -30,7 +37,6 @@ const Header: React.FC = () => {
         <Logo>
           SNEAKER<span>TREND</span>
         </Logo>
-
 
         <NavMenu isOpen={isOpen}>
           <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>
@@ -48,9 +54,9 @@ const Header: React.FC = () => {
           <Link to="/search">
             <Icon><SearchOutlined /></Icon>
           </Link>
-          <Link to="/cart">
-            <Icon><ShoppingCartOutlined /></Icon>
-          </Link>
+          <Icon onClick={() => setIsCartOpen(true)}>
+            <ShoppingCartOutlined />
+          </Icon>
         </IconGroup>
 
         <HamburgerIcon onClick={toggleMenu} isOpen={isOpen}>
@@ -60,6 +66,8 @@ const Header: React.FC = () => {
           <span></span>
         </HamburgerIcon>
       </HeaderMain>
+
+      {isCartOpen && <SideCart onClose={() => setIsCartOpen(false)} />}
     </>
   );
 };

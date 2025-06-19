@@ -11,6 +11,9 @@ import Blog from '../../pages/Client/Blog';
 import Contact from '../../pages/Client/Contact';
 import Brand from '../../pages/Client/Brand';
 import Products from '../../pages/Client/Products';
+import Cart from '../../pages/Client/Cart';
+import Breadcrumb from 'antd/es/breadcrumb/Breadcrumb';
+
 
 // Import các page
 
@@ -19,7 +22,6 @@ const IndexClient = () => {
     <div>
       <Header />
       <Slideshow />
-
       <div style={{ padding: '20px' }}>
         <Routes>
           <Route index element={<Home />} />
@@ -28,6 +30,7 @@ const IndexClient = () => {
           <Route path="about" element={<About />} />
           <Route path="blog" element={<Blog />} />
           <Route path="contact" element={<Contact />} />
+          <Route path="cart" element={<Cart />} />
           {/* fallback route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

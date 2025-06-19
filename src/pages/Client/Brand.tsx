@@ -3,9 +3,11 @@ import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
 
 const Brand= () => {
   return (
-    <div style={{}}>
+    <>
       <Breadcrumb current="Brand" />
-    </div>
+
+      
+    </>
   )
 }
 
