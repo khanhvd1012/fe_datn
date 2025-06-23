@@ -17,6 +17,7 @@ import {
 } from './style';
 import { Link, NavLink } from 'react-router-dom';
 import SideCart from '../../pages/Client/SideCart';
+import BrandDropdown from './BrandDropdown';
 
 
 const Header: React.FC = () => {
@@ -41,7 +42,11 @@ const Header: React.FC = () => {
         <NavMenu isOpen={isOpen}>
           <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/products">SẢN PHẨM</NavLink></NavItem>
-          <NavItem onClick={toggleMenu}><NavLink to="/brand">THƯƠNG HIỆU</NavLink></NavItem>
+
+          <NavItem onClick={toggleMenu}>
+            <BrandDropdown />
+          </NavItem>
+
           <NavItem onClick={toggleMenu}><NavLink to="/about">GIỚI THIỆU</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/blog">TIN TỨC</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/contact">LIÊN HỆ</NavLink></NavItem>
