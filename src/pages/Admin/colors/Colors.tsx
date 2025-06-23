@@ -5,7 +5,7 @@ import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlin
 import { useQueryClient } from '@tanstack/react-query';
 import type { IColor } from '../../../interface/color';
 import { useColors, useDeleteColor } from '../../../hooks/useColors';
-import DrawerColor from '../../../hooks/drawer/DrawerColor';
+import DrawerColor from '../../../components/drawer/DrawerColor';
 
 const Colors: React.FC = () => {
     const queryClient = useQueryClient();

@@ -1,13 +1,13 @@
 export interface IVariant {
     _id?: string;
-    SKU: string;
-    size: string | { _id: string; name: string }; // Can be either ID string or populated size object
-    color: string | { _id: string; name: string }; // Can be either ID string or populated color object
-    image: string;
+    product_id: string | { _id: string; name: string };
+    sizes: string[] | { _id: string; name: string }[];
+    quantity: number;
+    color_id: string | { _id: string; name: string };
+    sku: string;
     price: number;
-    stock: number;
-    status: 'Còn hàng' | 'Hết hàng' | 'Ngừng bán';
-    product: string | { _id: string; name: string }; // Can be either ID string or populated product object
+    images: string[];
+    status: 'active' | 'inactive';
     createdAt?: Date;
     updatedAt?: Date;
 }

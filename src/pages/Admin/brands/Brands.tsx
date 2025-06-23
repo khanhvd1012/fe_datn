@@ -5,7 +5,7 @@ import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IBrand } from '../../../interface/brand';
 import { useBrands, useDeleteBrand } from '../../../hooks/useBrands';
-import DrawerBrand from '../../../hooks/drawer/DrawerBrand';
+import DrawerBrand from '../../../components/drawer/DrawerBrand';
 
 const Brands = () => {
   const queryClient = useQueryClient();
