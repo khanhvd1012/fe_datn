@@ -4,6 +4,8 @@ import SidebarMenu from '../../components/LayoutClient/SideBarMenu'
 
 const About = () => {
   return (
+    <>
+    <Breadcrumb current="Giới thiệu" />
     <div
       style={{
         maxWidth: '1280px',
@@ -15,7 +17,6 @@ const About = () => {
         lineHeight: '1.6',
       }}
     >
-      <Breadcrumb current="Giới thiệu" />
       <div style={{ display: 'flex', gap: '32px', marginTop: '20px' }}>
         {/* Sidebar */}
         <div style={{ flex: '1' }}>
@@ -52,6 +53,7 @@ const About = () => {
         </div>
       </div>
     </div>
+    </>
   )
 }
 
