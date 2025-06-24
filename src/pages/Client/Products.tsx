@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
+import { Link } from 'react-router-dom'
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
 import SidebarMenu from '../../components/LayoutClient/SideBarMenu'
 
@@ -42,7 +43,6 @@ const Products = () => {
         <div className="flex gap-8">
           {/* Sidebar Filter */}
           <div className="w-1/4">
-            {/* sidebar menu */}
             <SidebarMenu />
 
             <h3 className="font-semibold mb-3">THƯƠNG HIỆU</h3>
@@ -82,12 +82,14 @@ const Products = () => {
               ))}
             </div>
           </div>
+
           {/* Product List */}
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-4 gap-6">
             {sortedProducts.map((product) => (
-              <div
+              <Link
+                to={`/products/${product._id}`}
                 key={product._id}
-                className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition"
+                className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block"
               >
                 <img
                   src={product.images?.[0] || ''}
@@ -98,7 +100,7 @@ const Products = () => {
                 <div className="text-sm font-semibold text-gray-800 mt-1">
                   {product.price?.toLocaleString('vi-VN')}₫
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
