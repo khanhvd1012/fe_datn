@@ -7,8 +7,8 @@ const { Title, Text } = Typography;
 interface Product {
   _id: string;
   name: string;
-  price: number;
-  images: string[];
+  price?: number; // ✅ thêm ? để tránh lỗi undefined
+  images?: string[]; // ✅ thêm ? vì có thể không có
 }
 
 const NewProducts: React.FC = () => {
@@ -18,10 +18,14 @@ const NewProducts: React.FC = () => {
 
   useEffect(() => {
     axios
-      .get('http://localhost:8080/api/products?limit=4') // ✅ Lấy 4 sản phẩm mới nhất
+      .get('http://localhost:8080/api/products?limit=4')
       .then((res) => {
         console.log('New Products:', res.data);
-        setProducts(res.data?.data?.products || []);
+        // ✅ chỉ nhận sản phẩm hợp lệ có price là số
+        const filtered = (res.data?.data?.products || []).filter(
+          (p: Product) => p && typeof p.price === 'number'
+        );
+        setProducts(filtered);
       })
       .catch(() => {
         message.error('Không thể tải sản phẩm');
@@ -43,8 +47,7 @@ const NewProducts: React.FC = () => {
           container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         }
       }
-    }, 3000); // 3 giây
-
+    }, 3000);
     return () => clearInterval(interval);
   }, [products]);
 
@@ -95,14 +98,18 @@ const NewProducts: React.FC = () => {
                 cover={
                   <img
                     alt={product.name}
-                    src={product.images?.[0] || 'https://via.placeholder.com/200'}
+                    src={product.images?.[0] || 'https://picsum.photos/200'}
                     style={{ height: 200, objectFit: 'contain', padding: 10 }}
                   />
                 }
                 style={{ textAlign: 'center' }}
               >
                 <Text style={{ display: 'block', marginBottom: 8 }}>{product.name}</Text>
-                <Text strong>{product.price.toLocaleString('vi-VN')}₫</Text>
+                <Text strong>
+                  {typeof product.price === 'number'
+                    ? `${product.price.toLocaleString('vi-VN')}₫`
+                    : 'Giá đang cập nhật'}
+                </Text>
               </Card>
             </div>
           ))}

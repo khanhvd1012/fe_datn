@@ -7,8 +7,8 @@ const { Title, Text } = Typography;
 interface Product {
   _id: string;
   name: string;
-  price: number;
-  images: string[];
+  price?: number; // thêm dấu ? để an toàn
+  images?: string[];
 }
 
 const BestSellingProducts: React.FC = () => {
@@ -17,12 +17,11 @@ const BestSellingProducts: React.FC = () => {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/products')
-    
-      .then(res => {
+    axios
+      .get('http://localhost:8080/api/products')
+      .then((res) => {
         console.log('RESPONSE:', res.data);
-        setProducts(res.data.data.products);
-
+        setProducts(res.data.data.products || []);
         setLoading(false);
       })
       .catch(() => {
@@ -36,16 +35,16 @@ const BestSellingProducts: React.FC = () => {
     const interval = setInterval(() => {
       if (sliderRef.current) {
         const container = sliderRef.current;
-        const scrollAmount = container.offsetWidth; // scroll 1 lần đúng 1 "trang"
+        const scrollAmount = container.offsetWidth;
         if (container.scrollLeft + scrollAmount >= container.scrollWidth) {
-          container.scrollTo({ left: 0, behavior: 'smooth' }); // quay lại đầu
+          container.scrollTo({ left: 0, behavior: 'smooth' });
         } else {
           container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
         }
       }
-    }, 3000); // 3s 1 lần
+    }, 3000);
 
-    return () => clearInterval(interval); // clear khi component unmount
+    return () => clearInterval(interval);
   }, [products]);
 
   return (
@@ -67,17 +66,21 @@ const BestSellingProducts: React.FC = () => {
       </Title>
 
       <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
-        <Text type="secondary" style={{ fontSize: 12 }}>Tự động trượt qua sản phẩm</Text>
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          Tự động trượt qua sản phẩm
+        </Text>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center' }}><Spin /></div>
+        <div style={{ textAlign: 'center' }}>
+          <Spin />
+        </div>
       ) : (
         <div
           ref={sliderRef}
           style={{
             display: 'flex',
-            overflowX: 'hidden', // ẩn scroll
+            overflowX: 'hidden',
             scrollBehavior: 'smooth',
           }}
         >
@@ -85,7 +88,7 @@ const BestSellingProducts: React.FC = () => {
             <div
               key={product._id}
               style={{
-                flex: '0 0 25%', // 4 sản phẩm mỗi lượt
+                flex: '0 0 25%',
                 padding: '0 8px',
                 minWidth: 250,
               }}
@@ -95,14 +98,18 @@ const BestSellingProducts: React.FC = () => {
                 cover={
                   <img
                     alt={product.name}
-                    src={product.images?.[0] || 'https://via.placeholder.com/200'}
+                    src={product.images?.[0] || 'https://picsum.photos/200'}
                     style={{ height: 200, objectFit: 'contain', padding: 10 }}
                   />
                 }
                 style={{ textAlign: 'center' }}
               >
                 <Text style={{ display: 'block', marginBottom: 8 }}>{product.name}</Text>
-                <Text strong>{product.price.toLocaleString('vi-VN')}₫</Text>
+                <Text strong>
+                  {typeof product.price === 'number'
+                    ? `${product.price.toLocaleString('vi-VN')}₫`
+                    : 'Giá đang cập nhật'}
+                </Text>
               </Card>
             </div>
           ))}
