@@ -18,6 +18,7 @@ import {
 import { Link, NavLink } from 'react-router-dom';
 import SideCart from '../../pages/Client/SideCart';
 import BrandDropdown from './BrandDropdown';
+import CateDropdown from './CateDropdown';
 
 
 const Header: React.FC = () => {
@@ -42,7 +43,10 @@ const Header: React.FC = () => {
         <NavMenu isOpen={isOpen}>
           <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/products">SẢN PHẨM</NavLink></NavItem>
-
+          
+          <NavItem onClick={toggleMenu}>
+            <CateDropdown />
+          </NavItem>
           <NavItem onClick={toggleMenu}>
             <BrandDropdown />
           </NavItem>

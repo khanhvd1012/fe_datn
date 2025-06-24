@@ -1,8 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { useBrands } from '../../hooks/useBrands'; // chỉnh path nếu khác
-import type { IBrand } from '../../interface/brand';
-
+import { useCategories } from '../../hooks/useCategories'; // chỉnh path nếu khác
+import type { ICategory } from '../../interface/category';
 
 const styles: { [key: string]: React.CSSProperties } = {
   dropdown: {
@@ -39,8 +38,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
 };
 
-const BrandDropdown = () => {
-  const { data: brands, isLoading, isError } = useBrands();
+const CateDropdown = () => {
+  const { data: categories, isLoading, isError } = useCategories();
 
   return (
     <div
@@ -54,20 +53,20 @@ const BrandDropdown = () => {
         if (content) content.style.display = 'none';
       }}
     >
-      <NavLink to="/brand" style={styles.link}>THƯƠNG HIỆU</NavLink>
+      <NavLink to="/category" style={styles.link}>DANH MỤC</NavLink>
       <div className="dropdown-content" style={styles.content}>
         {isLoading && <span style={styles.contentItem}>Đang tải...</span>}
         {isError && <span style={styles.contentItem}>Lỗi tải dữ liệu</span>}
-        {brands && brands.map((brand: IBrand) => (
+        {categories && categories.map((category: ICategory) => (
           <NavLink
-            key={brand._id}
-            to={`/brand/${brand._id}`}
+            key={category._id}
+            to={`/category/${category._id}`}
             style={styles.contentItem}
           >
-            {brand.logo_image && (
-              <img src={brand.logo_image} alt={brand.name} style={styles.logo} />
+            {category.logo_image && (
+              <img src={category.logo_image} alt={category.name} style={styles.logo} />
             )}
-            {brand.name}
+            {category.name}
           </NavLink>
         ))}
       </div>
@@ -75,4 +74,4 @@ const BrandDropdown = () => {
   );
 };
 
-export default BrandDropdown;
+export default CateDropdown;
