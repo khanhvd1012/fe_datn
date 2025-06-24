@@ -12,7 +12,7 @@ import Contact from '../../pages/Client/Contact';
 import Brand from '../../pages/Client/Brand';
 import Products from '../../pages/Client/Products';
 import Cart from '../../pages/Client/Cart';
-import Breadcrumb from 'antd/es/breadcrumb/Breadcrumb';
+import ProductDetail from './ProductDetail';
 
 
 // Import các page
@@ -26,6 +26,7 @@ const IndexClient = () => {
         <Routes>
           <Route index element={<Home />} />
           <Route path="products" element={<Products />} />
+           <Route path="products/:id" element={<ProductDetail />} />
           <Route path="brand" element={<Brand />} />
           <Route path="about" element={<About />} />
           <Route path="blog" element={<Blog />} />
