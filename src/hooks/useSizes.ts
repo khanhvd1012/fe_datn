@@ -1,19 +1,23 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getSizes, getSizeById, addSize, updateSize, deleteSize } from '../service/sizeAPI';
+import { getSizeById, addSize, updateSize, deleteSize, getSizes } from '../service/sizeAPI';
 import type { ISize } from '../interface/size';
 
 export const useSizes = () => {
-    return useQuery<{ message: string; sizes: ISize[] }>({
+    return useQuery<ISize[]>({
         queryKey: ['sizes'],
-        queryFn: getSizes
+        queryFn: async () => {
+            const res = await getSizes();
+            return res.sizes; 
+        }
     });
 };
 
+
 export const useSize = (id: string) => {
     return useQuery({
-        queryKey: ['size', id],
+        queryKey: ['sizes', id],
         queryFn: () => getSizeById(id),
-        enabled: !!id // Only run the query if we have an ID
+        enabled: !!id //
     });
 };
 

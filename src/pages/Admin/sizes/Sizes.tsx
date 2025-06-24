@@ -1,11 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, Input, message, Popconfirm, Select, Skeleton, Space, Table, Tag, Dropdown } from 'antd';
+import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag, Space } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import type { ISize } from '../../../interface/size';
 import { useSizes, useDeleteSize } from '../../../hooks/useSizes';
 import DrawerSize from '../../../components/drawer/DrawerSize';
+import SizeFilter from '../../../components/filter/SizeFilter';
 
 const Sizes = () => {
   const queryClient = useQueryClient();
@@ -20,6 +21,7 @@ const Sizes = () => {
     value: '',
     status: ''
   });
+
   const filteredData = data?.sizes?.filter((size: ISize) => {
     if (filters.name && !size.name.toLowerCase().includes(filters.name.toLowerCase())) {
       return false;
@@ -73,22 +75,7 @@ const Sizes = () => {
       title: (
         <Space size="middle">
           Tên kích thước
-          <Dropdown
-            trigger={['click']}
-            dropdownRender={() => (
-              <div style={{ backgroundColor: 'white', padding: '8px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                <Input
-                  placeholder="Tìm kiếm theo tên"
-                  value={filters.name}
-                  onChange={(e) => handleFilterChange(e.target.value, 'name')}
-                  prefix={<SearchOutlined />}
-                  allowClear
-                />
-              </div>
-            )}
-          >
-            <FilterOutlined style={{ cursor: 'pointer', marginLeft: 8 }} />
-          </Dropdown>
+          <SizeFilter filters={filters} handleFilterChange={handleFilterChange} type="name" />
         </Space>
       ),
       dataIndex: "name",
@@ -98,22 +85,7 @@ const Sizes = () => {
       title: (
         <Space size="middle">
           Giá trị
-          <Dropdown
-            trigger={['click']}
-            dropdownRender={() => (
-              <div style={{ backgroundColor: 'white', padding: '8px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                <Input
-                  placeholder="Tìm kiếm theo giá trị"
-                  value={filters.value}
-                  onChange={(e) => handleFilterChange(e.target.value, 'value')}
-                  prefix={<SearchOutlined />}
-                  allowClear
-                />
-              </div>
-            )}
-          >
-            <FilterOutlined style={{ cursor: 'pointer', marginLeft: 8 }} />
-          </Dropdown>
+          <SizeFilter filters={filters} handleFilterChange={handleFilterChange} type="value" />
         </Space>
       ),
       dataIndex: "value",
@@ -123,33 +95,15 @@ const Sizes = () => {
       title: (
         <Space size="middle">
           Trạng thái
-          <Dropdown
-            trigger={['click']}
-            dropdownRender={() => (
-              <div style={{ backgroundColor: 'white', padding: '8px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                <Select
-                  style={{ width: '200px' }}
-                  placeholder="Chọn trạng thái"
-                  allowClear
-                  value={filters.status}
-                  onChange={(value) => handleFilterChange(value || '', 'status')}
-                >
-                  <Select.Option value="active">Đang hoạt động</Select.Option>
-                  <Select.Option value="inactive">Ngừng hoạt động</Select.Option>
-                </Select>
-              </div>
-            )}
-          >
-            <FilterOutlined style={{ cursor: 'pointer', marginLeft: 8 }} />
-          </Dropdown>
+          <SizeFilter filters={filters} handleFilterChange={handleFilterChange} type="status" />
         </Space>
       ),
       dataIndex: "status",
       key: "status",
       render: (status: string) => {
         const color = status === 'active' ? 'success' : 'error';
-        return <Tag color={color}>{status === 'active' ? 'Đang hoạt động' : 'Ngừng hoạt động'}</Tag>
-      }
+        return <Tag color={color}>{status === 'active' ? 'Đang hoạt động' : 'Ngừng hoạt động'}</Tag>;
+      },
     },
     {
       title: "Thao tác",

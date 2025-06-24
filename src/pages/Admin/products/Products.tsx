@@ -1,116 +1,93 @@
-import { Button, Empty, message, Popconfirm, Skeleton, Table } from 'antd';
-import { useState } from 'react';
-import type { IProduct } from '../../../interface/product';
-import { Link } from 'react-router-dom';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { useProducts, useDeleteProduct } from '../../../hooks/useProducts';
-import { useCategories } from '../../../hooks/useCategories';
-import { useBrands } from '../../../hooks/useBrands';
-import DrawerProduct from '../../../components/drawer/DrawerProduct';
-import { ProductFilters } from '../../../components/ProductFilters';
+import { useQueryClient } from "@tanstack/react-query";
+import { Button, Empty, message, Popconfirm, Skeleton, Table } from "antd";
+import { useState } from "react";
+import type { IProduct } from "../../../interface/product";
+import { Link } from "react-router-dom";
+import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import DrawerProduct from "../../../components/drawer/DrawerProduct";
+import { useDeleteProduct, useProducts } from "../../../hooks/useProducts";
 
 const Products = () => {
+  const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<IProduct | null>(null);
-  const [filters, setFilters] = useState({
-    name: '',
-    minPrice: '',
-    maxPrice: '',
-    category: '',
-    brand: '',
-    status: '',
-    gender: ''
-  });
+  const [drawerLoading, setDrawerLoading] = useState(false);
+  const { mutate } = useDeleteProduct();
+  const { data, isLoading } = useProducts();
 
-  // Sử dụng các hooks đã được đơn giản hóa
-  const { data: productsResponse, isLoading, refetch } = useProducts();
-  const { data: categories } = useCategories();
-  const { data: brands } = useBrands();
-  const { mutate: deleteProduct } = useDeleteProduct();
-
-  const filteredData = productsResponse?.data?.filter((product: IProduct) => {
-    if (filters.name && !product.name.toLowerCase().includes(filters.name.toLowerCase())) {
-      return false;
+  const handleDelete = async (id: string) => {
+    try {
+      mutate(id, {
+        onSuccess: () => {
+          messageApi.success("Xóa sản phẩm thành công");
+          queryClient.invalidateQueries({
+            queryKey: ["products"],
+          });
+        },
+        onError: () => messageApi.error("Lỗi khi xóa danh mục"),
+      });
+    } catch (error) {
+      console.error("Error deleting product:", error);
     }
-    if (filters.minPrice && product.price < Number(filters.minPrice)) {
-      return false;
-    }
-    if (filters.maxPrice && product.price > Number(filters.maxPrice)) {
-      return false;
-    }
-    if (filters.category && typeof product.category === 'object' &&
-      product.category !== null && 'name' in product.category &&
-      product.category._id !== filters.category) {
-      return false;
-    }
-    if (filters.brand && typeof product.brand === 'object' &&
-      product.brand !== null && 'name' in product.brand &&
-      product.brand._id !== filters.brand) {
-      return false;
-    }
-    if (filters.status && product.status !== filters.status) {
-      return false;
-    }
-    if (filters.gender && product.gender !== filters.gender) {
-      return false;
-    }
-    return true;
-  }) || [];
-
-  const handleFilterChange = (value: string | number, type: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [type]: value
-    }));
   };
 
-  const handleDelete = (id: string) => {
-    deleteProduct(id, {
-      onSuccess: () => {
-        messageApi.success('Xóa sản phẩm thành công!');
-        refetch(); // Tải lại danh sách sau khi xóa
-      },
-      onError: (error: any) => {
-        messageApi.error(error?.response?.data?.message || 'Có lỗi xảy ra khi xóa sản phẩm!');
-      }
-    });
-  };
-
-  const handleView = (product: IProduct) => {
+  const showProductDetails = (product: IProduct) => {
+    setDrawerLoading(true);
     setSelectedProduct(product);
     setIsDrawerVisible(true);
+    setTimeout(() => {
+      setDrawerLoading(false);
+    }, 500);
   };
 
   if (isLoading) return <Skeleton active />;
-  if (!productsResponse?.data) return <Empty />;
-
-  const filterProps = {
-    filters,
-    onFilterChange: handleFilterChange,
-    categories,
-    brands
-  };
+  if (!data) return <Empty />;
 
   const columns = [
-    ProductFilters.nameColumn(filterProps),
+    {
+      title: "Tên sản phẩm",
+      dataIndex: "name",
+      key: "name",
+    },
+    {
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+    },
+    {
+      title: "Thương hiệu",
+      dataIndex: "brand",
+      key: "brand",
+      render: (brand: any) => typeof brand === 'string' ? brand : brand?.name,
+    },
+    {
+      title: "Danh mục",
+      dataIndex: "category",
+      key: "category",
+      render: (category: any) => typeof category === 'string' ? category : category?.name,
+    },
     {
       title: "Hình ảnh",
       dataIndex: "images",
       key: "images",
-      render: (images: string[]) => (
-        images && images.length > 0 ? (
-          <img src={images[0]} alt="Sản phẩm" style={{ width: 50, height: 50, objectFit: 'cover' }} />
-        ) : (
-          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có ảnh" style={{ margin: 0 }} />
-        )
-      )
+      render: (images: any) => {
+        const arr = Array.isArray(images)
+          ? images
+          : typeof images === 'string'
+          ? images.split(',').map((img: string) => img.trim())
+          : [];
+        return arr.length > 0 ? (
+          <img src={arr[0]} alt="Ảnh sản phẩm" style={{ width: 50, height: 50, objectFit: 'cover' }} />
+        ) : null;
+      },
     },
-    ProductFilters.priceColumn(filterProps),
-    ProductFilters.brandColumn(filterProps),
-    ProductFilters.categoryColumn(filterProps),
-    ProductFilters.genderColumn(filterProps),
-    ProductFilters.statusColumn(filterProps),
+    {
+      title: "Biến thể",
+      dataIndex: "variants",
+      key: "variants",
+      render: (variants: string[]) => variants?.length || 0,
+    },
     {
       title: "Thao tác",
       key: "actions",
@@ -119,9 +96,9 @@ const Products = () => {
           <Button
             type="primary"
             icon={<EyeOutlined />}
-            onClick={() => handleView(product)}
+            onClick={() => showProductDetails(product)}
           />
-          <Link to={`/admin/products/edit/${product._id}`}>
+          <Link to={`/admin/Products/edit/${product._id}`}>
             <Button type="default" icon={<EditOutlined />} />
           </Link>
           <Popconfirm
@@ -142,28 +119,28 @@ const Products = () => {
     <div>
       {contextHolder}
       <div style={{ marginBottom: 16 }}>
-        <Link to="/admin/products/create">
-          <Button type="primary">Thêm sản phẩm mới</Button>
+        <Link to="/admin/Products/create">
+          <Button type="primary">Thêm sản phẩm</Button>
         </Link>
       </div>
 
       <Table
         columns={columns}
-        dataSource={filteredData}
+        dataSource={Array.isArray(data) ? data : []}
         rowKey="_id"
         pagination={{
-          total: filteredData?.length,
+          total: data.length,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
-          showTotal: (total) => `Tổng ${total} sản phẩm`,
+          showTotal: (total) => `Tổng ${total} danh mục`,
         }}
       />
 
       <DrawerProduct
         visible={isDrawerVisible}
         product={selectedProduct}
-        loading={false}
+        loading={drawerLoading}
         onClose={() => {
           setIsDrawerVisible(false);
           setSelectedProduct(null);
