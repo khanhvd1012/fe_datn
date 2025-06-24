@@ -1,13 +1,13 @@
 export interface IVariant {
     _id?: string;
     product_id: string | { _id: string; name: string };
-    sizes: string[] | { _id: string; name: string }[];
-    quantity: number;
-    color_id: string | { _id: string; name: string };
     sku: string;
+    color: string[] | { _id: string; name: string }[];
+    size: string[] | { _id: string; name: string }[];
     price: number;
-    images: string[];
-    status: 'active' | 'inactive';
+    image_url: string;
+    import_price: number;
+    status?: 'inStock' | 'outOfStock';
     createdAt?: Date;
     updatedAt?: Date;
 }

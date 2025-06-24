@@ -2,7 +2,8 @@ export interface ISize {
     _id?: string;
     name: string;
     value: string;
-    description?: string;
+    description: string;
+    variants?: string[];
     status: 'active' | 'inactive';
     createdAt?: Date;
     updatedAt?: Date;

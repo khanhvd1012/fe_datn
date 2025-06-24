@@ -3,68 +3,56 @@ import type { IProduct } from "../interface/product";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-
-export const getProduct = async () => {
+export const getProducts = async (): Promise<IProduct[]> => {
     try {
         const response = await axios.get(`${API_URL}/products`);
-        return response.data
+        return response.data.data.products;
     } catch (error) {
-        console.error("Error fetching:", error);
+        console.error("Error fetching products:", error);
         throw error;
     }
-}
-export const getById = async (id: string) => {
+};
+
+
+export const getProductById = async (id: string) => {
     try {
         const response = await axios.get(`${API_URL}/products/${id}`);
-        return response.data
+        return response.data;
     } catch (error) {
-        console.error("Error fetching:", error);
+        console.error("Error fetching products:", error);
         throw error;
     }
 }
-export const addProduct = async (product: IProduct) => {
+
+export const addProduct = async (products: IProduct) => {
     try {
-        // Ensure sizes is always an array of IDs
-        const productData = {
-            ...product,
-            sizes: Array.isArray(product.sizes)
-                ? product.sizes.map(size => typeof size === 'object' ? size._id : size)
-                : []
-        };
-        const response = await axios.post(`${API_URL}/products`, productData);
-        return response.data
+        const response = await axios.post(`${API_URL}/products`, products);
+        return response.data;
     } catch (error) {
-        console.error("Error mutation:", error);
+        console.error("Error creating category:", error);
         throw error;
     }
 }
+
 export const updateProduct = async (id: string, product: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>>) => {
     try {
-        // Ensure sizes is always an array of IDs
-        const productData = {
-            ...product,
-            sizes: product.sizes
-                ? (Array.isArray(product.sizes)
-                    ? product.sizes.map(size => typeof size === 'object' ? size._id : size)
-                    : [])
-                : []
-        };
-        const response = await axios.put(`${API_URL}/products/${id}`, productData);
-        return response.data
+        const response = await axios.put(`${API_URL}/products/${id}`, product);
+        return response.data;
     } catch (error) {
-        console.error("Error mutation:", error);
+        console.error("Error updating product:", error);
         throw error;
     }
 }
-export const deleteProduct = async (id: string) => { 
+
+export const deleteProduct = async (id: string) => {
     try {
         await axios.delete(`${API_URL}/products/${id}`);
         return {
-            message: "Deleted successfully",
-            status: 200,
-        }
+            message: "Product deleted successfully",
+            status: 200
+        };
     } catch (error) {
-        console.error("Error mutation:", error);
+        console.error("Error deleting product:", error);
         throw error;
     }
 }

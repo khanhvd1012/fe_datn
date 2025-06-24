@@ -1,32 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getProduct, getById, addProduct, updateProduct, deleteProduct } from '../service/productAPI';
-import type { IProduct } from '../interface/product';
-
-interface ProductResponse extends IProduct {
-  _id: string;
-}
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { addProduct, deleteProduct, getProductById, getProducts, updateProduct } from "../service/productAPI";
+import type { IProduct } from "../interface/product";
 
 export const useProducts = () => {
-  return useQuery({
+  return useQuery<IProduct[]>({
     queryKey: ['products'],
-    queryFn: getProduct
+    queryFn: getProducts
   });
 };
 
 export const useProduct = (id: string) => {
   return useQuery({
-    queryKey: ['product', id],
-    queryFn: () => getById(id),
-    enabled: !!id // Chỉ fetch khi có id
+    queryKey: ['products', id],
+    queryFn: () => getProductById(id),
+    enabled: !!id 
   });
 };
 
 export const useAddProduct = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (product: Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>) => 
-      addProduct(product),
+    mutationFn: (product: IProduct) => addProduct(product),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
@@ -35,12 +30,10 @@ export const useAddProduct = () => {
 
 export const useUpdateProduct = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (data: { 
-      id: string; 
-      product: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>> 
-    }) => updateProduct(data.id, data.product),
+    mutationFn: (data: { id: string; product: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>> }) =>
+      updateProduct(data.id, data.product),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
@@ -49,9 +42,9 @@ export const useUpdateProduct = () => {
 
 export const useDeleteProduct = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: deleteProduct,
+    mutationFn: (id: string) => deleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }

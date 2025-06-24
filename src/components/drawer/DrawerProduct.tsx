@@ -1,148 +1,79 @@
+import { Drawer, Descriptions, Skeleton, Divider } from 'antd';
 import type { IProduct } from '../../interface/product';
-import { Drawer, Empty, Skeleton, Tag } from 'antd';
-import Title from 'antd/es/typography/Title';
 
 interface DrawerProductProps {
   visible: boolean;
   product: IProduct | null;
-  loading: boolean;
   onClose: () => void;
+  loading?: boolean;
 }
 
-const DrawerProduct = ({ visible, product, loading, onClose }: DrawerProductProps) => {
+const DrawerProduct = ({ visible, product, onClose, loading }: DrawerProductProps) => {
   return (
-    <div>
-      <Drawer
-        title={<Title level={4}>{product?.name || 'Chi tiết sản phẩm'}</Title>}
-        placement="right"
-        width={600}
-        onClose={onClose}
-        open={visible}
-      >
-        {loading ? (
-          <Skeleton active paragraph={{ rows: 10 }} />
-        ) : product ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <div>
-              <strong>Hình ảnh:</strong>
-              <div style={{ display: 'flex', gap: '12px', marginTop: '12px', flexWrap: 'wrap' }}>
-                {product.images && product.images.length > 0 ? (
-                  product.images.map((image, index) => (
+    <Drawer
+      title={<span className="text-lg font-semibold">Chi tiết sản phẩm</span>}
+      placement="right"
+      onClose={onClose}
+      open={visible}
+      width={500}
+    >
+      {loading ? (
+        <Skeleton active />
+      ) : (
+        <>
+          <div className="mb-4">
+            <h3 className="text-base font-medium mb-2">Thông tin cơ bản</h3>
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="Tên sản phẩm" className="bg-gray-50">
+                {product?.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả">
+                {product?.description || '---'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Thương hiệu" className="bg-gray-50">
+                {typeof product?.brand === 'string' ? product?.brand : product?.brand?.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Danh mục">
+                {typeof product?.category === 'string' ? product?.category : product?.category?.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Biến thể" className="bg-gray-50">
+                {product?.variants?.length || 0}
+              </Descriptions.Item>
+              <Descriptions.Item label="Hình ảnh">
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                  {product?.images?.map((img, idx) => (
                     <img
-                      key={index}
-                      src={image}
-                      alt={`Sản phẩm ${index + 1}`}
-                      style={{
-                        width: 120,
-                        height: 120,
-                        objectFit: 'cover',
-                        borderRadius: '8px',
-                        border: '1px solid #f0f0f0',
-                      }}
+                      key={idx}
+                      src={img}
+                      alt="Ảnh sản phẩm"
+                      style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4, border: '1px solid #eee' }}
                     />
-                  ))
-                ) : (
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có ảnh" />
-                )}
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <strong>Giá:</strong>
-                <p style={{ margin: '8px 0', fontSize: '16px' }}>{product.price?.toFixed(2)} đ</p>
-              </div>
-
-              <div>
-                <strong>Trạng thái:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  <Tag color={product.status === 'inStock' ? 'success' : 'error'}>
-                    {product.status === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
-                  </Tag>
-                </p>
-              </div>
-
-              <div>
-                <strong>Thương hiệu:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  {typeof product.brand === 'object' && product.brand !== null && 'name' in product.brand
-                    ? product.brand.name
-                    : 'Chưa có thương hiệu'}
-                </p>
-              </div>
-
-              <div>
-                <strong>Danh mục:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  {typeof product.category === 'object' && product.category !== null && 'name' in product.category
-                    ? product.category.name
-                    : 'Chưa phân loại'}
-                </p>
-              </div>
-
-              <div>
-                <strong>Giới tính:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  <Tag
-                    color={
-                      product.gender === 'male' ? 'blue' : product.gender === 'female' ? 'pink' : 'green'
-                    }
-                  >
-                    {product.gender === 'male' ? 'NAM' : product.gender === 'female' ? 'NỮ' : 'UNISEX'}
-                  </Tag>
-                </p>
-              </div>
-            </div>
-
-            <div>
-              <strong>Mô tả:</strong>
-              <p style={{ margin: '8px 0', whiteSpace: 'pre-wrap' }}>{product.description}</p>
-            </div>
-
-            <div>
-              <strong>Biến thể:</strong>
-              <div style={{ marginTop: '8px' }}>
-                {product.variants && product.variants.length > 0 ? (
-                  <div
-                    style={{
-                      backgroundColor: '#f5f5f5',
-                      padding: '12px',
-                      borderRadius: '8px',
-                      maxHeight: '200px',
-                      overflowY: 'auto',
-                    }}
-                  >
-                    <pre style={{ margin: 0, fontSize: '13px' }}>
-                      {JSON.stringify(product.variants, null, 2)}
-                    </pre>
-                  </div>
-                ) : (
-                  <Empty description="Không có biến thể" />
-                )}
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-              <div>
-                <strong>Ngày tạo:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  {product.createdAt ? new Date(product.createdAt).toLocaleString() : 'N/A'}
-                </p>
-              </div>
-
-              <div>
-                <strong>Cập nhật lần cuối:</strong>
-                <p style={{ margin: '8px 0' }}>
-                  {product.updatedAt ? new Date(product.updatedAt).toLocaleString() : 'N/A'}
-                </p>
-              </div>
-            </div>
+                  ))}
+                </div>
+              </Descriptions.Item>
+            </Descriptions>
           </div>
-        ) : (
-          <Empty description="Không có sản phẩm được chọn" />
-        )}
-      </Drawer>
-    </div>
+
+          <Divider />
+
+          <div>
+            <h3 className="text-base font-medium mb-2">Thông tin thời gian</h3>
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="Ngày tạo" className="bg-gray-50">
+                {product && (product as any).createdAt
+                  ? new Date((product as any).createdAt).toLocaleString('vi-VN')
+                  : '---'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Cập nhật lần cuối">
+                {product && (product as any).updatedAt
+                  ? new Date((product as any).updatedAt).toLocaleString('vi-VN')
+                  : '---'}
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+        </>
+      )}
+    </Drawer>
   );
 };
 

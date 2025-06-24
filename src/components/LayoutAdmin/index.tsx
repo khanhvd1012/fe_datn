@@ -37,6 +37,9 @@ import EditSize from '../../pages/Admin/sizes/EditSize';
 import Colors from '../../pages/Admin/colors/Colors';
 import CreateColor from '../../pages/Admin/colors/CreateColor';
 import EditColor from '../../pages/Admin/colors/EditColor';
+import Variant from '../../pages/Admin/variant/Variant';
+import CreateVariant from '../../pages/Admin/variant/CreateVariant';
+import EditVariant from '../../pages/Admin/variant/EditVariant';
 
 
 
@@ -137,6 +140,8 @@ const IndexAdmin = () => {
                             { key: "sizes", label: <Link to="/admin/sizes">Sizes</Link>, icon: <TagsOutlined /> },
                             // Quản lý màu sắc
                             { key: "colors", label: <Link to="/admin/colors">Colors</Link>, icon: <BgColorsOutlined /> },
+                            // Quản lý variant
+                            { key: "variants", label: <Link to="/admin/variants">Variants</Link>, icon: <TagsOutlined /> },
                             // Quản lý người dùng với submenu
                             {
                                 key: "5", label: <Link to="/admin/users">Users</Link>, icon: <UserOutlined />,
@@ -216,6 +221,13 @@ const IndexAdmin = () => {
                                     <Route path="" element={<Colors />} />
                                     <Route path="add" element={<CreateColor />} />
                                     <Route path="edit/:id" element={<EditColor />} />
+                                </Route>
+
+                                {/* Routes quản lý variant */}
+                                <Route path="variants">
+                                    <Route path='' element={<Variant />} />
+                                    <Route path="create" element={<CreateVariant />} />
+                                    <Route path="edit/:id" element={<EditVariant />} />
                                 </Route>
 
                                 {/* Routes quản lý người dùng */}
