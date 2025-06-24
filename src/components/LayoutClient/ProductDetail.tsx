@@ -1,62 +1,78 @@
-import React, { useState } from 'react';
-import { Breadcrumb, Button } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { Breadcrumb, Button, Spin, message } from 'antd';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
+import axios from 'axios';
 
-const sampleImages = [
-  'https://i.imgur.com/X1xqG5L.png',
-  'https://i.imgur.com/UoEaK7V.png',
-  'https://i.imgur.com/SNv6ga1.png',
-  'https://i.imgur.com/J2TbK0y.png',
-  'https://i.imgur.com/lJjzZyL.png',
-  'https://i.imgur.com/mcPiOJY.png',
-];
+interface Product {
+  _id: string;
+  name: string;
+  description: string;
+  images: string[];
+  price: number;
+  sizes: string[]; // chỉ hiển thị số size giả định
+  colors: string; // hoặc object nếu cần chi tiết
+}
 
 const ProductDetail = () => {
-  const [mainImage, setMainImage] = useState(sampleImages[0]);
-  const [selectedColor, setSelectedColor] = useState('purple');
-  const [selectedSize, setSelectedSize] = useState<number | null>(36);
+  const { id } = useParams();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [mainImage, setMainImage] = useState<string>('');
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    axios.get(`http://localhost:8080/api/products/${id}`)
+      .then(res => {
+        const data = res.data.data;
+        setProduct(data);
+        setMainImage(data.images?.[0] || '');
+        setSelectedSize(data.sizes?.[0] || null);
+        setLoading(false);
+      })
+      .catch(err => {
+        message.error('Không thể tải chi tiết sản phẩm');
+        setLoading(false);
+      });
+  }, [id]);
+
+  if (loading) {
+    return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
+  }
+
+  if (!product) return <div>Không tìm thấy sản phẩm</div>;
 
   return (
     <div className="product-detail-container">
       <Breadcrumb style={{ marginBottom: 16 }}>
         <Breadcrumb.Item>Trang chủ</Breadcrumb.Item>
         <Breadcrumb.Item>Sản phẩm</Breadcrumb.Item>
-        <Breadcrumb.Item>Nike Air Max 90</Breadcrumb.Item>
+        <Breadcrumb.Item>{product.name}</Breadcrumb.Item>
       </Breadcrumb>
 
       <div className="product-detail-content">
         <div className="product-images">
           <div className="thumbnail-list">
-            {sampleImages.map((img, idx) => (
+            {product.images.map((img, idx) => (
               <img key={idx} src={img} onClick={() => setMainImage(img)} />
             ))}
           </div>
           <div className="main-image">
-            <img src={mainImage} alt="product" />
+            <img src={mainImage} alt={product.name} />
           </div>
         </div>
 
         <div className="product-info">
-          <h2>Nike Air Max 90 Essential "Grape"</h2>
-          <p className="sku">SKU: S-0015-1</p>
-          <p className="price">4,800,000₫</p>
-
-          <div className="color-section">
-            <p>Tím</p>
-            <div className="color-options">
-              <span className={`color purple ${selectedColor === 'purple' ? 'active' : ''}`} onClick={() => setSelectedColor('purple')}></span>
-              <span className={`color blue ${selectedColor === 'blue' ? 'active' : ''}`} onClick={() => setSelectedColor('blue')}></span>
-            </div>
-          </div>
+          <h2>{product.name}</h2>
+          <p className="price">{product.price.toLocaleString('vi-VN')}₫</p>
 
           <div className="size-section">
-            {[36, 37, 38, 39].map(size => (
+            {product.sizes.map((size) => (
               <button
                 key={size}
-                className={`size-btn ${selectedSize === size ? 'active' : ''} ${size === 39 ? 'disabled' : ''}`}
-                onClick={() => size !== 39 && setSelectedSize(size)}
-                disabled={size === 39}
+                className={`size-btn ${selectedSize === size ? 'active' : ''}`}
+                onClick={() => setSelectedSize(size)}
               >
                 {size}
               </button>
@@ -80,10 +96,7 @@ const ProductDetail = () => {
 
           <div className="product-description">
             <h3><u>Mô tả</u></h3>
-            <p>
-              Hiện đại và thời trang khi diện item mới của Nike. Màu sắc lạ mắt, chất liệu thoáng mát, nhẹ nhàng,
-              phù hợp với những chàng trai yêu phong cách sports.
-            </p>
+            <p>{product.description}</p>
           </div>
         </div>
       </div>
@@ -129,40 +142,10 @@ const ProductDetail = () => {
           max-width: 480px;
         }
 
-        .sku {
-          color: #999;
-          margin-bottom: 8px;
-        }
-
         .price {
           font-size: 24px;
           font-weight: bold;
           margin-bottom: 16px;
-        }
-
-        .color-section {
-          margin-bottom: 16px;
-        }
-
-        .color-options {
-          display: flex;
-          gap: 12px;
-        }
-
-        .color {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          cursor: pointer;
-          border: 2px solid #ddd;
-        }
-
-        .color.purple {
-          background-color: purple;
-        }
-
-        .color.blue {
-          background-color: #4a90e2;
         }
 
         .size-section {
@@ -183,13 +166,6 @@ const ProductDetail = () => {
         .size-btn.active {
           background: #000;
           color: #fff;
-        }
-
-        .size-btn.disabled {
-          background: #f2f2f2;
-          color: #999;
-          border: 1px solid #ccc;
-          cursor: not-allowed;
         }
 
         .quantity-control {
@@ -221,10 +197,6 @@ const ProductDetail = () => {
           background: #3f63c6;
           font-weight: 600;
           margin-bottom: 24px;
-        }
-
-        .product-description h3 {
-          margin-bottom: 8px;
         }
       `}</style>
     </div>
