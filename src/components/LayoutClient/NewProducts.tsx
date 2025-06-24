@@ -7,8 +7,8 @@ const { Title, Text } = Typography;
 interface Product {
   _id: string;
   name: string;
-  price?: number; // ✅ thêm ? để tránh lỗi undefined
-  images?: string[]; // ✅ thêm ? vì có thể không có
+  price?: number;
+  images?: string[];
 }
 
 const NewProducts: React.FC = () => {
@@ -20,12 +20,11 @@ const NewProducts: React.FC = () => {
     axios
       .get('http://localhost:8080/api/products?limit=4')
       .then((res) => {
-        console.log('New Products:', res.data);
-        // ✅ chỉ nhận sản phẩm hợp lệ có price là số
-        const filtered = (res.data?.data?.products || []).filter(
-          (p: Product) => p && typeof p.price === 'number'
-        );
-        setProducts(filtered);
+        const raw = res.data?.data?.products || [];
+        console.log('✅ Dữ liệu sản phẩm mới:', raw);
+
+        // Không lọc để đảm bảo hiển thị tất cả, kiểm tra từng sản phẩm khi render
+        setProducts(raw);
       })
       .catch(() => {
         message.error('Không thể tải sản phẩm');
@@ -35,7 +34,6 @@ const NewProducts: React.FC = () => {
       });
   }, []);
 
-  // Auto slide
   useEffect(() => {
     const interval = setInterval(() => {
       if (sliderRef.current) {
@@ -75,6 +73,8 @@ const NewProducts: React.FC = () => {
 
       {loading ? (
         <div style={{ textAlign: 'center' }}><Spin /></div>
+      ) : products.length === 0 ? (
+        <div style={{ textAlign: 'center' }}>Không có sản phẩm nào</div>
       ) : (
         <div
           ref={sliderRef}
