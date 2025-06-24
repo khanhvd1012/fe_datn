@@ -6,7 +6,6 @@ import { Link } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import DrawerProduct from "../../../components/drawer/DrawerProduct";
 import { useDeleteProduct, useProducts } from "../../../hooks/useProducts";
-import Brands from "../brands/Brands";
 
 const Products = () => {
   const queryClient = useQueryClient();
@@ -26,7 +25,7 @@ const Products = () => {
             queryKey: ["products"],
           });
         },
-        onError: () => messageApi.error("Lỗi khi xóa danh mục"),
+        onError: () => messageApi.error("Lỗi khi xóa sản phẩm"),
       });
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -44,9 +43,6 @@ const Products = () => {
 
   if (isLoading) return <Skeleton active />;
   if (!data) return <Empty />;
-  console.log(data);
-
-  
 
   const columns = [
     {
@@ -65,7 +61,6 @@ const Products = () => {
       key: "brand",
       render: (brand: any) => typeof brand === 'string' ? brand : brand?.name,
     },
-    
     {
       title: "Danh mục",
       dataIndex: "category",
@@ -83,7 +78,11 @@ const Products = () => {
           ? images.split(',').map((img: string) => img.trim())
           : [];
         return arr.length > 0 ? (
-          <img src={arr[0]} alt="Ảnh sản phẩm" style={{ width: 50, height: 50, objectFit: 'cover' }} />
+          <img
+            src={arr[0]}
+            alt="Ảnh sản phẩm"
+            style={{ width: 50, height: 50, objectFit: "cover" }}
+          />
         ) : null;
       },
     },
@@ -97,7 +96,7 @@ const Products = () => {
       title: "Thao tác",
       key: "actions",
       render: (_: any, product: IProduct) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div style={{ display: "flex", gap: "8px" }}>
           <Button
             type="primary"
             icon={<EyeOutlined />}
@@ -131,15 +130,14 @@ const Products = () => {
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(data?.data) ? data.data : []}
-
+        dataSource={Array.isArray(data?.data?.products) ? data.data.products : []}
         rowKey="_id"
         pagination={{
-          total: data.length,
+          total: data?.data?.pagination?.total || 0,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
-          showTotal: (total) => `Tổng ${total} danh mục`,
+          showTotal: (total) => `Tổng ${total} sản phẩm`,
         }}
       />
 

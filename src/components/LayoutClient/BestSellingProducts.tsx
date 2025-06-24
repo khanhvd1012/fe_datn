@@ -18,8 +18,11 @@ const BestSellingProducts: React.FC = () => {
 
   useEffect(() => {
     axios.get('http://localhost:8080/api/products')
+    
       .then(res => {
-        setProducts(res.data.data);
+        console.log('RESPONSE:', res.data);
+        setProducts(res.data.data.products);
+
         setLoading(false);
       })
       .catch(() => {
