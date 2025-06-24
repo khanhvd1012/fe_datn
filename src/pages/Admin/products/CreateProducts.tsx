@@ -1,151 +1,293 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, message, Select, Skeleton } from 'antd';
+import { Button, Form, Input, Select, message, Card, Row, Col, Typography, InputNumber } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import type { IProduct } from '../../../interface/product';
+import type { ICategory } from '../../../interface/category';
+import type { IBrand } from '../../../interface/brand';
+import type { IColor } from '../../../interface/color';
+import type { ISize } from '../../../interface/size';
 import { useAddProduct } from '../../../hooks/useProducts';
-import { useBrands } from '../../../hooks/useBrands';
 import { useCategories } from '../../../hooks/useCategories';
+import { useBrands } from '../../../hooks/useBrands';
+import { useColors } from '../../../hooks/useColors';
+import { useSizes } from '../../../hooks/useSizes';
+import VariantForm from '../../../components/VariantForm';
+import { useMutation } from '@tanstack/react-query';
+import { addVariant } from '../../../service/variantAPI';
 
-const CreateProduct = () => {
-  const queryClient = useQueryClient();
+const { TextArea } = Input;
+const { Title } = Typography;
+
+const CreateProducts = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
-  const { mutate, isPending } = useAddProduct();
-  const { data: brands, isLoading: loadingBrands } = useBrands();
-  const { data: categories, isLoading: loadingCategories } = useCategories();
-
   const [form] = Form.useForm();
 
-  const handleSubmit = (values: any) => {
-    // Chuyển images thành mảng
-    const submitValues = {
-      ...values,
-      images: values.images
-        ? Array.isArray(values.images)
-          ? values.images
-          : values.images
-            .split(',')
-            .map((img: string) => img.trim())
-            .filter((img: string) => img)
-        : [],
-      variants: values.variants
-        ? Array.isArray(values.variants)
-          ? values.variants
-          : values.variants.split(',').map((v: string) => v.trim())
-        : [],
-    };
-    console.log('submitValues', submitValues); 
-    mutate(submitValues, {
-      onSuccess: () => {
-        messageApi.success('Thêm sản phẩm thành công!');
-        queryClient.invalidateQueries({ queryKey: ['products'] });
-        setTimeout(() => {
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: brands, isLoading: brandsLoading } = useBrands();
+  const { data: colorsData, isLoading: colorsLoading } = useColors();
+  const { data: sizesData, isLoading: sizesLoading } = useSizes();
+
+  const { mutate: addProduct, isPending: isAddingProduct } = useAddProduct();
+  const { mutate: createVariant } = useMutation({
+    mutationFn: addVariant,
+    onError: (error: any) => {
+      messageApi.error(error?.response?.data?.message || 'Có lỗi xảy ra khi tạo biến thể!');
+    }
+  });
+
+  const handleSubmit = async (values: any) => {
+    try {
+      if (!values.images || values.images.length === 0) {
+        messageApi.error('Vui lòng thêm ít nhất một ảnh sản phẩm!');
+        return;
+      }
+
+      const productData: Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'> = {
+        name: values.name,
+        description: values.description,
+        brand: values.brand,
+        category: values.category,
+        gender: values.gender,
+        variants: [],
+        colors: values.colors,
+        sizes: values.sizes || [],
+        images: values.images,
+        price: Number(values.price),
+        quantity: Number(values.quantity),
+        status: Number(values.quantity) === 0 ? 'outOfStock' : 'inStock'
+      };
+
+      addProduct(productData, {
+        onSuccess: async (response) => {
+          if (values.variants?.length > 0) {
+            const variantPromises = values.variants.map((variant: any) => {
+              if (!variant.images?.length) {
+                throw new Error('Mỗi biến thể phải có ít nhất một ảnh!');
+              }
+              return createVariant({
+                ...variant,
+                product_id: response._id,
+                status: 'active'
+              });
+            });
+
+            await Promise.all(variantPromises);
+          }
+
+          messageApi.success('Thêm sản phẩm thành công!');
           navigate('/admin/products');
-        }, 1000);
-      },
-      onError: () => {
-        messageApi.error('Thêm sản phẩm thất bại!');
-      },
-    });
+        },
+        onError: (error: any) => {
+          messageApi.error(error?.response?.data?.message || 'Có lỗi xảy ra khi tạo sản phẩm!');
+        }
+      });
+    } catch (error: any) {
+      messageApi.error(error.message || 'Có lỗi xảy ra!');
+    }
   };
 
-  if (loadingBrands || loadingCategories) return <Skeleton active />;
-
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="p-4">
       {contextHolder}
-      <h2 className="text-2xl font-bold mb-4">Thêm Sản Phẩm</h2>
-      <Form
-        layout="vertical"
-        form={form}
-        onFinish={handleSubmit}
-        initialValues={{
-          name: '',
-          description: '',
-          brand: undefined,
-          category: undefined,
-          images: '',
-          variants: '',
-        }}
-      >
-        <Form.Item
-          label="Tên sản phẩm"
-          name="name"
-          rules={[
-            { required: true, message: 'Vui lòng nhập tên sản phẩm!' },
-            { min: 2, message: 'Tên phải có ít nhất 2 ký tự!' },
-            { max: 100, message: 'Tên không được vượt quá 100 ký tự!' },
-          ]}
-        >
-          <Input placeholder="Nhập tên sản phẩm" />
-        </Form.Item>
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Row gutter={16}>
+          <Col span={14}>
+            <Card title={<Title level={4}>Thông tin sản phẩm</Title>} className="mb-4">
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="name"
+                    label="Tên sản phẩm"
+                    rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm!' }]}
+                  >
+                    <Input placeholder="Nhập tên sản phẩm" />
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="price"
+                    label="Giá gốc"
+                    rules={[
+                      { required: true, message: 'Vui lòng nhập giá!' },
+                      { type: 'number', min: 0, message: 'Giá phải lớn hơn hoặc bằng 0!' }
+                    ]}
+                  >
+                    <InputNumber
+                      style={{ width: '100%' }}
+                      placeholder="Nhập giá sản phẩm"
+                      formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                      parser={value => value!.replace(/\$\s?|(,*)/g, '')}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-        <Form.Item
-          label="Mô tả"
-          name="description"
-          rules={[
-            { required: true, message: 'Vui lòng nhập mô tả sản phẩm!' },
-            { max: 1000, message: 'Mô tả không được vượt quá 1000 ký tự!' },
-          ]}
-        >
-          <Input.TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
-        </Form.Item>
+              <Row gutter={16}>
+                <Col span={8}>
+                  <Form.Item
+                    name="category"
+                    label="Danh mục"
+                    rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
+                  >
+                    <Select loading={categoriesLoading} placeholder="Chọn danh mục">
+                      {categories?.map((category: ICategory) => (
+                        <Select.Option key={category._id} value={category._id}>
+                          {category.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    name="brand"
+                    label="Thương hiệu"
+                    rules={[{ required: true, message: 'Vui lòng chọn thương hiệu!' }]}
+                  >
+                    <Select loading={brandsLoading} placeholder="Chọn thương hiệu">
+                      {brands?.map((brand: IBrand) => (
+                        <Select.Option key={brand._id} value={brand._id}>
+                          {brand.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={8}>
+                  <Form.Item
+                    name="gender"
+                    label="Giới tính"
+                    rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
+                  >
+                    <Select placeholder="Chọn giới tính">
+                      <Select.Option value="male">Nam</Select.Option>
+                      <Select.Option value="female">Nữ</Select.Option>
+                      <Select.Option value="unisex">Unisex</Select.Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
 
-        <Form.Item
-          label="Thương hiệu"
-          name="brand"
-          rules={[{ required: true, message: 'Vui lòng chọn thương hiệu!' }]}
-        >
-          <Select placeholder="Chọn thương hiệu">
-            {brands?.map((b: any) => (
-              <Select.Option key={typeof b === 'string' ? b : b._id} value={typeof b === 'string' ? b : b._id}>
-                {typeof b === 'string' ? b : b.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+              <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item
+                    name="colors"
+                    label="Màu sắc chính"
+                    rules={[{ required: true, message: 'Vui lòng chọn màu sắc!' }]}
+                  >
+                    <Select loading={colorsLoading} placeholder="Chọn màu sắc">
+                      {colorsData?.map((color: IColor) => (
+                        <Select.Option key={color._id} value={color._id}>
+                          {color.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+                <Col span={12}>
+                  <Form.Item
+                    name="sizes"
+                    label="Kích thước"
+                    rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
+                  >
+                    <Select
+                      mode="multiple"
+                      placeholder="Chọn kích thước"
+                      loading={sizesLoading}
+                    >
+                      {sizesData?.sizes?.map((size: ISize) => (
+                        <Select.Option key={size._id} value={size._id}>
+                          {size.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
 
-        <Form.Item
-          label="Danh mục"
-          name="category"
-          rules={[{ required: true, message: 'Vui lòng chọn danh mục!' }]}
-        >
-          <Select placeholder="Chọn danh mục">
-            {categories?.map((c: any) => (
-              <Select.Option key={typeof c === 'string' ? c : c._id} value={typeof c === 'string' ? c : c._id}>
-                {typeof c === 'string' ? c : c.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
+              <Form.Item
+                name="quantity"
+                label="Số lượng"
+                rules={[
+                  { required: true, message: 'Vui lòng nhập số lượng!' },
+                  { type: 'number', min: 0, message: 'Số lượng phải lớn hơn hoặc bằng 0!' }
+                ]}
+              >
+                <InputNumber style={{ width: '100%' }} min={0} placeholder="Nhập số lượng" />
+              </Form.Item>
 
-        <Form.Item
-          label="Ảnh sản phẩm"
-          name="images"
-          rules={[{ required: true, message: 'Vui lòng nhập ít nhất 1 ảnh!' }]}
-        >
-          <Input placeholder="Nhập các URL ảnh, cách nhau bởi dấu phẩy" />
-        </Form.Item>
+              <Form.Item
+                name="description"
+                label="Mô tả"
+                rules={[{ required: true, message: 'Vui lòng nhập mô tả sản phẩm!' }]}
+              >
+                <TextArea rows={4} placeholder="Nhập mô tả sản phẩm" />
+              </Form.Item>
 
-        <Form.Item
-          label="Biến thể sản phẩm"
-          name="variants"
-        >
-          <Input placeholder="Nhập các biến thể, cách nhau bởi dấu phẩy (nếu có)" />
-        </Form.Item>
+              {/* ✅ Thêm link ảnh thay cho Upload */}
+              <Form.List name="images" rules={[{
+                validator: async (_, value) => {
+                  if (!value || value.length < 1) {
+                    return Promise.reject(new Error('Phải có ít nhất một đường dẫn ảnh!'));
+                  }
+                }
+              }]}>
+                {(fields, { add, remove }) => (
+                  <>
+                    <label><b>Ảnh sản phẩm</b></label>
+                    {fields.map(({ key, name, ...restField }) => (
+                      <Row key={key} gutter={8} align="middle" style={{ marginBottom: 8 }}>
+                        <Col flex="auto">
+                          <Form.Item
+                            {...restField}
+                            name={name}
+                            rules={[
+                              { required: true, message: 'Vui lòng nhập đường dẫn ảnh!' },
+                              { type: 'url', message: 'URL không hợp lệ!' }
+                            ]}
+                          >
+                            <Input placeholder="https://example.com/image.jpg" />
+                          </Form.Item>
+                        </Col>
+                        <Col>
+                          <Button danger onClick={() => remove(name)}>Xóa</Button>
+                        </Col>
+                      </Row>
+                    ))}
+                    <Form.Item>
+                      <Button type="dashed" onClick={() => add()} block>
+                        Thêm ảnh
+                      </Button>
+                    </Form.Item>
+                  </>
+                )}
+              </Form.List>
 
-        <Form.Item>
-          <div className="flex justify-end gap-4">
-            <Button onClick={() => navigate('/admin/products')}>
-              Hủy
-            </Button>
-            <Button type="primary" htmlType="submit" loading={isPending}>
-              {isPending ? 'Đang thêm...' : 'Thêm sản phẩm'}
-            </Button>
-          </div>
-        </Form.Item>
+              <Form.Item>
+                <Row justify="end" gutter={16}>
+                  <Col>
+                    <Button onClick={() => navigate('/admin/products')}>Hủy</Button>
+                  </Col>
+                  <Col>
+                    <Button type="primary" htmlType="submit" loading={isAddingProduct}>
+                      Thêm sản phẩm
+                    </Button>
+                  </Col>
+                </Row>
+              </Form.Item>
+            </Card>
+          </Col>
+
+          <Col span={10}>
+            <Card title={<Title level={4}>Biến thể sản phẩm</Title>} className="mb-4">
+              <VariantForm sizes={sizesData?.sizes} colors={colorsData} />
+            </Card>
+          </Col>
+        </Row>
       </Form>
     </div>
   );
 };
 
-export default CreateProduct;
+export default CreateProducts;
