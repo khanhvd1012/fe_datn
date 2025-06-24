@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import DrawerProduct from "../../../components/drawer/DrawerProduct";
 import { useDeleteProduct, useProducts } from "../../../hooks/useProducts";
+import Brands from "../brands/Brands";
 
 const Products = () => {
   const queryClient = useQueryClient();
@@ -43,6 +44,9 @@ const Products = () => {
 
   if (isLoading) return <Skeleton active />;
   if (!data) return <Empty />;
+  console.log(data);
+
+  
 
   const columns = [
     {
@@ -61,6 +65,7 @@ const Products = () => {
       key: "brand",
       render: (brand: any) => typeof brand === 'string' ? brand : brand?.name,
     },
+    
     {
       title: "Danh mục",
       dataIndex: "category",
@@ -126,7 +131,8 @@ const Products = () => {
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(data) ? data : []}
+        dataSource={Array.isArray(data?.data) ? data.data : []}
+
         rowKey="_id"
         pagination={{
           total: data.length,

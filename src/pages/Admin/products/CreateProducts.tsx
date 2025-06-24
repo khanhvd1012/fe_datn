@@ -187,22 +187,23 @@ const CreateProducts = () => {
                 </Col>
                 <Col span={12}>
                   <Form.Item
-                    name="sizes"
-                    label="Kích thước"
-                    rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
-                  >
-                    <Select
-                      mode="multiple"
-                      placeholder="Chọn kích thước"
-                      loading={sizesLoading}
-                    >
-                      {sizesData?.sizes?.map((size: ISize) => (
-                        <Select.Option key={size._id} value={size._id}>
-                          {size.name}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
+  name="sizes"
+  label="Kích thước"
+  rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
+>
+  <Select
+    mode="multiple"
+    placeholder="Chọn kích thước"
+    loading={sizesLoading}
+  >
+    {sizesData?.map((size: ISize) => (
+      <Select.Option key={size._id} value={size._id}>
+        {size.name}
+      </Select.Option>
+    ))}
+  </Select>
+</Form.Item>
+
                 </Col>
               </Row>
 

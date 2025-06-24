@@ -1,58 +1,29 @@
 import axios from "axios";
 import type { IProduct } from "../interface/product";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API = "http://localhost:8080/api/products";
 
 export const getProducts = async (): Promise<IProduct[]> => {
-    try {
-        const response = await axios.get(`${API_URL}/products`);
-        return response.data.data.products;
-    } catch (error) {
-        console.error("Error fetching products:", error);
-        throw error;
-    }
+  const { data } = await axios.get(API);
+  return data;
 };
 
+export const getProductById = async (id: string): Promise<IProduct> => {
+  const { data } = await axios.get(`${API}/${id}`);
+  return data;
+};
 
-export const getProductById = async (id: string) => {
-    try {
-        const response = await axios.get(`${API_URL}/products/${id}`);
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching products:", error);
-        throw error;
-    }
-}
+export const addProduct = async (product: IProduct) => {
+  const { data } = await axios.post(API, product);
+  return data;
+};
 
-export const addProduct = async (products: IProduct) => {
-    try {
-        const response = await axios.post(`${API_URL}/products`, products);
-        return response.data;
-    } catch (error) {
-        console.error("Error creating category:", error);
-        throw error;
-    }
-}
-
-export const updateProduct = async (id: string, product: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>>) => {
-    try {
-        const response = await axios.put(`${API_URL}/products/${id}`, product);
-        return response.data;
-    } catch (error) {
-        console.error("Error updating product:", error);
-        throw error;
-    }
-}
+export const updateProduct = async (id: string, product: Partial<IProduct>) => {
+  const { data } = await axios.put(`${API}/${id}`, product);
+  return data;
+};
 
 export const deleteProduct = async (id: string) => {
-    try {
-        await axios.delete(`${API_URL}/products/${id}`);
-        return {
-            message: "Product deleted successfully",
-            status: 200
-        };
-    } catch (error) {
-        console.error("Error deleting product:", error);
-        throw error;
-    }
-}
+  const { data } = await axios.delete(`${API}/${id}`);
+  return data;
+};
