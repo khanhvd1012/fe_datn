@@ -17,7 +17,7 @@ const Products = () => {
 
   useEffect(() => {
     axios.get('http://localhost:8080/api/products')
-      .then(res => setProducts(res.data.data))
+      .then(res => setProducts(res.data.data.products))
       .catch(() => setProducts([]))
   }, [])
 
