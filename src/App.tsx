@@ -17,8 +17,6 @@ function App() {
           </PrivateRoute>
         } />
         <Route path="/*" element={<IndexClient />} />
-        <Route path="/profile" element={<Profile
-         />} />
       </Routes>
     </ErrorBoundary>
   )

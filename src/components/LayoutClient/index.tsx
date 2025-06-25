@@ -16,12 +16,13 @@ import Cart from '../../pages/Client/Cart';
 import ProductDetail from './ProductDetail';
 import Login from '../../pages/Auth/login';
 import Register from '../../pages/Auth/register';
+import Profile from '../../pages/Client/Profile';
 
 const IndexClient = () => {
   const location = useLocation();
 
   // Chỉ ẩn Slideshow ở các trang này
-  const isNoSlidePage = ['/login', '/register'].includes(location.pathname);
+  const isNoSlidePage = ['/login', '/register','/profile'].includes(location.pathname);
 
 
   return (
@@ -38,13 +39,14 @@ const IndexClient = () => {
           <Route path="/brand" element={<Brand />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
+
           <Route path="/contact" element={<Contact />} />
           <Route path="/cart" element={<Cart />} />
 
           {/* Auth pages - không slideshow */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-
+          <Route path="/profile" element={<Profile />} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

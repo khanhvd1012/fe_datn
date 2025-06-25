@@ -1,24 +1,36 @@
-// src/components/PrivateRoute.tsx
 import { Navigate } from "react-router-dom";
+import { Result, Button } from "antd";
+import type { ReactNode } from "react";
 
-const PrivateRoute = ({
-  children,
-  requiredRole,
-}: {
-  children: JSX.Element;
+interface PrivateRouteProps {
+  children: ReactNode;
   requiredRole?: string;
-}) => {
+}
+
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requiredRole }) => {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
-  // Debug log
-  // console.log("role in localStorage:", role, "requiredRole:", requiredRole);
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
 
-  if (!token) return <Navigate to="/login" />;
-  if (requiredRole && role?.toLowerCase() !== requiredRole.toLowerCase())
-    return <Navigate to="/" />;
+  if (requiredRole && role?.toLowerCase() !== requiredRole.toLowerCase()) {
+    return (
+      <Result
+        status="403"
+        title="403 - Không được phép"
+        subTitle="Bạn không có quyền truy cập vào trang này."
+        extra={
+          <Button type="primary" onClick={() => (window.location.href = "/")}>
+            Quay về trang chủ
+          </Button>
+        }
+      />
+    );
+  }
 
-  return children;
+  return <>{children}</>; // đảm bảo render mọi loại nội dung hợp lệ
 };
 
 export default PrivateRoute;
