@@ -37,8 +37,9 @@ export const useUpdateVoucher = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: string; voucher: Partial<Omit<IVoucher, '_id' | 'createdAt' | 'updatedAt'>> }) =>
-      updateVoucher(data.id, data.voucher),
+    mutationFn: (data: { id: string; voucher: Partial<Omit<IVoucher, '_id' | 'createdAt' | 'updatedAt'>> }) => {
+      return updateVoucher(data.id, data.voucher);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vouchers'] });
     }

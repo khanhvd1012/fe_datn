@@ -45,7 +45,9 @@ const EditVoucher = () => {
       endDate: endDate?.toISOString() || '',
     };
 
-    mutate({ id, data: payload }, {
+
+    mutate({ id, voucher: payload }, {
+           
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["vouchers"] });
         messageApi.success("Cập nhật voucher thành công");

@@ -30,8 +30,6 @@ const CreateVoucher = () => {
       endDate: endDate.toISOString()
     };
 
-    console.log("Payload gửi đi:", payload);
-
     mutate( payload, {
       onSuccess: () => {
         messageApi.success("Tạo voucher thành công");
