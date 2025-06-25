@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, Typography, Spin, message } from 'antd';
 import axios from 'axios';
+import { Link } from 'react-router-dom'; // 👈 Thêm dòng này
 
 const { Title, Text } = Typography;
 
@@ -21,9 +22,6 @@ const NewProducts: React.FC = () => {
       .get('http://localhost:8080/api/products?limit=4')
       .then((res) => {
         const raw = res.data?.data?.products || [];
-        console.log('✅ Dữ liệu sản phẩm mới:', raw);
-
-        // Không lọc để đảm bảo hiển thị tất cả, kiểm tra từng sản phẩm khi render
         setProducts(raw);
       })
       .catch(() => {
@@ -93,24 +91,26 @@ const NewProducts: React.FC = () => {
                 minWidth: 250,
               }}
             >
-              <Card
-                hoverable
-                cover={
-                  <img
-                    alt={product.name}
-                    src={product.images?.[0] || 'https://picsum.photos/200'}
-                    style={{ height: 200, objectFit: 'contain', padding: 10 }}
-                  />
-                }
-                style={{ textAlign: 'center' }}
-              >
-                <Text style={{ display: 'block', marginBottom: 8 }}>{product.name}</Text>
-                <Text strong>
-                  {typeof product.price === 'number'
-                    ? `${product.price.toLocaleString('vi-VN')}₫`
-                    : 'Giá đang cập nhật'}
-                </Text>
-              </Card>
+              <Link to={`/products/${product._id}`}> {/* 👈 Gắn link ở đây */}
+                <Card
+                  hoverable
+                  cover={
+                    <img
+                      alt={product.name}
+                      src={product.images?.[0] || 'https://picsum.photos/200'}
+                      style={{ height: 200, objectFit: 'contain', padding: 10 }}
+                    />
+                  }
+                  style={{ textAlign: 'center' }}
+                >
+                  <Text style={{ display: 'block', marginBottom: 8 }}>{product.name}</Text>
+                  <Text strong>
+                    {typeof product.price === 'number'
+                      ? `${product.price.toLocaleString('vi-VN')}₫`
+                      : 'Giá đang cập nhật'}
+                  </Text>
+                </Card>
+              </Link>
             </div>
           ))}
         </div>

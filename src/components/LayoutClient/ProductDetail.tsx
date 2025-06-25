@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Breadcrumb, Button, Spin, message } from 'antd';
+import { Button, Spin, message } from 'antd';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import Breadcrumb from './Breadcrumb';
 
 interface Product {
   _id: string;
@@ -52,13 +53,9 @@ const ProductDetail = () => {
   if (!product) return <div>Không tìm thấy sản phẩm</div>;
 
   return (
+    <>
+     <Breadcrumb current={product.name ? `Sản phẩm / ${product.name}` : 'Sản phẩm'} />
     <div className="product-detail-container">
-      <Breadcrumb style={{ marginBottom: 16 }}>
-        <Breadcrumb.Item>Trang chủ</Breadcrumb.Item>
-        <Breadcrumb.Item>Sản phẩm</Breadcrumb.Item>
-        <Breadcrumb.Item>{product.name}</Breadcrumb.Item>
-      </Breadcrumb>
-
       <div className="product-detail-content">
         <div className="product-images">
           <div className="thumbnail-list">
@@ -216,6 +213,7 @@ const ProductDetail = () => {
         }
       `}</style>
     </div>
+    </>
   );
 };
 

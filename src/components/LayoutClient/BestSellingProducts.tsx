@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, Typography, Spin, message } from 'antd';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
@@ -93,6 +94,7 @@ const BestSellingProducts: React.FC = () => {
                 minWidth: 250,
               }}
             >
+              <Link to={`/products/${product._id}`}> {/* 👈 Gắn link ở đây */}
               <Card
                 hoverable
                 cover={
@@ -111,6 +113,7 @@ const BestSellingProducts: React.FC = () => {
                     : 'Giá đang cập nhật'}
                 </Text>
               </Card>
+              </Link>
             </div>
           ))}
         </div>
