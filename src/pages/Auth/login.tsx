@@ -1,13 +1,30 @@
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const [form] = Form.useForm();
+  const navigate = useNavigate();
 
-  const onFinish = (values: any) => {
-    console.log('Đăng nhập với dữ liệu:', values);
-    message.success('Đăng nhập thành công!');
-    // TODO: Gửi API đăng nhập tại đây nếu cần
+  const onFinish = async (values: any) => {
+    try {
+      const res = await axios.post('http://localhost:8080/api/auth/login', {
+        email: values.email,
+        password: values.password,
+      });
+      if (res.data.token) {
+        localStorage.setItem('token', res.data.token);
+        message.success('Đăng nhập thành công!');
+        navigate('/');
+      } else {
+        message.error(res.data.message || 'Đăng nhập thất bại!');
+      }
+    } catch (error: any) {
+      message.error(
+        error?.response?.data?.message || 'Đăng nhập thất bại!'
+      );
+    }
   };
 
   const onFinishFailed = (errorInfo: any) => {

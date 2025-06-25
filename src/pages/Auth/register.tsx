@@ -1,13 +1,28 @@
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
+import axios from 'axios';
 
 const Register: React.FC = () => {
   const [form] = Form.useForm();
 
-  const onFinish = (values: any) => {
-    console.log('Đăng ký với dữ liệu:', values);
-    message.success('Đăng ký thành công!');
-    // TODO: Gửi dữ liệu đến API tại đây
+  const onFinish = async (values: any) => {
+    try {
+      const res = await axios.post('http://localhost:8080/api/auth/register', {
+        email: values.email,
+        password: values.password,
+        // Nếu backend có hỗ trợ thêm name, sdt, address thì giữ lại, không thì bỏ đi
+      });
+      if (res.data.success) {
+        message.success('Đăng ký thành công!');
+        form.resetFields();
+      } else {
+        message.error(res.data.message || 'Đăng ký thất bại!');
+      }
+    } catch (error: any) {
+      message.error(
+        error?.response?.data?.message || 'Đăng ký thất bại!'
+      );
+    }
   };
 
   const onFinishFailed = (errorInfo: any) => {
