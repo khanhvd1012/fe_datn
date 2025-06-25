@@ -17,7 +17,7 @@
     "@tailwindcss/vite": "^4.1.7",
     "@tanstack/react-query": "^5.79.2",
     "@types/styled-components": "^5.1.34",
-    "antd": "^5.25.3",
+    "antd": "^5.26.2",
     "axios": "^1.9.0",
     "bootstrap": "^5.3.6",
     "react": "^19.1.0",

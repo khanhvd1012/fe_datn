@@ -19,6 +19,7 @@ import { Link, NavLink } from 'react-router-dom';
 import SideCart from '../../pages/Client/SideCart';
 import BrandDropdown from './BrandDropdown';
 import CateDropdown from './CateDropdown';
+import { Dropdown, Menu } from 'antd';
 
 
 const Header: React.FC = () => {
@@ -28,6 +29,17 @@ const Header: React.FC = () => {
   const toggleMenu = () => {
     setIsOpen((prev) => !prev);
   };
+
+  const userMenu = (
+    <Menu>
+      <Menu.Item key="login">
+        <Link to="/login">Đăng nhập</Link>
+      </Menu.Item>
+      <Menu.Item key="register">
+        <Link to="/register">Đăng ký</Link>
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
     <>
@@ -57,9 +69,11 @@ const Header: React.FC = () => {
         </NavMenu>
 
         <IconGroup>
-          <Link to="/profile">
-            <Icon><UserOutlined /></Icon>
-          </Link>
+          <Dropdown overlay={userMenu} trigger={['hover']}>
+            <Icon style={{ cursor: 'pointer' }}>
+              <UserOutlined />
+            </Icon>
+          </Dropdown>
           <Link to="/search">
             <Icon><SearchOutlined /></Icon>
           </Link>

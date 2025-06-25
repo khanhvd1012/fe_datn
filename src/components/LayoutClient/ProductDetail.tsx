@@ -10,8 +10,8 @@ interface Product {
   description: string;
   images: string[];
   price: number;
-  sizes: string[]; // chỉ hiển thị số size giả định
-  colors: string; // hoặc object nếu cần chi tiết
+  sizes: string[];
+  colors: string;
 }
 
 const ProductDetail = () => {
@@ -26,9 +26,17 @@ const ProductDetail = () => {
     axios.get(`http://localhost:8080/api/products/${id}`)
       .then(res => {
         const data = res.data.data;
-        setProduct(data);
-        setMainImage(data.images?.[0] || '');
-        setSelectedSize(data.sizes?.[0] || null);
+
+        // Đảm bảo dữ liệu có đầy đủ mảng
+        const fixedData: Product = {
+          ...data,
+          images: Array.isArray(data.images) ? data.images : [],
+          sizes: Array.isArray(data.sizes) ? data.sizes : [],
+        };
+
+        setProduct(fixedData);
+        setMainImage(fixedData.images?.[0] || '');
+        setSelectedSize(fixedData.sizes?.[0] || null);
         setLoading(false);
       })
       .catch(err => {
@@ -54,7 +62,7 @@ const ProductDetail = () => {
       <div className="product-detail-content">
         <div className="product-images">
           <div className="thumbnail-list">
-            {product.images.map((img, idx) => (
+            {product.images?.map((img, idx) => (
               <img key={idx} src={img} onClick={() => setMainImage(img)} />
             ))}
           </div>
@@ -65,18 +73,26 @@ const ProductDetail = () => {
 
         <div className="product-info">
           <h2>{product.name}</h2>
-          <p className="price">{product.price.toLocaleString('vi-VN')}₫</p>
+          <p className="price">
+            {typeof product.price === 'number'
+              ? product.price.toLocaleString('vi-VN') + '₫'
+              : 'Đang cập nhật giá'}
+          </p>
 
           <div className="size-section">
-            {product.sizes.map((size) => (
-              <button
-                key={size}
-                className={`size-btn ${selectedSize === size ? 'active' : ''}`}
-                onClick={() => setSelectedSize(size)}
-              >
-                {size}
-              </button>
-            ))}
+            {Array.isArray(product.sizes) && product.sizes.length > 0 ? (
+              product.sizes.map((size) => (
+                <button
+                  key={size}
+                  className={`size-btn ${selectedSize === size ? 'active' : ''}`}
+                  onClick={() => setSelectedSize(size)}
+                >
+                  {size}
+                </button>
+              ))
+            ) : (
+              <p>Không có size</p>
+            )}
           </div>
 
           <div className="quantity-control">
