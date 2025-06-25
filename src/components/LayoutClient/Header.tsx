@@ -38,7 +38,33 @@ const Header: React.FC = () => {
     window.location.reload();
   };
 
+  // Lấy role và userName từ localStorage
+  const role = localStorage.getItem("role");
+  const userName = localStorage.getItem("userName");
+
+  // Menu cho admin
+  const adminMenu = (
+    <Menu>
+      <Menu.Item key="admin">
+        <Link to="/admin">Quản trị Admin</Link>
+      </Menu.Item>
+      <Menu.Item key="logout" onClick={handleLogout}>
+        Đăng xuất
+      </Menu.Item>
+    </Menu>
+  );
+
+  // Menu cho user thường
   const userMenu = (
+    <Menu>
+      <Menu.Item key="logout" onClick={handleLogout}>
+        Đăng xuất
+      </Menu.Item>
+    </Menu>
+  );
+
+  // Menu cho khách chưa đăng nhập
+  const guestMenu = (
     <Menu>
       <Menu.Item key="login">
         <Link to="/login">Đăng nhập</Link>
@@ -46,11 +72,14 @@ const Header: React.FC = () => {
       <Menu.Item key="register">
         <Link to="/register">Đăng ký</Link>
       </Menu.Item>
-      <Menu.Item key="logout" onClick={handleLogout}>
-        Đăng xuất
-      </Menu.Item>
     </Menu>
   );
+
+  // Chọn menu phù hợp
+  let menuToShow = guestMenu;
+  if (localStorage.getItem("token")) {
+    menuToShow = role === "admin" ? adminMenu : userMenu;
+  }
 
   return (
     <>
@@ -80,9 +109,14 @@ const Header: React.FC = () => {
         </NavMenu>
 
         <IconGroup>
-          <Dropdown overlay={userMenu} trigger={['hover']}>
+          <Dropdown overlay={menuToShow} trigger={['hover']}>
             <Icon style={{ cursor: 'pointer' }}>
               <UserOutlined />
+              {userName && (
+                <span style={{ marginLeft: 8, fontSize: 13 }}>
+                  {role === "admin" ? `Admin: ${userName}` : userName}
+                </span>
+              )}
             </Icon>
           </Dropdown>
           <Link to="/search">
