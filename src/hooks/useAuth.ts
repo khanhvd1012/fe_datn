@@ -3,9 +3,10 @@ import { login, register } from "../service/authAPI";
 import { message } from "antd";
 import { useNavigate } from "react-router-dom";
 
-// Đăng ký
+// Hook đăng ký
 export const useRegister = () => {
   const navigate = useNavigate();
+
   return useMutation({
     mutationFn: register,
     onSuccess: (data) => {
@@ -22,21 +23,33 @@ export const useRegister = () => {
   });
 };
 
-// Đăng nhập
+// Hook đăng nhập
 export const useLogin = () => {
   const navigate = useNavigate();
+
   return useMutation({
     mutationFn: login,
     onSuccess: (data) => {
-      if (data.token) {
+      console.log("✅ Login response:", data);
+
+      if (data.token && data.user) {
+        // Lưu thông tin vào localStorage
         localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.user.role || "user");
+        localStorage.setItem("userName", data.user.username || "User");
+        console.log("Đã lưu vào localStorage:", {
+          token: localStorage.getItem("token"),
+          role: localStorage.getItem("role"),
+          userName: localStorage.getItem("userName"),
+        });
         message.success("Đăng nhập thành công!");
-        navigate("/");
+        navigate("/"); // 👉 điều hướng sau khi login thành công
       } else {
-        message.error(data.message || "Đăng nhập thất bại!");
+        message.error("Thiếu thông tin token hoặc user.");
       }
     },
     onError: (error: any) => {
+      console.error("❌ Đăng nhập lỗi:", error);
       message.error(error?.response?.data?.message || "Đăng nhập thất bại!");
     },
   });

@@ -1,6 +1,5 @@
 import { Button, Form, Input, Select, message, Card, Row, Col, Typography, InputNumber } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 import type { IProduct } from '../../../interface/product';
 import type { ICategory } from '../../../interface/category';
 import type { IBrand } from '../../../interface/brand';

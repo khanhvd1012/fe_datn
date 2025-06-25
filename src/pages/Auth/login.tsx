@@ -13,8 +13,10 @@ const Login: React.FC = () => {
         email: values.email,
         password: values.password,
       });
-      if (res.data.token) {
+      if (res.data.token && res.data.user) {
         localStorage.setItem('token', res.data.token);
+        localStorage.setItem('role', res.data.user.role || 'user');
+        localStorage.setItem('userName', res.data.user.username || 'User');
         message.success('Đăng nhập thành công!');
         navigate('/');
       } else {

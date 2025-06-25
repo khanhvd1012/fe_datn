@@ -1,24 +1,16 @@
 import axios from "axios";
 
+// Khai báo base API
 const API = "http://localhost:8080/api/auth";
 
-// Đăng ký tài khoản
-export const register = async (payload: {
-  name: string;
-  sdt: string;
-  email: string;
-  password: string;
-  address: string;
-}) => {
-  const { data } = await axios.post(`${API}/register`, payload);
-  return data;
+// Gọi API đăng nhập
+export const login = async (credentials: { email: string; password: string }) => {
+  const response = await axios.post(`${API}/login`, credentials);
+  return response.data; // ⚠️ Quan trọng: chỉ return data
 };
 
-// Đăng nhập
-export const login = async (payload: {
-  email: string;
-  password: string;
-}) => {
-  const { data } = await axios.post(`${API}/login`, payload);
-  return data;
+// Gọi API đăng ký
+export const register = async (payload: any) => {
+  const response = await axios.post(`${API}/register`, payload);
+  return response.data;
 };

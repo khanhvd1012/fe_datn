@@ -31,6 +31,13 @@ const Header: React.FC = () => {
     setIsOpen((prev) => !prev);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userName");
+    window.location.reload();
+  };
+
   const userMenu = (
     <Menu>
       <Menu.Item key="login">
@@ -38,6 +45,9 @@ const Header: React.FC = () => {
       </Menu.Item>
       <Menu.Item key="register">
         <Link to="/register">Đăng ký</Link>
+      </Menu.Item>
+      <Menu.Item key="logout" onClick={handleLogout}>
+        Đăng xuất
       </Menu.Item>
     </Menu>
   );
