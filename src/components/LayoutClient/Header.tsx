@@ -22,7 +22,6 @@ import CateDropdown from './CateDropdown';
 import { Dropdown, Menu } from 'antd';
 import SearchBox from './Search';
 
-
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -48,6 +47,9 @@ const Header: React.FC = () => {
       <Menu.Item key="admin">
         <Link to="/admin">Quản trị Admin</Link>
       </Menu.Item>
+      <Menu.Item key="profile">
+        <Link to="/profile">Thông tin tài khoản</Link>
+      </Menu.Item>
       <Menu.Item key="logout" onClick={handleLogout}>
         Đăng xuất
       </Menu.Item>
@@ -57,6 +59,9 @@ const Header: React.FC = () => {
   // Menu cho user thường
   const userMenu = (
     <Menu>
+      <Menu.Item key="profile">
+        <Link to="/profile">Thông tin tài khoản</Link>
+      </Menu.Item>
       <Menu.Item key="logout" onClick={handleLogout}>
         Đăng xuất
       </Menu.Item>
@@ -95,14 +100,8 @@ const Header: React.FC = () => {
         <NavMenu isOpen={isOpen}>
           <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/products">SẢN PHẨM</NavLink></NavItem>
-          
-          <NavItem onClick={toggleMenu}>
-            <CateDropdown />
-          </NavItem>
-          <NavItem onClick={toggleMenu}>
-            <BrandDropdown />
-          </NavItem>
-
+          <NavItem onClick={toggleMenu}><CateDropdown /></NavItem>
+          <NavItem onClick={toggleMenu}><BrandDropdown /></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/about">GIỚI THIỆU</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/blog">TIN TỨC</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/contact">LIÊN HỆ</NavLink></NavItem>

@@ -14,3 +14,11 @@ export const register = async (payload: any) => {
   const response = await axios.post(`${API}/register`, payload);
   return response.data;
 };
+
+export const getProfile = async () => {
+  const token = localStorage.getItem("token");
+  const { data } = await axios.get("http://localhost:8080/api/auth/profile", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return data.user;
+};

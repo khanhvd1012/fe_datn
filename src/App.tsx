@@ -5,6 +5,7 @@ import IndexAdmin from './components/LayoutAdmin'
 import IndexClient from './components/LayoutClient'
 import ErrorBoundary from './components/ErrorBoundary' // ✅ import
 import PrivateRoute from "./components/PrivateRoute";
+import Profile from './pages/Client/Profile'
 
 function App() {
   return (
@@ -16,6 +17,8 @@ function App() {
           </PrivateRoute>
         } />
         <Route path="/*" element={<IndexClient />} />
+        <Route path="/profile" element={<Profile
+         />} />
       </Routes>
     </ErrorBoundary>
   )
