@@ -7,7 +7,7 @@ const Register: React.FC = () => {
   const onFinish = (values: any) => {
     console.log('Đăng ký với dữ liệu:', values);
     message.success('Đăng ký thành công!');
-    // Gửi dữ liệu đến API ở đây nếu cần
+    // TODO: Gửi dữ liệu đến API tại đây
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -15,70 +15,69 @@ const Register: React.FC = () => {
   };
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.formCard}>
+    <div style={styles.container}>
+      {/* Bên trái: tiêu đề */}
+      <div style={styles.leftColumn}>
         <h1 style={styles.title}>Tạo tài khoản</h1>
+        <div style={styles.underline}></div>
+      </div>
 
+      {/* Bên phải: form */}
+      <div style={styles.rightColumn}>
         <Form
           form={form}
           layout="vertical"
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
+          style={styles.form}
         >
           <Form.Item
-            label="Họ và tên"
             name="name"
             rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
           >
-            <Input placeholder="Họ và tên" />
+            <Input placeholder="Họ và tên" size="large" style={styles.input} />
           </Form.Item>
 
           <Form.Item
-            label="Số điện thoại"
             name="sdt"
             rules={[{ required: true, message: 'Vui lòng nhập SĐT!' }]}
           >
-            <Input type="tel" placeholder="SĐT" />
+            <Input placeholder="Số điện thoại" size="large" style={styles.input} />
           </Form.Item>
 
           <Form.Item
-            label="Email"
             name="email"
             rules={[
               { required: true, message: 'Vui lòng nhập email!' },
               { type: 'email', message: 'Email không hợp lệ!' },
             ]}
           >
-            <Input placeholder="Email" />
+            <Input placeholder="Email" size="large" style={styles.input} />
           </Form.Item>
 
           <Form.Item
-            label="Mật khẩu"
             name="password"
             rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
           >
-            <Input.Password placeholder="Mật khẩu" />
+            <Input.Password placeholder="Mật khẩu" size="large" style={styles.input} />
           </Form.Item>
 
           <Form.Item
-            label="Địa chỉ"
             name="address"
             rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
           >
-            <Input placeholder="Địa chỉ" />
+            <Input placeholder="Địa chỉ" size="large" style={styles.input} />
           </Form.Item>
 
-          <Form.Item>
-            <div style={styles.recaptchaNote}>
-              This site is protected by reCAPTCHA and the Google{' '}
-              <a href="#">Privacy Policy</a> and{' '}
-              <a href="#">Terms of Service</a> apply.
-            </div>
-          </Form.Item>
+          <p style={styles.recaptchaNote}>
+            This site is protected by reCAPTCHA and the Google{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms of Service</a> apply.
+          </p>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              Đăng ký
+          <Form.Item style={{ marginTop: 16 }}>
+            <Button type="primary" htmlType="submit" block size="large" style={styles.button}>
+              ĐĂNG KÝ
             </Button>
           </Form.Item>
         </Form>
@@ -88,30 +87,56 @@ const Register: React.FC = () => {
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
-  wrapper: {
+  container: {
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     minHeight: '50vh',
-    background: '#f0f2f5',
+    backgroundColor: '#fff',
   },
-  formCard: {
-    background: '#fff',
-    padding: 40,
-    borderRadius: 12,
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-    maxWidth: 500,
-    width: '100%',
+  leftColumn: {
+    width: '50%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    paddingLeft: 100,
+    backgroundColor: '#fff',
   },
   title: {
-    marginBottom: 24,
-    fontSize: 28,
-    textAlign: 'center',
+    fontSize: 40,
     fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  underline: {
+    width: 70,
+    height: 4,
+    backgroundColor: '#000',
+    marginTop: 4,
+  },
+  rightColumn: {
+    width: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 60px',
+    backgroundColor: '#fff',
+  },
+  form: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  input: {
+    backgroundColor: '#f0f6ff',
+    border: '1px solid #ccc',
   },
   recaptchaNote: {
     fontSize: 12,
-    color: '#888',
+    color: '#666',
+    marginTop: 8,
+  },
+  button: {
+    backgroundColor: '#000',
+    color: '#fff',
+    fontWeight: 600,
   },
 };
 

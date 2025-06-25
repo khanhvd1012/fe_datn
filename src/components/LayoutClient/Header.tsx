@@ -20,6 +20,7 @@ import SideCart from '../../pages/Client/SideCart';
 import BrandDropdown from './BrandDropdown';
 import CateDropdown from './CateDropdown';
 import { Dropdown, Menu } from 'antd';
+import SearchBox from './Search';
 
 
 const Header: React.FC = () => {
@@ -75,7 +76,7 @@ const Header: React.FC = () => {
             </Icon>
           </Dropdown>
           <Link to="/search">
-            <Icon><SearchOutlined /></Icon>
+            <Icon><SearchBox /></Icon>
           </Link>
           <Icon onClick={() => setIsCartOpen(true)}>
             <ShoppingCartOutlined />

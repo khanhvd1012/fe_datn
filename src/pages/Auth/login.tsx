@@ -7,7 +7,7 @@ const Login: React.FC = () => {
   const onFinish = (values: any) => {
     console.log('Đăng nhập với dữ liệu:', values);
     message.success('Đăng nhập thành công!');
-    // Gửi API đăng nhập ở đây nếu cần
+    // TODO: Gửi API đăng nhập tại đây nếu cần
   };
 
   const onFinishFailed = (errorInfo: any) => {
@@ -15,40 +15,54 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div style={styles.wrapper}>
-      <div style={styles.formCard}>
+    <div style={styles.container}>
+      {/* Cột trái */}
+      <div style={styles.leftColumn}>
         <h1 style={styles.title}>Đăng nhập</h1>
+        <div style={styles.underline}></div>
+      </div>
 
+      {/* Cột phải */}
+      <div style={styles.rightColumn}>
         <Form
           form={form}
           layout="vertical"
           onFinish={onFinish}
           onFinishFailed={onFinishFailed}
+          style={styles.form}
         >
           <Form.Item
-            label="Email"
             name="email"
             rules={[
               { required: true, message: 'Vui lòng nhập email!' },
               { type: 'email', message: 'Email không hợp lệ!' },
             ]}
           >
-            <Input placeholder="Email" />
+            <Input placeholder="Email" size="large" style={styles.input} />
           </Form.Item>
 
           <Form.Item
-            label="Mật khẩu"
             name="password"
             rules={[{ required: true, message: 'Vui lòng nhập mật khẩu!' }]}
           >
-            <Input.Password placeholder="Mật khẩu" />
+            <Input.Password placeholder="Mật khẩu" size="large" style={styles.input} />
           </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              Đăng nhập
+          <p style={styles.note}>
+            This site is protected by reCAPTCHA and the Google{' '}
+            <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy Policy</a> and{' '}
+            <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms of Service</a> apply.
+          </p>
+
+          <Form.Item style={{ marginTop: 16 }}>
+            <Button type="primary" htmlType="submit" block size="large" style={styles.button}>
+              ĐĂNG NHẬP
             </Button>
           </Form.Item>
+
+          <div style={styles.footerText}>
+            <span>Quên mật khẩu?</span> hoặc <a href="/register">Đăng kí</a>
+          </div>
         </Form>
       </div>
     </div>
@@ -56,26 +70,61 @@ const Login: React.FC = () => {
 };
 
 const styles: { [key: string]: React.CSSProperties } = {
-  wrapper: {
+  container: {
     display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
     minHeight: '50vh',
-    background: '#f0f2f5',
+    backgroundColor: '#fff',
   },
-  formCard: {
-    background: '#fff',
-    padding: 40,
-    borderRadius: 12,
-    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
-    maxWidth: 500,
-    width: '80%',
+  leftColumn: {
+    width: '50%',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    paddingLeft: 100,
+    backgroundColor: '#fff',
   },
   title: {
-    marginBottom: 24,
-    fontSize: 28,
-    textAlign: 'center',
+    fontSize: 40,
     fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
+  },
+  underline: {
+    width: 70,
+    height: 4,
+    backgroundColor: '#000',
+    marginTop: 4,
+  },
+  rightColumn: {
+    width: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '40px 60px',
+    backgroundColor: '#fff',
+  },
+  form: {
+    width: '100%',
+    maxWidth: 400,
+  },
+  input: {
+    backgroundColor: '#f0f6ff',
+    border: '1px solid #ccc',
+  },
+  note: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 8,
+  },
+  button: {
+    backgroundColor: '#000',
+    color: '#fff',
+    fontWeight: 600,
+  },
+  footerText: {
+    fontSize: 13,
+    textAlign: 'left',
+    color: '#555',
   },
 };
 
