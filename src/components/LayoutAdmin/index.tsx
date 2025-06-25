@@ -40,7 +40,9 @@ import EditColor from '../../pages/Admin/colors/EditColor';
 import Variant from '../../pages/Admin/variant/Variant';
 import CreateVariant from '../../pages/Admin/variant/CreateVariant';
 import EditVariant from '../../pages/Admin/variant/EditVariant';
-
+import Vouchers from '../../pages/Admin/vochers/Vocher';
+import CreateVoucher from '../../pages/Admin/vochers/CreateVoucher';
+import EditVoucher from '../../pages/Admin/vochers/EditVoucher';
 
 
 // Component chính quản lý layout của trang admin
@@ -151,6 +153,8 @@ const IndexAdmin = () => {
                                     { key: '8', label: <Link to="/admin/users/customers">Customer</Link> },
                                 ],
                             },
+                            // Quản lý Mã giảm giá
+                             { key: "vouchers", label: <Link to="/admin/vouchers">Vouchers</Link>, icon: <TagsOutlined /> },
                             // Quản lý đơn hàng
                             { key: "9", label: <Link to="/admin/orders">Orders</Link>, icon: <ShoppingCartOutlined /> },
                             // Quản lý đánh giá
@@ -255,6 +259,13 @@ const IndexAdmin = () => {
                                 <Route path="orders">
                                     <Route path="" element={<Orders />} />
                                     <Route path="edit/:id" element={<EditOrders />} />
+                                </Route>
+                                
+                                {/* Routes quản lý mã giảm giá */}
+                                <Route path="vouchers">
+                                    <Route path="" element={<Vouchers />} />
+                                    <Route path="create" element={<CreateVoucher />} />
+                                    <Route path="edit/:id" element={<EditVoucher />} />
                                 </Route>
 
                                 {/* Routes quản lý đánh giá */}

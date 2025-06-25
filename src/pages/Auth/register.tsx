@@ -1,9 +1,11 @@
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
   const [form] = Form.useForm();
+  const navigate=useNavigate()
 
   const onFinish = async (values: any) => {
     try {
@@ -15,6 +17,7 @@ const Register: React.FC = () => {
       if (res.data.success) {
         message.success('Đăng ký thành công!');
         form.resetFields();
+         navigate('/login');
       } else {
         message.error(res.data.message || 'Đăng ký thất bại!');
       }
