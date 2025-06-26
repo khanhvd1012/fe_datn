@@ -1,40 +1,58 @@
 import axios from "axios";
 import type { IProduct } from "../interface/product";
 
-const API = "http://localhost:8080/api/products";
+const API_URL = import.meta.env.VITE_API_URL;
 
-// ✅ Lấy toàn bộ sản phẩm
 export const getProducts = async (): Promise<IProduct[]> => {
-  const { data } = await axios.get(API);
-  return data;
+    try {
+        const response = await axios.get(`${API_URL}/products`);
+        return response.data.data.products;
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+    }
 };
 
-// ✅ Lấy sản phẩm theo ID
-export const getProductById = async (id: string): Promise<IProduct> => {
-  const { data } = await axios.get(`${API}/${id}`);
-  return data;
-};
 
-// ✅ Thêm sản phẩm mới (LOẠI BỎ _id, createdAt, updatedAt để tránh lỗi)
-export const addProduct = async (
-  product: Omit<IProduct, "_id" | "createdAt" | "updatedAt">
-) => {
-  console.log("📤 Sending product:", product); // ✅ Log debug để kiểm tra dữ liệu gửi đi
-  const { data } = await axios.post(API, product);
-  return data;
-};
+export const getProductById = async (id: string) => {
+    try {
+        const response = await axios.get(`${API_URL}/products/${id}`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        throw error;
+    }
+}
 
-// ✅ Cập nhật sản phẩm
-export const updateProduct = async (
-  id: string,
-  product: Partial<IProduct>
-) => {
-  const { data } = await axios.put(`${API}/${id}`, product);
-  return data;
-};
+export const addProduct = async (products: IProduct) => {
+    try {
+        const response = await axios.post(`${API_URL}/products`, products);
+        return response.data;
+    } catch (error) {
+        console.error("Error creating category:", error);
+        throw error;
+    }
+}
 
-// ✅ Xóa sản phẩm
+export const updateProduct = async (id: string, product: Partial<Omit<IProduct, '_id' | 'createdAt' | 'updatedAt'>>) => {
+    try {
+        const response = await axios.put(`${API_URL}/products/${id}`, product);
+        return response.data;
+    } catch (error) {
+        console.error("Error updating product:", error);
+        throw error;
+    }
+}
+
 export const deleteProduct = async (id: string) => {
-  const { data } = await axios.delete(`${API}/${id}`);
-  return data;
-};
+    try {
+        await axios.delete(`${API_URL}/products/${id}`);
+        return {
+            message: "Product deleted successfully",
+            status: 200
+        };
+    } catch (error) {
+        console.error("Error deleting product:", error);
+        throw error;
+    }
+}

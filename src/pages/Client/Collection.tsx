@@ -1,12 +1,12 @@
 import React from 'react'
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
 
-const Products = () => {
+const Collection = () => {
   return (
-    <div style={{}}>
-      <Breadcrumb current="Sản phẩm" />
+   <div style={{}}>
+      <Breadcrumb current="Bộ sưu tập" />
     </div>
   )
 }
 
-export default Products
+export default Collection

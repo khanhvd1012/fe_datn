@@ -24,7 +24,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ current }) => {
         Trang chủ
       </Link>
       <span style={{ color: '#b0b0b0' }}>/</span>
-      <span style={{ color: '#b0b0b0' }}>{current}</span>
+      <span style={{ fontWeight: 600, color: '#333' }}>{current}</span>
     </div>
   );
 };

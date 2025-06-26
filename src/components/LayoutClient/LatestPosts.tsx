@@ -5,10 +5,10 @@ const { Title, Text } = Typography;
 
 const posts = [
   {
-    title: 'Adidas Falcon New 2025 nổi bật mùa Hè với phối màu color block',
+    title: 'Adidas Falcon nổi bật mùa Hè với phối màu color block',
     date: 'THỨ BA 11,06,2019',
     description:
-      'Cuối tháng 5, adidas Falcon  đã cho ra mắt nhiều phối màu đón chào mùa Hè khiến giới trẻ yêu thích không thôi...',
+      'Cuối tháng 5, adidas Falcon đã cho ra mắt nhiều phối màu đón chào mùa Hè khiến giới trẻ yêu thích không thôi...',
     image: 'https://picsum.photos/id/104/600/400', // ảnh ngang
   },
   {
@@ -19,7 +19,7 @@ const posts = [
     image: 'https://picsum.photos/id/104/600/400',
   },
   {
-    title: 'Nike Vapormax Plus New 2025 trở lại với sắc tím mộng mơ huyền ảo mới mẻ',
+    title: 'Nike Vapormax Plus trở lại với sắc tím mộng mơ',
     date: 'THỨ BA 11,06,2019',
     description:
       'Nike Vapormax Plus là mẫu retro có nhiều phối màu gradient đẹp nhất từ trước đến nay...',

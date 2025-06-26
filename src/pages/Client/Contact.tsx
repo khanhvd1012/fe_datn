@@ -4,9 +4,10 @@ import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 
 const Contact = () => {
   return (
-    <>
-    <Breadcrumb current="Liên hệ" />
     <div style={{ padding: '40px', fontFamily: '"Quicksand", sans-serif', backgroundColor: '#fff' }}>
+      <div>
+        <Breadcrumb current="Liên hệ" />
+      </div>
       <div style={{ display: 'flex', gap: '40px', flexWrap: 'wrap' }}>
         {/* Left: Google Map */}
         <div style={{ flex: '2 1 60%', minWidth: '300px' }}>
@@ -39,7 +40,6 @@ const Contact = () => {
         </div>
       </div>
     </div>
-    </>
   );
 };
 

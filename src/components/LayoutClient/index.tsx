@@ -1,53 +1,56 @@
 import React from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { HomeOutlined } from '@ant-design/icons';
+import { Breadcrumb } from 'antd';
+import { Link, Route, Routes, Navigate, useLocation } from 'react-router-dom';
 
 import Header from './Header';
 import Footer from './Footer';
 import Slideshow from './SlideShow';
 import Gallery from './Gallery';
-
 import Home from '../../pages/Client/Home';
+import Collection from '../../pages/Client/Collection';
+import Products from '../../pages/Client/Products';
 import About from '../../pages/Client/About';
 import Blog from '../../pages/Client/Blog';
 import Contact from '../../pages/Client/Contact';
-import Brand from '../../pages/Client/Brand';
-import Products from '../../pages/Client/Products';
-import Cart from '../../pages/Client/Cart';
-import ProductDetail from './ProductDetail';
-import Login from '../../pages/Auth/login';
-import Register from '../../pages/Auth/register';
-import Profile from '../../pages/Client/Profile';
+
+// Import các page
 
 const IndexClient = () => {
   const location = useLocation();
 
-  // Chỉ ẩn Slideshow ở các trang này
-  const isNoSlidePage = ['/login', '/register','/profile'].includes(location.pathname);
+  // Tạo breadcrumb
+  const getBreadcrumbItems = () => {
+    const pathSnippets = location.pathname.split('/').filter(i => i);
+    let url = '';
+    const items = pathSnippets.map(snippet => {
+      url += `/${snippet}`;
+      return {
+        title: (
+          <Link to={url}>
+            {snippet.charAt(0).toUpperCase() + snippet.slice(1)}
+          </Link>
+        ),
+      };
+    });
 
+    return items;
+  };
 
   return (
     <div>
       <Header />
-      {!isNoSlidePage && <Slideshow />}
+      <Slideshow />
 
-      <div style={{ padding: isNoSlidePage ? '0' : '20px' }}>
+      <div style={{ padding: '20px' }}>
         <Routes>
-          {/* Trang chính */}
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/products/:id" element={<ProductDetail />} />
-          <Route path="/brand" element={<Brand />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/blog" element={<Blog />} />
-
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/cart" element={<Cart />} />
-
-          {/* Auth pages - không slideshow */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/profile" element={<Profile />} />
-          {/* Fallback */}
+          <Route index element={<Home />} />
+          <Route path="collection" element={<Collection />} />
+          <Route path="products" element={<Products />} />
+          <Route path="about" element={<About />} />
+          <Route path="blog" element={<Blog />} />
+          <Route path="contact" element={<Contact />} />
+          {/* fallback route */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>

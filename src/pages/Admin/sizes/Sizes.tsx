@@ -22,8 +22,7 @@ const Sizes = () => {
     status: ''
   });
 
-  // ✅ FIX: data là mảng, không cần .sizes
-  const filteredData = data?.filter((size: ISize) => {
+  const filteredData = data?.sizes?.filter((size: ISize) => {
     if (filters.name && !size.name.toLowerCase().includes(filters.name.toLowerCase())) {
       return false;
     }
