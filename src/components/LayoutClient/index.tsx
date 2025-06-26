@@ -22,7 +22,7 @@ const IndexClient = () => {
   const location = useLocation();
 
   // Chỉ ẩn Slideshow ở các trang này
-  const isNoSlidePage = ['/login', '/register','/profile'].includes(location.pathname);
+  const isNoSlidePage = ['/login', '/register','/profile','/cart'].includes(location.pathname);
 
 
   return (
@@ -41,12 +41,12 @@ const IndexClient = () => {
           <Route path="/blog" element={<Blog />} />
 
           <Route path="/contact" element={<Contact />} />
-          <Route path="/cart" element={<Cart />} />
 
           {/* Auth pages - không slideshow */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
+           <Route path="/cart" element={<Cart />} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
