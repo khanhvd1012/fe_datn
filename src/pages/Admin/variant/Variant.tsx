@@ -15,7 +15,7 @@ const Variant = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteVariant();
   const { data, isLoading } = useVariants();
-
+  console.log("variants data:", data);
   const handleDelete = async (id: string) => {
     try {
       mutate(id, {
@@ -58,31 +58,81 @@ const Variant = () => {
       title: "Màu sắc",
       dataIndex: "color",
       key: "color",
-      render: (color: string) => <Tag color="blue">{color}</Tag>,
+      render: (color: any) => (
+        <Tag color="blue">
+          {typeof color === 'string' ? color : color?.name || 'Không rõ'}
+        </Tag>
+      ),
     },
     {
       title: "Kích cỡ",
       dataIndex: "size",
       key: "size",
-      render: (size: string) => <Tag color="green">{size}</Tag>,
+      render: (sizes: any[]) =>
+        Array.isArray(sizes)
+          ? sizes.map(s => typeof s === 'string' ? s : s?.size).join(', ')
+          : '',
+    },
+    {
+      title: "Giới tính",
+      dataIndex: "gender",
+      key: "gender",
+      render: (gender: string) => {
+        let color = "default";
+        let label = "";
+
+        switch (gender) {
+          case "male":
+            color = "blue";
+            label = "Nam";
+            break;
+          case "female":
+            color = "magenta";
+            label = "Nữ";
+            break;
+          case "unisex":
+            color = "green";
+            label = "Unisex";
+            break;
+          default:
+            color = "gray";
+            label = "Không rõ";
+        }
+
+        return <Tag color={color}>{label}</Tag>;
+      },
     },
     {
       title: "Giá bán",
       dataIndex: "price",
       key: "price",
-      render: (price: number) => price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
+      render: (price: number) => price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
     },
     {
       title: "Giá nhập",
       dataIndex: "import_price",
       key: "import_price",
-      render: (price: number) => price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' }),
+      render: (price: number) => price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
     },
     {
       title: "Hình ảnh",
       dataIndex: "image_url",
       key: "image_url",
-      render: (url: string) => url ? <img src={url} alt="Ảnh biến thể" style={{ width: 50, height: 50, objectFit: 'cover' }} /> : null,
+      render: (urls: string[]) =>
+        urls && urls.length > 0 ? (
+          <div style={{ display: "flex", gap: "4px" }}>
+            {urls.map((url, index) => (
+              <img
+                key={index}
+                src={url}
+                alt={`ảnh ${index}`}
+                style={{ width: 50, height: 50, objectFit: "cover", borderRadius: 4 }}
+              />
+            ))}
+          </div>
+        ) : (
+          <Tag color="default">Không có ảnh</Tag>
+        ),
     },
     {
       title: "Trạng thái",

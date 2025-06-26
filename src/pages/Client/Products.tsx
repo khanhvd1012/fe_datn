@@ -3,30 +3,60 @@ import axios from 'axios'
 import { Link } from 'react-router-dom'
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
 import SidebarMenu from '../../components/LayoutClient/SideBarMenu'
-
-interface Product {
-  _id: string
-  name: string
-  price: number
-  images: string[]
-}
+import type { IProduct } from '../../interface/product'
+import type { IVariant } from '../../interface/variant'
 
 const Products = () => {
-  const [products, setProducts] = useState<Product[]>([])
+  const [products, setProducts] = useState<IProduct[]>([])
+  const [variants, setVariants] = useState<IVariant[]>([])
   const [sortOption, setSortOption] = useState('desc')
 
   useEffect(() => {
-    axios.get('http://localhost:8080/api/products')
-      .then(res => setProducts(res.data.data.products))
-      .catch(() => setProducts([]))
+    Promise.all([
+      axios.get('http://localhost:8080/api/products'),
+      axios.get('http://localhost:8080/api/variants')
+    ])
+      .then(([productsRes, variantsRes]) => {
+        setProducts(productsRes.data.data.products || [])
+        setVariants(variantsRes.data.data || [])
+      })
+      .catch(() => {
+        setProducts([])
+        setVariants([])
+      })
   }, [])
 
+  // Lấy giá thấp nhất từ các variant của sản phẩm
+  const getMinVariantPrice = (product: IProduct) => {
+    if (!Array.isArray((product as any).variants) || (product as any).variants.length === 0) return null
+    const productVariants = variants.filter(v =>
+      ((product as any).variants as string[]).includes(v._id || '')
+    )
+    if (productVariants.length === 0) return null
+    const prices = productVariants.map(v => v.price).filter(p => typeof p === 'number')
+    if (prices.length === 0) return null
+    return Math.min(...prices)
+  }
+
+  // Lấy ảnh từ variant đầu tiên có ảnh, nếu không có thì lấy ảnh sản phẩm
+  const getDisplayImage = (product: IProduct) => {
+    if (!Array.isArray((product as any).variants) || (product as any).variants.length === 0) return (product as any).images?.[0] || ''
+    const productVariants = variants.filter(v =>
+      ((product as any).variants as string[]).includes(v._id || '')
+    )
+    const variantWithImage = productVariants.find(v => Array.isArray((v as any).image_url) && (v as any).image_url.length > 0)
+    if (variantWithImage) return (variantWithImage as any).image_url[0]
+    return (product as any).images?.[0] || ''
+  }
+
   const sortedProducts = [...products].sort((a, b) => {
+    const aPrice = getMinVariantPrice(a) ?? 0
+    const bPrice = getMinVariantPrice(b) ?? 0
     switch (sortOption) {
       case 'asc':
-        return a.price - b.price
+        return aPrice - bPrice
       case 'desc':
-        return b.price - a.price
+        return bPrice - aPrice
       case 'name-asc':
         return a.name.localeCompare(b.name)
       case 'name-desc':
@@ -85,23 +115,29 @@ const Products = () => {
 
           {/* Product List */}
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-4 gap-6">
-            {sortedProducts.map((product) => (
-              <Link
-                to={`/products/${product._id}`}
-                key={product._id}
-                className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block"
-              >
-                <img
-                  src={product.images?.[0] || ''}
-                  alt={product.name}
-                  className="w-full h-48 object-cover rounded-md"
-                />
-                <div className="mt-3 text-base font-medium">{product.name}</div>
-                <div className="text-sm font-semibold text-gray-800 mt-1">
-                  {product.price?.toLocaleString('vi-VN')}₫
-                </div>
-              </Link>
-            ))}
+            {sortedProducts.map((product) => {
+              const minPrice = getMinVariantPrice(product)
+              const displayImage = getDisplayImage(product)
+              return (
+                <Link
+                  to={`/products/${product._id}`}
+                  key={product._id}
+                  className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block"
+                >
+                  <img
+                    src={displayImage}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded-md"
+                  />
+                  <div className="mt-3 text-base font-medium">{product.name}</div>
+                  <div className="text-sm font-semibold text-gray-800 mt-1">
+                    {typeof minPrice === 'number'
+                      ? minPrice.toLocaleString('vi-VN') + '₫'
+                      : 'Giá đang cập nhật'}
+                  </div>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>

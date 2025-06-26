@@ -25,7 +25,7 @@ const Products = () => {
             queryKey: ["products"],
           });
         },
-        onError: () => messageApi.error("Lỗi khi xóa sản phẩm"),
+        onError: () => messageApi.error("Lỗi khi xóa danh mục"),
       });
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -68,24 +68,15 @@ const Products = () => {
       render: (category: any) => typeof category === 'string' ? category : category?.name,
     },
     {
-      title: "Hình ảnh",
-      dataIndex: "images",
-      key: "images",
-      render: (images: any) => {
-        const arr = Array.isArray(images)
-          ? images
-          : typeof images === 'string'
-          ? images.split(',').map((img: string) => img.trim())
-          : [];
-        return arr.length > 0 ? (
-          <img
-            src={arr[0]}
-            alt="Ảnh sản phẩm"
-            style={{ width: 50, height: 50, objectFit: "cover" }}
-          />
-        ) : null;
-      },
+      title: "Kích cỡ",
+      dataIndex: "size",
+      key: "size",
+      render: (sizes: any[]) =>
+        Array.isArray(sizes)
+          ? sizes.map(s => typeof s === 'string' ? s : s?.size).join(', ')
+          : '',
     },
+
     {
       title: "Biến thể",
       dataIndex: "variants",
@@ -96,7 +87,7 @@ const Products = () => {
       title: "Thao tác",
       key: "actions",
       render: (_: any, product: IProduct) => (
-        <div style={{ display: "flex", gap: "8px" }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
           <Button
             type="primary"
             icon={<EyeOutlined />}
@@ -130,14 +121,14 @@ const Products = () => {
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(data?.data?.products) ? data.data.products : []}
+        dataSource={Array.isArray(data) ? data : []}
         rowKey="_id"
         pagination={{
-          total: data?.data?.pagination?.total || 0,
+          total: data.length,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
-          showTotal: (total) => `Tổng ${total} sản phẩm`,
+          showTotal: (total) => `Tổng ${total} danh mục`,
         }}
       />
 

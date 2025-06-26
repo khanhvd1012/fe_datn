@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, message, Select, Skeleton } from 'antd';
+import { Button, Form, InputNumber, message, Select, Skeleton } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAddVariant } from '../../../hooks/useVariants';
 import { useProducts } from '../../../hooks/useProducts';
@@ -50,6 +50,7 @@ const CreateVariant = () => {
           color: undefined,
           size: undefined,
           price: '',
+          gender: '',
           import_price: '',
           image_url: '',
           status: 'inStock',
@@ -69,14 +70,21 @@ const CreateVariant = () => {
           </Select>
         </Form.Item>
         <Form.Item
-          label="Kích cỡ"
+          label="Kích thước sản phẩm"
           name="size"
-          rules={[{ required: true, message: 'Vui lòng nhập kích cỡ!' }]}
+          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
         >
-          <Select placeholder="Chọn kích cỡ">
-            {sizes?.map((p: any) => (
-              <Select.Option key={typeof p === 'string' ? p : p._id} value={typeof p === 'string' ? p : p._id}>
-                {typeof p === 'string' ? p : p.name}
+          <Select
+            mode="multiple"
+            placeholder="Chọn kích thước"
+            allowClear
+          >
+            {sizes?.map((size: any) => (
+              <Select.Option
+                key={typeof size === 'string' ? size : size._id}
+                value={typeof size === 'string' ? size : size._id}
+              >
+                {typeof size === 'string' ? size : size.size}
               </Select.Option>
             ))}
           </Select>
@@ -99,21 +107,54 @@ const CreateVariant = () => {
           name="price"
           rules={[{ required: true, message: 'Vui lòng nhập giá bán!' }]}
         >
-          <Input type="number" placeholder="Nhập giá bán" />
+          <InputNumber style={{ width: '100%' }} type="number" placeholder="Nhập giá bán" />
         </Form.Item>
         <Form.Item
           label="Giá nhập"
           name="import_price"
-          rules={[{ required: true, message: 'Vui lòng nhập giá nhập!' }]}
+          rules={[
+            { required: true, message: 'Vui lòng nhập giá nhập!' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                const price = getFieldValue('price');
+                if (value === undefined || value === null) {
+                  return Promise.reject('Vui lòng nhập giá nhập!');
+                }
+                if (value < 0) {
+                  return Promise.reject('Giá nhập không được âm!');
+                }
+                if (price !== undefined && value > price) {
+                  return Promise.reject('Giá nhập không được cao hơn giá bán!');
+                }
+                return Promise.resolve();
+              },
+            }),
+          ]}
         >
-          <Input type="number" placeholder="Nhập giá nhập" />
+          <InputNumber style={{ width: '100%' }} type="number" placeholder="Nhập giá nhập" />
+        </Form.Item>
+        <Form.Item
+          label="Giới tính"
+          name="gender"
+          rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
+        >
+          <Select placeholder="Chọn giới tính">
+            <Select.Option value="unisex">Unisex</Select.Option>
+            <Select.Option value="male">Nam</Select.Option>
+            <Select.Option value="female">Nữ</Select.Option>
+          </Select>
         </Form.Item>
         <Form.Item
           label="Ảnh biến thể"
           name="image_url"
-          rules={[{ required: true, message: 'Vui lòng nhập URL ảnh!' }]}
+          rules={[{ required: true, message: 'Vui lòng nhập ít nhất 1 URL ảnh!' }]}
         >
-          <Input placeholder="Nhập URL ảnh" />
+          <Select
+            mode="tags"
+            style={{ width: '100%' }}
+            tokenSeparators={[',']}
+            placeholder="Nhập URL ảnh, cách nhau bằng dấu phẩy hoặc Enter"
+          />
         </Form.Item>
         <Form.Item
           label="Trạng thái"

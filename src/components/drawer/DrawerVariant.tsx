@@ -51,21 +51,28 @@ const DrawerVariant = ({ visible, variant, onClose, loading }: DrawerVariantProp
                 {renderArray(variant?.color, 'blue')}
               </Descriptions.Item>
               <Descriptions.Item label="Kích cỡ">
-                {renderArray(variant?.size, 'green')}
+                {Array.isArray(variant?.size)
+                  ? variant.size.map((s: any) => (typeof s === 'string' ? s : s.size)).join(', ')
+                  : '---'}
               </Descriptions.Item>
               <Descriptions.Item label="Giá bán" className="bg-gray-50">
-                {variant?.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                {variant?.price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
               </Descriptions.Item>
               <Descriptions.Item label="Giá nhập">
-                {variant?.import_price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                {variant?.import_price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
               </Descriptions.Item>
               <Descriptions.Item label="Hình ảnh" className="bg-gray-50">
-                {variant?.image_url ? (
-                  <img
-                    src={variant.image_url}
-                    alt="Ảnh biến thể"
-                    style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4, border: '1px solid #eee' }}
-                  />
+                {variant?.image_url && variant.image_url.length > 0 ? (
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {variant.image_url.map((url: string, idx: number) => (
+                      <img
+                        key={idx}
+                        src={url}
+                        alt={`Ảnh ${idx + 1}`}
+                        style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4, border: '1px solid #eee' }}
+                      />
+                    ))}
+                  </div>
                 ) : (
                   '---'
                 )}

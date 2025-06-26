@@ -4,7 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useProduct, useUpdateProduct } from '../../../hooks/useProducts';
 import { useBrands } from '../../../hooks/useBrands';
 import { useCategories } from '../../../hooks/useCategories';
-import type { IProduct } from '../../../interface/product';
+import { useSizes } from '../../../hooks/useSizes';
 
 const EditProducts = () => {
   const { id } = useParams();
@@ -15,20 +15,22 @@ const EditProducts = () => {
   const { mutate, isPending: isUpdating } = useUpdateProduct();
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
+  const { data: sizes } = useSizes();
 
   // Chuẩn hóa dữ liệu initialValues
   const initialValues = product && product.data ? {
     ...product.data,
     brand: typeof product.data.brand === 'object' ? product.data.brand._id : product.data.brand,
     category: typeof product.data.category === 'object' ? product.data.category._id : product.data.category,
-    images: Array.isArray(product.data.images) ? product.data.images.join(', ') : product.data.images,
+    size: Array.isArray(product.data.size)
+      ? product.data.size.map((s: any) => (typeof s === 'object' ? s._id : s))
+      : [],
   } : {};
 
   const handleSubmit = (values: any) => {
     if (!id) return;
     const submitValues = {
       ...values,
-      images: values.images ? values.images.split(',').map((img: string) => img.trim()) : [],
     };
     mutate(
       { id, product: submitValues },
@@ -111,18 +113,24 @@ const EditProducts = () => {
         </Form.Item>
 
         <Form.Item
-          label="Ảnh sản phẩm "
-          name="images"
-          rules={[{ required: true, message: 'Vui lòng nhập ít nhất 1 ảnh!' }]}
+          label="Kích thước sản phẩm"
+          name="size"
+          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
         >
-          <Input placeholder="Nhập các URL ảnh, cách nhau bởi dấu phẩy" />
-        </Form.Item>
-
-        <Form.Item
-          label="Biến thể sản phẩm "
-          name="variants"
-        >
-          <Input placeholder="Nhập các biến thể " />
+          <Select
+            mode="multiple"
+            placeholder="Chọn kích thước"
+            allowClear
+          >
+            {sizes?.map((size: any) => (
+              <Select.Option
+                key={typeof size === 'string' ? size : size._id}
+                value={typeof size === 'string' ? size : size._id}
+              >
+                {typeof size === 'string' ? size : size.name}
+              </Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
         <Form.Item>

@@ -17,24 +17,16 @@ const Sizes = () => {
   const { mutate } = useDeleteSize();
   const { data, isLoading } = useSizes();
   const [filters, setFilters] = useState({
-    name: '',
-    value: '',
-    status: ''
+    size: '',
   });
 
-  // ✅ FIX: data là mảng, không cần .sizes
   const filteredData = data?.filter((size: ISize) => {
-    if (filters.name && !size.name.toLowerCase().includes(filters.name.toLowerCase())) {
-      return false;
-    }
-    if (filters.value && !size.value.toLowerCase().includes(filters.value.toLowerCase())) {
-      return false;
-    }
-    if (filters.status && size.status !== filters.status) {
+    if (filters.size && !size.size.toString().includes(filters.size.toString())) {
       return false;
     }
     return true;
   });
+
 
   const handleFilterChange = (value: string | number, type: string) => {
     setFilters(prev => ({
@@ -75,36 +67,12 @@ const Sizes = () => {
     {
       title: (
         <Space size="middle">
-          Tên kích thước
-          <SizeFilter filters={filters} handleFilterChange={handleFilterChange} type="name" />
+          Kích thước
+          <SizeFilter filters={filters} handleFilterChange={handleFilterChange} type="size" />
         </Space>
       ),
-      dataIndex: "name",
-      key: "name",
-    },
-    {
-      title: (
-        <Space size="middle">
-          Giá trị
-          <SizeFilter filters={filters} handleFilterChange={handleFilterChange} type="value" />
-        </Space>
-      ),
-      dataIndex: "value",
-      key: "value",
-    },
-    {
-      title: (
-        <Space size="middle">
-          Trạng thái
-          <SizeFilter filters={filters} handleFilterChange={handleFilterChange} type="status" />
-        </Space>
-      ),
-      dataIndex: "status",
-      key: "status",
-      render: (status: string) => {
-        const color = status === 'active' ? 'success' : 'error';
-        return <Tag color={color}>{status === 'active' ? 'Đang hoạt động' : 'Ngừng hoạt động'}</Tag>;
-      },
+      dataIndex: "size",
+      key: "size",
     },
     {
       title: "Thao tác",
