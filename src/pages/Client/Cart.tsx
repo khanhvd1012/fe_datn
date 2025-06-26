@@ -2,36 +2,56 @@ import React, { useEffect, useState } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import { useSizes } from '../../hooks/useSizes';
-
-interface CartItem {
-    _id: string;
-    name: string;
-    size: string; // lưu id size
-    color?: string;
-    image: string;
-    price: number;
-    quantity: number;
-}
-
-interface Size {
-    _id: string;
-    name: string;
-}
+import axios from 'axios';
+import type { IVariant } from '../../interface/variant';
+import type { ISize } from '../../interface/size';
 
 const Cart: React.FC = () => {
-    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [cartItems, setCartItems] = useState<any[]>([]);
     const { data: sizes = [], isLoading: isSizesLoading } = useSizes();
 
     useEffect(() => {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-        setCartItems(cart);
-    }, []);
-
-    const getSizeName = (id: string) => {
-        if (!id || !Array.isArray(sizes) || sizes.length === 0) return id;
-        const found = sizes.find(s => s._id === id);
-        return found ? found.name : id;
-    };
+        // Lấy toàn bộ variants 1 lần
+        axios.get('http://localhost:8080/api/variants')
+            .then(res => {
+                const allVariants = res.data.data || [];
+                Promise.all(
+                    cart.map(async (item: any) => {
+                        // Tìm variant đúng với product và size
+                        const variant = allVariants.find((v: any) =>
+                            (v.product_id && (v.product_id._id === item._id || v.product_id === item._id)) &&
+                            Array.isArray(v.size) &&
+                            v.size.some((s: any) =>
+                                (typeof s === 'object' && (s._id === item.size || s.size === item.size)) ||
+                                (typeof s === 'string' && s === item.size)
+                            )
+                        );
+                        // Lấy ảnh
+                        const image = variant && Array.isArray(variant.image_url) && variant.image_url.length > 0
+                            ? variant.image_url[0]
+                            : item.image;
+                        // Lấy tên size
+                        let sizeName = item.size;
+                        if (variant && Array.isArray(variant.size)) {
+                            const found = variant.size.find((s: any) =>
+                                (typeof s === 'object' && (s._id === item.size || s.size === item.size)) ||
+                                (typeof s === 'string' && s === item.size)
+                            );
+                            if (found) sizeName = typeof found === 'object'
+                                ? (found.size || found.name || found._id)
+                                : found;
+                        }
+                        // Nếu vẫn là id, thử lấy từ hook sizes
+                        if ((sizeName === item.size || !sizeName) && sizes.length > 0) {
+                            const foundSize = sizes.find((s: ISize) => s._id === item.size);
+                            if (foundSize) sizeName = foundSize.size || foundSize.name || item.size;
+                        }
+                        return { ...item, image, sizeName };
+                    })
+                ).then(setCartItems);
+            });
+    }, [sizes]);
 
     const formatCurrency = (value: number) =>
         value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -89,7 +109,7 @@ const Cart: React.FC = () => {
                             <div>
                                 <h3 className="text-sm font-semibold">{item.name}</h3>
                                 <p className="text-sm text-gray-500 mt-1">
-                                    Size: {getSizeName(item.size)} {item.color && <>/ {item.color}</>}
+                                    Size: {item.sizeName || item.size} {item.color && <>/ {item.color}</>}
                                 </p>
                             </div>
                         </div>

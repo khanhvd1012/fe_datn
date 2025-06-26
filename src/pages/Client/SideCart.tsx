@@ -1,20 +1,46 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { CloseOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
 import { useSizes } from '../../hooks/useSizes'
-
+import type { ISize } from '../../interface/size'
+import axios from 'axios';
 
 const SideCart = ({ onClose }: { onClose: () => void }) => {
-    // Lấy sản phẩm từ localStorage
-    const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem("cart") || "[]"));
+    const [cart, setCart] = useState<any[]>([]);
     const { data: sizes = [] } = useSizes();
     const total = cart.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+
+    useEffect(() => {
+        const fetchCartWithImages = async () => {
+            const rawCart = JSON.parse(localStorage.getItem("cart") || "[]");
+            // Giả sử bạn có API lấy variant theo product._id hoặc variant._id
+            const res = await axios.get('http://localhost:8080/api/variants');
+            const allVariants = res.data.data || [];
+            const updatedCart = rawCart.map((item: any) => {
+                // Tìm variant đúng với sản phẩm và size
+                const variant = allVariants.find((v: any) =>
+                    v.product_id && (v.product_id._id === item._id || v.product_id === item._id) &&
+                    Array.isArray(v.size) &&
+                    v.size.some((s: any) =>
+                        (typeof s === 'object' && (s._id === item.size || s.size === item.size)) ||
+                        (typeof s === 'string' && s === item.size)
+                    )
+                );
+                const image = variant && Array.isArray(variant.image_url) && variant.image_url.length > 0
+                    ? variant.image_url[0]
+                    : '/no-image.png';
+                return { ...item, image };
+            });
+            setCart(updatedCart);
+        };
+        fetchCartWithImages();
+    }, []);
 
     // Hàm lấy tên size từ id
     const getSizeName = (id: string) => {
         if (!id || !Array.isArray(sizes) || sizes.length === 0) return id;
-        const found = sizes.find((s: any) => s._id === id);
-        return found ? found.name : id;
+        const found = sizes.find((s: ISize) => s._id === id);
+        return found ? found.size : id;
     };
 
     // Hàm cập nhật số lượng
@@ -25,6 +51,8 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
         setCart(newCart);
         localStorage.setItem("cart", JSON.stringify(newCart));
     };
+
+    console.log(JSON.parse(localStorage.getItem("cart")));
 
     return (
         <div
@@ -46,7 +74,12 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                 ) : (
                     cart.map((item: any, idx: number) => (
                         <div className="flex gap-3 mb-4" key={idx}>
-                            <img src={item.image} alt={item.name} className="border w-20 h-20 object-cover" />
+                            <img
+                                src={item.image || '/no-image.png'}
+                                alt={item.name}
+                                className="border w-20 h-20 object-cover"
+                                onError={e => (e.currentTarget.src = '/no-image.png')}
+                            />
                             <div className="flex-1">
                                 <h3 className="text-xs font-semibold uppercase leading-snug">
                                     {item.name}
