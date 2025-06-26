@@ -1,16 +1,19 @@
+// src/pages/admin/reviews/Reviews.tsx
 import { useState } from 'react';
 import { Table, Button, Drawer, Rate, Typography, Spin, Empty } from 'antd';
 import { EyeOutlined } from '@ant-design/icons';
-import { useParams } from 'react-router-dom'; // ✅ thêm dòng này
+import { useQuery } from "@tanstack/react-query";
 import type { IReview } from '../../../interface/review';
-import { useReviews } from '../../../hooks/useReview';
+import { getAllReviews } from '../../../service/reviewAPI';
 
 const { Paragraph, Text, Title } = Typography;
 
 const Reviews: React.FC = () => {
-  const { id: product_id } = useParams();
+  const { data: reviews, isLoading, isError } = useQuery<IReview[]>({
+    queryKey: ['reviews'],
+    queryFn: getAllReviews,
+  });
 
-  const { data: reviews, isLoading, isError } = useReviews(product_id || '');
   const [selectedReview, setSelectedReview] = useState<IReview | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
@@ -59,13 +62,12 @@ const Reviews: React.FC = () => {
     },
   ];
 
-  if (!product_id) return <p style={{ color: 'red' }}>Không có ID sản phẩm</p>;
   if (isLoading) return <Spin tip="Đang tải đánh giá..." />;
   if (isError || !reviews) return <Empty description="Không có đánh giá nào" />;
 
   return (
     <div>
-      <Title level={4}>Danh sách đánh giá</Title>
+      <Title level={4}>Tất cả đánh giá sản phẩm</Title>
 
       <Table
         dataSource={reviews}

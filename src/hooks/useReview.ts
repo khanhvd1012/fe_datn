@@ -1,21 +1,18 @@
-// hooks/useReview.ts
-import { useQuery } from '@tanstack/react-query';
-import { getReviewById, getReviewsByProduct } from '../service/reviewAPI';
-import type { IReview } from '../interface/review';
+// src/hooks/useReview.ts
+import { useQuery } from "@tanstack/react-query";
+import axios from "axios";
+import type { IReview } from "../interface/review";
 
-export const useReviews = (productId: string) => {
+const API_URL = import.meta.env.VITE_API_URL;
+
+export const useAllReviews = () => {
   return useQuery<IReview[]>({
-    queryKey: ['reviews', productId],
-    queryFn: () => getReviewsByProduct(productId),
-    enabled: !!productId, // 👈 Bảo vệ khi productId rỗng
+    queryKey: ['reviews'],
+    queryFn: async () => {
+      const res = await axios.get(`${API_URL}/reviews`);
+      return res.data.reviews;
+    },
   });
 };
 
 
-export const useReview = (reviewId: string) => {
-    return useQuery<IReview>({
-        queryKey: ['review', reviewId],
-        queryFn: () => getReviewById(reviewId),
-        enabled: !!reviewId
-    });
-};
