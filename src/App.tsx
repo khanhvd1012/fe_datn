@@ -6,6 +6,7 @@ import IndexClient from './components/LayoutClient'
 import ErrorBoundary from './components/ErrorBoundary' // ✅ import
 import PrivateRoute from "./components/PrivateRoute";
 import Profile from './pages/Client/Profile'
+import Brand from './pages/Client/Brand'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           </PrivateRoute>
         } />
         <Route path="/*" element={<IndexClient />} />
+        <Route path="/brand/:id" element={<Brand />} />
       </Routes>
     </ErrorBoundary>
   )

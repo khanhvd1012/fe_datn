@@ -38,3 +38,9 @@ export const deleteProduct = async (id: string) => {
   const { data } = await axios.delete(`${API}/${id}`);
   return data;
 };
+
+// ✅ Lấy sản phẩm theo thương hiệu
+export const getProductsByBrand = async (brandId: string) => {
+  const { data } = await axios.get(`${API}?brand=${brandId}`);
+  return data.data.products; // hoặc data.products tùy backend trả về
+};
