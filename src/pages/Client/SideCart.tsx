@@ -1,10 +1,31 @@
 import React, { useState } from 'react'
 import { CloseOutlined } from '@ant-design/icons'
 import { Link } from 'react-router-dom'
+import { useSizes } from '../../hooks/useSizes'
 
 
 const SideCart = ({ onClose }: { onClose: () => void }) => {
-      const [isCartOpen, setIsCartOpen] = useState(false);
+    // Lấy sản phẩm từ localStorage
+    const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem("cart") || "[]"));
+    const { data: sizes = [] } = useSizes();
+    const total = cart.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0);
+
+    // Hàm lấy tên size từ id
+    const getSizeName = (id: string) => {
+        if (!id || !Array.isArray(sizes) || sizes.length === 0) return id;
+        const found = sizes.find((s: any) => s._id === id);
+        return found ? found.name : id;
+    };
+
+    // Hàm cập nhật số lượng
+    const updateQuantity = (idx: number, newQty: number) => {
+        if (newQty < 1) return;
+        const newCart = [...cart];
+        newCart[idx].quantity = newQty;
+        setCart(newCart);
+        localStorage.setItem("cart", JSON.stringify(newCart));
+    };
+
     return (
         <div
             className="fixed top-0 right-0 w-[400px] h-full bg-white shadow-2xl z-50 px-6 py-5 flex flex-col"
@@ -12,33 +33,50 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
         >
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-semibold mb-6">Giỏ hàng</h2>
+                <h2 className="text-2xl font-semibold mb-6">Giỏ hàng</h2>
                 <button onClick={onClose} className="text-lg">
                     <CloseOutlined />
                 </button>
             </div>
 
-            {/* Product item */}
-            <div className="flex gap-3 mb-4">
-                <img src="https://picsum.photos/seed/shoe1/80/80" alt="Product" className="border" />
-                <div className="flex-1">
-                    <h3 className="text-xs font-semibold uppercase leading-snug">
-                        Nike Air Max 90 <br /> Essential “Grape”
-                    </h3>
-                    <div className="text-xs text-gray-500 mt-1">Tím / 36</div>
-                    <div className="flex items-center mt-2">
-                        <input
-                            type="number"
-                            value={1}
-                            className="w-8 h-8 text-center border border-gray-400 text-sm mr-2"
-                            readOnly
-                        />
-                        <span className="text-sm font-semibold">4,800,000₫</span>
-                    </div>
-                </div>
-                <button className="text-gray-400 hover:text-red-500">
-                    <CloseOutlined />
-                </button>
+            {/* Product items */}
+            <div className="flex-1 overflow-y-auto">
+                {cart.length === 0 ? (
+                    <div className="text-center text-gray-500 mt-10">Chưa có sản phẩm nào trong giỏ hàng.</div>
+                ) : (
+                    cart.map((item: any, idx: number) => (
+                        <div className="flex gap-3 mb-4" key={idx}>
+                            <img src={item.image} alt={item.name} className="border w-20 h-20 object-cover" />
+                            <div className="flex-1">
+                                <h3 className="text-xs font-semibold uppercase leading-snug">
+                                    {item.name}
+                                </h3>
+                                <div className="text-xs text-gray-500 mt-1">
+                                    {item.color ? `${item.color} / ` : ''}
+                                    Size: {getSizeName(item.size)}
+                                </div>
+                                <div className="flex items-center mt-2">
+                                    <button
+                                        className="w-7 h-7 border border-gray-400 text-lg"
+                                        onClick={() => updateQuantity(idx, item.quantity - 1)}
+                                    >-</button>
+                                    <input
+                                        type="number"
+                                        value={item.quantity}
+                                        min={1}
+                                        className="w-8 h-8 text-center border border-gray-400 text-sm mx-2"
+                                        onChange={e => updateQuantity(idx, Number(e.target.value))}
+                                    />
+                                    <button
+                                        className="w-7 h-7 border border-gray-400 text-lg"
+                                        onClick={() => updateQuantity(idx, item.quantity + 1)}
+                                    >+</button>
+                                    <span className="text-sm font-semibold ml-2">{item.price?.toLocaleString('vi-VN')}₫</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Divider */}
@@ -47,7 +85,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
             {/* Tổng tiền */}
             <div className="flex justify-between text-sm mb-4">
                 <span>TỔNG TIỀN:</span>
-                <span>4,800,000₫</span>
+                <span>{total.toLocaleString('vi-VN')}₫</span>
             </div>
 
             {/* Buttons */}
@@ -64,7 +102,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                 >
                     THANH TOÁN
                 </Link>
-
             </div>
 
             <button className="bg-blue-700 hover:bg-blue-800 text-white text-sm  py-2 w-full">

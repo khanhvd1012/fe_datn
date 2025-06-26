@@ -4,6 +4,7 @@ import { Button, Spin, message } from 'antd';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Breadcrumb from './Breadcrumb';
+import { useSizes } from '../../hooks/useSizes';
 
 interface Product {
   _id: string;
@@ -11,7 +12,7 @@ interface Product {
   description: string;
   images: string[];
   price: number;
-  sizes: string[];
+  sizes: string[]; // array of size ids
   colors: string;
 }
 
@@ -22,6 +23,16 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
+
+  // Lấy danh sách size từ hook
+  const { data: sizes = [] } = useSizes();
+
+  // Hàm lấy tên size từ id
+  const getSizeName = (id: string) => {
+    if (!id || !Array.isArray(sizes) || sizes.length === 0) return id;
+    const found = sizes.find((s: any) => s._id === id);
+    return found ? found.name : id;
+  };
 
   useEffect(() => {
     axios.get(`http://localhost:8080/api/products/${id}`)
@@ -45,6 +56,32 @@ const ProductDetail = () => {
         setLoading(false);
       });
   }, [id]);
+
+  const addToCart = () => {
+    if (!product || !selectedSize) {
+      message.warning("Vui lòng chọn size!");
+      return;
+    }
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    // Kiểm tra sản phẩm đã có trong giỏ chưa (theo id + size)
+    const existing = cart.find(
+      (item: any) => item._id === product._id && item.size === selectedSize
+    );
+    if (existing) {
+      existing.quantity += quantity;
+    } else {
+      cart.push({
+        _id: product._id,
+        name: product.name,
+        image: product.images?.[0],
+        price: product.price,
+        size: selectedSize,
+        quantity,
+      });
+    }
+    localStorage.setItem("cart", JSON.stringify(cart));
+    message.success("Đã thêm vào giỏ hàng!");
+  };
 
   if (loading) {
     return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
@@ -78,13 +115,13 @@ const ProductDetail = () => {
 
           <div className="size-section">
             {Array.isArray(product.sizes) && product.sizes.length > 0 ? (
-              product.sizes.map((size) => (
+              product.sizes.map((sizeId) => (
                 <button
-                  key={size}
-                  className={`size-btn ${selectedSize === size ? 'active' : ''}`}
-                  onClick={() => setSelectedSize(size)}
+                  key={sizeId}
+                  className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
+                  onClick={() => setSelectedSize(sizeId)}
                 >
-                  {size}
+                  {getSizeName(sizeId)}
                 </button>
               ))
             ) : (
@@ -99,7 +136,14 @@ const ProductDetail = () => {
           </div>
 
           <div className="action-buttons">
-            <Button type="default" size="large" className="add-cart">THÊM VÀO</Button>
+            <Button
+              type="default"
+              size="large"
+              className="add-cart"
+              onClick={addToCart}
+            >
+              THÊM VÀO
+            </Button>
             <Button type="primary" size="large" danger className="buy-now">MUA NGAY</Button>
           </div>
 
