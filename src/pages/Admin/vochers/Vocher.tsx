@@ -3,8 +3,8 @@ import { Button, Empty, message, Popconfirm, Skeleton, Table } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
-import { useVouchers, useDeleteVoucher } from '../../../hooks/useVouchers';
 import type { IVoucher } from '../../../interface/voucher';
+import { useDeleteVoucher, useVouchers } from '../../../hooks/useVouchers';
 import DrawerVoucher from '../../../components/drawer/DrawerVoucher';
 
 const Vouchers = () => {
