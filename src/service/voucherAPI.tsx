@@ -26,8 +26,11 @@ export const getVoucherById = async (id: string) => {
 export const addVoucher = async (voucher: IVoucher) => {
     try {
         const response = await axios.post(`${API_URL}/vouchers`, voucher);
+        console.log("Voucher gửi lên:", voucher); // Debugging line to check the voucher data`
         return response.data;
-    } catch (error) {
+        
+    }
+     catch (error) {
         console.error("Error creating voucher:", error);
         throw error;
     }

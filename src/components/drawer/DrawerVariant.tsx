@@ -9,7 +9,6 @@ interface DrawerVariantProps {
 }
 
 const DrawerVariant = ({ visible, variant, onClose, loading }: DrawerVariantProps) => {
-  // Helper render for color/size array
   const renderArray = (arr: any, color: string) => {
     if (!arr) return '---';
     if (Array.isArray(arr)) {

@@ -13,17 +13,29 @@ import {
   HamburgerIcon
 } from './style';
 import { NavLink, useNavigate } from 'react-router-dom';
-import SideCart from '../../pages/Client/SideCart'; // Thêm dòng này
+import SideCart from '../../pages/Client/SideCart';
+
+// Thêm import để lấy tên user từ database
+import { useQuery } from '@tanstack/react-query';
+import { getProfile } from '../../service/authAPI';
+import type { IUser } from '../../interface/user';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [showCart, setShowCart] = useState(false); // State điều khiển SideCart
+  const [showCart, setShowCart] = useState(false);
   const navigate = useNavigate();
 
-  // Kiểm tra token, role và tên người dùng
+  // Lấy token và role từ localStorage
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('role');
-  const userName = localStorage.getItem('name');
+
+  // Lấy tên user từ database (không lấy từ localStorage)
+  const { data: user } = useQuery<IUser>({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+    enabled: !!token,
+    retry: false,
+  });
 
   const toggleMenu = () => {
     setIsOpen(prev => !prev);
@@ -36,7 +48,7 @@ const Header: React.FC = () => {
 
   const menuItems = token
     ? [
-        { key: '0', label: <span style={{ fontWeight: 'bold' }}>{userName || 'Người dùng'}</span>, disabled: true },
+        { key: '0', label: <span style={{ fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>, disabled: true },
         { key: '1', label: <NavLink to="/profile">Thông tin tài khoản</NavLink> },
         ...(userRole === 'admin' ? [{ key: '2', label: <NavLink to="/admin">Trang quản trị</NavLink> }] : []),
         { key: '3', label: <span onClick={handleLogout}>Đăng xuất</span>, danger: true },
@@ -72,7 +84,7 @@ const Header: React.FC = () => {
           <Dropdown overlay={menu} trigger={['hover']} placement="bottomRight">
             <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
               <Icon><UserOutlined /></Icon>
-              {token && <span style={{ marginLeft: 8, fontWeight: 'bold' }}>{userName || 'Người dùng'}</span>}
+              {token && <span style={{ marginLeft: 8, fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>}
             </div>
           </Dropdown>
           <Icon><SearchOutlined /></Icon>

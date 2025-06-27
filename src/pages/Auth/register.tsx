@@ -9,7 +9,7 @@ const Register: React.FC = () => {
 
   const onFinish = async (values: any) => {
     try {
-      const res = await axios.post('http://localhost:8080/api/auth/register', {
+      const res = await axios.post('http://localhost:3000/api/auth/register', {
         email: values.email,
         password: values.password,
         // Nếu backend có hỗ trợ thêm name, sdt, address thì giữ lại, không thì bỏ đi
