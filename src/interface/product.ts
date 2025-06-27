@@ -1,18 +1,9 @@
-export interface IVariant {
-  image_url: string[];  
-  price?: number;
-  size: string | string[]; 
-}
-
 export interface IProduct {
-  _id: string;
-  name: string;
-  price: number;
-  images: string[];
-  size: any[];
-  brand?: {
+    _id?: string;
     name: string;
-  } | string;
-  description?: string;
-  variants?: IVariant[]; 
+    description?: string;
+    brand: string | { _id: string; name: string };
+    category: string | { _id: string; name: string };
+    variants: string[]; 
+    size: string[] | { _id: string; name: string }[];
 }
