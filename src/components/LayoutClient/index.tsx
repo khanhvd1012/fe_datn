@@ -35,7 +35,7 @@ const IndexClient = () => {
           {/* Trang chính */}
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
-          <Route path="/products/:id" element={<ProductDetail />} />
+          <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/brand" element={<Brand />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />

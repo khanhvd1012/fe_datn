@@ -8,10 +8,9 @@ import { useSizes } from '../../hooks/useSizes';
 import type { IProduct } from '../../interface/product';
 import type { ISize } from '../../interface/size';
 
-
-
 const ProductDetail = () => {
-  const { id } = useParams();
+  // Đổi id thành slug để lấy từ URL
+  const { slug } = useParams();
   const [product, setProduct] = useState<IProduct | null>(null);
   const [mainImage, setMainImage] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -29,10 +28,11 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/api/products/${id}`)
+    if (!slug) return;
+    axios.get(`http://localhost:3000/api/products/slug/${slug}`)
       .then(res => {
         const data = res.data.data;
-        console.log('Product data:', data); // Thêm dòng này để kiểm tra dữ liệu
+        console.log('Product data:', data);
 
         // Đảm bảo dữ liệu có đầy đủ mảng
         const fixedData: IProduct = {
@@ -43,7 +43,6 @@ const ProductDetail = () => {
 
         setProduct(fixedData);
         setMainImage(fixedData.images?.[0] || '');
-        // Nếu size là mảng object {_id, name} thì lấy _id, nếu là string thì lấy luôn
         const firstSize = fixedData.size?.[0];
         setSelectedSize(typeof firstSize === 'object' ? firstSize._id : firstSize || null);
         setLoading(false);
@@ -52,7 +51,7 @@ const ProductDetail = () => {
         message.error('Không thể tải chi tiết sản phẩm');
         setLoading(false);
       });
-  }, [id]);
+  }, [slug]);
 
   // Hàm lấy variant theo size đang chọn
   const getSelectedVariant = () => {
@@ -116,7 +115,6 @@ const ProductDetail = () => {
             <div className="main-image">
               <img
                 src={
-                  // Nếu variant có ảnh thì ưu tiên ảnh variant, nếu không thì lấy ảnh sản phẩm
                   (selectedVariant?.image_url && selectedVariant.image_url[0])
                     ? selectedVariant.image_url[0]
                     : mainImage
@@ -139,7 +137,6 @@ const ProductDetail = () => {
             <div className="size-section">
               {Array.isArray(product.size) && product.size.length > 0 ? (
                 product.size.map((sizeObj: any) => {
-                  // Nếu là object {_id, name}, lấy _id, nếu là string thì lấy luôn
                   const sizeId = typeof sizeObj === 'object' ? sizeObj._id : sizeObj;
                   return (
                     <button

@@ -130,7 +130,8 @@ const BestSellingProducts: React.FC = () => {
                   minWidth: 250,
                 }}
               >
-                <Link to={`/products/${product._id}`}>
+                {/* Sử dụng slug thay vì _id */}
+                <Link to={`/products/${product.slug}`}>
                   <Card
                     hoverable
                     cover={

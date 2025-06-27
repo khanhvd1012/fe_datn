@@ -120,7 +120,7 @@ const Products = () => {
               const displayImage = getDisplayImage(product)
               return (
                 <Link
-                  to={`/products/${product._id}`}
+                  to={`/products/${product.slug}`} // Sử dụng slug thay vì _id
                   key={product._id}
                   className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block"
                 >
