@@ -1,12 +1,15 @@
-
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getProductsByBrand } from '../../service/productAPI';
-import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
-import SidebarMenu from '../../components/LayoutClient/SideBarMenu';
 import Header from '../../components/LayoutClient/Header';
 import Footer from '../../components/LayoutClient/Footer';
+import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import Slideshow from '../../components/LayoutClient/SlideShow';
+import SidebarMenu from '../../components/LayoutClient/SideBarMenu';
+
+const priceRanges = ['Dưới 500,000₫', '500,000₫ - 1,000,000₫', '1,000,000₫ - 1,500,000₫', '2,000,000₫ - 5,000,000₫', 'Trên 5,000,000₫'];
+const colors = ['#f44336', '#3f51b5', '#000000', '#03a9f4', '#e1e1e1', '#607d8b', '#ff4081', '#9e9e9e'];
+const sizes = [35, 36, 37, 38, 39, 40];
 
 const Brand = () => {
   const { id } = useParams();
@@ -23,45 +26,21 @@ const Brand = () => {
       <Breadcrumb current="Thương hiệu" />
       <div className="px-10 py-5 font-[Quicksand]">
         <div className="flex gap-8">
-          {/* Sidebar Filter */}
-          <div className="w-1/4">
+          {/* Sidebar */}
+          <aside className="w-1/4 space-y-5">
             <SidebarMenu />
+            <FilterSection title="GIÁ SẢN PHẨM" items={priceRanges} renderItem={(label, i) => (
+              <label key={i}><input type="checkbox" className="mr-2" /> {label}</label>
+            )} />
+            <FilterSection title="MÀU SẮC" items={colors} renderItem={(color, i) => (
+              <div key={i} className="w-6 h-6 rounded border" style={{ backgroundColor: color }} />
+            )} />
+            <FilterSection title="KÍCH THƯỚC" items={sizes} renderItem={(size) => (
+              <button key={size} className="border px-2 py-1">{size}</button>
+            )} />
+          </aside>
 
-            <h3 className="font-semibold mt-5 mb-3">GIÁ SẢN PHẨM</h3>
-            <div className="space-y-1">
-              {['Dưới 500,000₫', '500,000₫ - 1,000,000₫', '1,000,000₫ - 1,500,000₫', '2,000,000₫ - 5,000,000₫', 'Trên 5,000,000₫'].map(
-                (label, i) => (
-                  <div key={i}>
-                    <label>
-                      <input type="checkbox" className="mr-2" /> {label}
-                    </label>
-                  </div>
-                )
-              )}
-            </div>
-
-            <h3 className="font-semibold mt-5 mb-3">MÀU SẮC</h3>
-            <div className="flex flex-wrap gap-2">
-              {['#f44336', '#3f51b5', '#000000', '#03a9f4', '#e1e1e1', '#607d8b', '#ff4081', '#9e9e9e'].map((color, i) => (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded border"
-                  style={{ backgroundColor: color }}
-                />
-              ))}
-            </div>
-
-            <h3 className="font-semibold mt-5 mb-3">KÍCH THƯỚC</h3>
-            <div className="flex flex-wrap gap-2">
-              {[35, 36, 37, 38, 39, 40].map((size) => (
-                <button key={size} className="border px-2 py-1">
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Product List */}
+          {/* Products */}
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-4 gap-6">
             {isLoading ? (
               <div className="col-span-4 text-center py-10">Đang tải...</div>
@@ -90,6 +69,40 @@ const Brand = () => {
         </div>
       </div>
       <Footer />
-</>)
-}
+    </>
+  );
+};
+
+// const FilterSection = ({ title, items, renderItem }: any) => (
+//   <div>
+//     <h3 className="font-semibold mb-3">{title}</h3>
+//     <div className={`space-y-1 ${title === 'MÀU SẮC' || title === 'KÍCH THƯỚC' ? 'flex flex-wrap gap-2' : ''}`}>
+//       {items.map(renderItem)}
+//     </div>
+//   </div>
+// );
+const FilterSection = <T,>({
+  title,
+  items,
+  renderItem,
+}: {
+  title: string;
+  items: T[];
+  renderItem: (item: T, index: number) => React.ReactNode;
+}) => (
+  <div>
+    <h3 className="font-semibold mb-3">{title}</h3>
+    <div
+      className={`${
+        title === 'MÀU SẮC' || title === 'KÍCH THƯỚC'
+          ? 'flex flex-wrap gap-2'
+          : 'space-y-1'
+      }`}
+    >
+      {items.map((item, index) => renderItem(item, index))}
+    </div>
+  </div>
+);
+
+
 export default Brand;
