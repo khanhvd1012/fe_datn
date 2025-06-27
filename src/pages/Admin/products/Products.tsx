@@ -128,7 +128,7 @@ const Products = () => {
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
-          showTotal: (total) => `Tổng ${total} danh mục`,
+          showTotal: (total) => `Tổng ${total} sản phẩm`,
         }}
       />
 
