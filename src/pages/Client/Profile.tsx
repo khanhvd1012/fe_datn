@@ -23,13 +23,14 @@ const Profile: React.FC = () => {
   const mutation = useMutation<User, Error, string>({
     mutationFn: async (newAddress: string) => {
       const token = localStorage.getItem("token");
+      if (!user?._id) throw new Error("Không tìm thấy user");
       const shippingAddressObject = {
         address: newAddress,
         is_default: true,
       };
 
       const { data } = await axios.put(
-        `http://localhost:3000/api/auth/profile/${user?._id}`,
+        `http://localhost:3000/api/auth/profile/${user._id}`,
         { shipping_addresses: [shippingAddressObject] },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -45,7 +46,7 @@ const Profile: React.FC = () => {
   });
 
   if (isLoading) return <Spin style={{ marginTop: 40 }} />;
-  if (!user) return null;
+  if (!user) return <div className="text-center mt-10 text-red-500">Bạn chưa đăng nhập.</div>;
 
   const firstAddressObj = user.shipping_addresses?.[0];
   const displayAddress = firstAddressObj?.address || "";
@@ -78,13 +79,15 @@ const Profile: React.FC = () => {
       <div className="w-3/4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">THÔNG TIN TÀI KHOẢN</h2>
-          <Button type="primary">CẬP NHẬT THÔNG TIN TÀI KHOẢN</Button>
+          <Button type="primary" disabled>
+            CẬP NHẬT THÔNG TIN TÀI KHOẢN
+          </Button>
         </div>
 
         <Descriptions column={1} bordered size="middle">
-          <Descriptions.Item label="Họ và tên">{user.username}</Descriptions.Item>
-          <Descriptions.Item label="Email">{user.email}</Descriptions.Item>
-          <Descriptions.Item label="Vai trò">{user.role}</Descriptions.Item>
+          <Descriptions.Item label="Họ và tên">{user.username || "Chưa cập nhật"}</Descriptions.Item>
+          <Descriptions.Item label="Email">{user.email || "Chưa cập nhật"}</Descriptions.Item>
+          <Descriptions.Item label="Vai trò">{user.role || "Chưa cập nhật"}</Descriptions.Item>
           <Descriptions.Item label="Địa chỉ">
             {editing ? (
               <>
@@ -126,13 +129,13 @@ const Profile: React.FC = () => {
             )}
           </Descriptions.Item>
           <Descriptions.Item label="Ngày sinh">
-            {user?.dob || "Chưa cập nhật"}
+            {user?.dob ? user.dob : "Chưa cập nhật"}
           </Descriptions.Item>
           <Descriptions.Item label="Điện thoại">
-            {user?.phone || "Chưa cập nhật"}
+            {user?.phone ? user.phone : "Chưa cập nhật"}
           </Descriptions.Item>
           <Descriptions.Item label="Ngày tạo">
-            {new Date(user.createdAt).toLocaleDateString("vi-VN")}
+            {user.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}
           </Descriptions.Item>
         </Descriptions>
 

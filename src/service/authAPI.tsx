@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // Khai báo base API
-const API = "http://localhost:8080/api/auth";
+const API = "http://localhost:3000/api/auth";
 
 // Gọi API đăng nhập
 export const login = async (credentials: { email: string; password: string }) => {
@@ -17,7 +17,7 @@ export const register = async (payload: any) => {
 
 export const getProfile = async () => {
   const token = localStorage.getItem("token");
-  const { data } = await axios.get(`http://localhost:8080/api/auth/profile`, {
+  const { data } = await axios.get(`http://localhost:3000/api/auth/profile`, {
     headers: { Authorization: `Bearer ${token}` },
   });
   return data.user;
@@ -25,6 +25,6 @@ export const getProfile = async () => {
 
 // Đăng xuất (cần token)
 export const logout = async () => {
-  const response = await axios.post(`http://localhost:8080/api/auth/logout`);
+  const response = await axios.post(`http://localhost:3000/api/auth/logout`);
   return response.data;
 };
