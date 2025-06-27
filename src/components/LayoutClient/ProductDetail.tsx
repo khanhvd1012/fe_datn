@@ -32,8 +32,6 @@ const ProductDetail = () => {
     axios.get(`http://localhost:3000/api/products/slug/${slug}`)
       .then(res => {
         const data = res.data.data;
-        console.log('Product data:', data);
-
         // Đảm bảo dữ liệu có đầy đủ mảng
         const fixedData: IProduct = {
           ...data,
@@ -42,12 +40,22 @@ const ProductDetail = () => {
         };
 
         setProduct(fixedData);
-        setMainImage(fixedData.images?.[0] || '');
-        const firstSize = fixedData.size?.[0];
-        setSelectedSize(typeof firstSize === 'object' ? firstSize._id : firstSize || null);
+
+        // Lấy biến thể đầu tiên (nếu có)
+        const firstVariant = Array.isArray(fixedData.variants) && typeof fixedData.variants[0] === 'object'
+          ? fixedData.variants[0]
+          : undefined;
+
+        // Lấy size đầu tiên của biến thể đầu tiên (nếu có)
+        const firstSize = firstVariant?.size?.[0] || (typeof firstVariant?.size === 'string' ? firstVariant.size : null);
+        setSelectedSize(firstSize || null);
+
+        // Lấy ảnh đầu tiên từ biến thể đầu tiên (nếu có)
+        setMainImage(Array.isArray(firstVariant?.image_url) ? firstVariant.image_url[0] : '');
+
         setLoading(false);
       })
-      .catch(err => {
+      .catch(() => {
         message.error('Không thể tải chi tiết sản phẩm');
         setLoading(false);
       });
@@ -64,7 +72,7 @@ const ProductDetail = () => {
   };
 
   const selectedVariant = getSelectedVariant();
-  const displayPrice = selectedVariant?.price ?? product?.price;
+  const displayPrice = selectedVariant?.price;
 
   const addToCart = () => {
     if (!product || !selectedSize) {
@@ -82,7 +90,6 @@ const ProductDetail = () => {
       cart.push({
         _id: product._id,
         name: product.name,
-        image: product.images?.[0],
         price: displayPrice,
         size: selectedSize,
         quantity,
@@ -107,19 +114,21 @@ return (
     <Breadcrumb current={product.name ? `Sản phẩm / ${product.name}` : 'Sản phẩm'} />
     <div className="product-detail-container">
       <div className="product-detail-content">
-        <div className="product-images">
-          <div className="thumbnail-list">
-            {product.images?.map((img: string, idx: number) => (
-              <img key={idx} src={img} onClick={() => setMainImage(img)} />
+        <div className="product-images-vertical">
+          <div className="thumbnail-list-vertical">
+            {(selectedVariant?.image_url || []).map((img: string, idx: number) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`thumb-${idx}`}
+                className={mainImage === img ? 'active' : ''}
+                onClick={() => setMainImage(img)}
+              />
             ))}
           </div>
-          <div className="main-image">
+          <div className="main-image-vertical">
             <img
-              src={
-                (selectedVariant?.image_url && selectedVariant.image_url[0])
-                  ? selectedVariant.image_url[0]
-                  : mainImage
-              }
+              src={mainImage}
               alt={product.name}
             />
           </div>
@@ -206,32 +215,44 @@ return (
           border: 1px solid #eee;
         }
 
-        .main-image img {
+        .product-images-vertical {
+          display: flex;
+          flex-direction: row;
+          align-items: flex-start;
+          gap: 18px;
+        }
+
+        .thumbnail-list-vertical {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .thumbnail-list-vertical img {
+          width: 80px;
+          height: 80px;
+          object-fit: cover;
+          border-radius: 0;
+          border: 1px solid #eee;
+          cursor: pointer;
+          background: #fafafa;
+          transition: border 0.2s, box-shadow 0.2s;
+        }
+
+        .thumbnail-list-vertical img.active,
+        .thumbnail-list-vertical img:hover {
+          border: 1px solid #111;
+          box-shadow: 0 0 0 2px #1112;
+        }
+
+        .main-image-vertical img {
           width: 420px;
           height: 420px;
           object-fit: cover;
           border-radius: 0;
           border: 1px solid #eee;
           background: #fafafa;
-          margin-bottom: 18px;
           box-shadow: none;
-        }
-
-        .thumbnail-list {
-          display: flex;
-          gap: 12px;
-          margin-bottom: 8px;
-        }
-
-        .thumbnail-list img {
-          width: 64px;
-          height: 64px;
-          object-fit: cover;
-          border-radius: 0;
-          border: 1px solid #eee;
-          cursor: pointer;
-          transition: border 0.2s, transform 0.2s;
-          background: #fafafa;
         }
 
         .product-info {
