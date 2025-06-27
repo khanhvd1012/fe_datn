@@ -375,4 +375,5 @@ return (
     </div>
   </>
 );
+}
 export default ProductDetail;
