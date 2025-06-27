@@ -17,6 +17,7 @@ import ProductDetail from './ProductDetail';
 import Login from '../../pages/Auth/login';
 import Register from '../../pages/Auth/register';
 import Profile from '../../pages/Client/Profile';
+import Collection from '../../pages/Client/Collection';
 
 const IndexClient = () => {
   const location = useLocation();
@@ -35,6 +36,7 @@ const IndexClient = () => {
           {/* Trang chính */}
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
+           <Route path="/collection" element={<Collection />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/brand" element={<Brand />} />
           <Route path="/about" element={<About />} />

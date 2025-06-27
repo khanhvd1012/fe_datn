@@ -3,9 +3,12 @@ import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
 
 const Collection = () => {
   return (
-   <div style={{}}>
+   <>
       <Breadcrumb current="Bộ sưu tập" />
-    </div>
+      <div>
+        {/* viết code ở đây */}
+      </div>
+    </>
   )
 }
 

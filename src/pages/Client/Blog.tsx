@@ -63,11 +63,9 @@ const styles: { [key: string]: React.CSSProperties } = {
 
 const Blog = () => {
   return (
+    <>
+    <Breadcrumb current="Blog" />
     <div style={styles.page}>
-      <div style={{}}>
-        <Breadcrumb current="Blog" />
-      </div>
-
       <Title level={2}>Tin tức</Title>
 
       <Row gutter={24}>
@@ -106,6 +104,7 @@ const Blog = () => {
         </Col>
       </Row>
     </div>
+    </>
   );
 };
 

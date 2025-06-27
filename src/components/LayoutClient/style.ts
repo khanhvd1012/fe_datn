@@ -25,7 +25,7 @@ export const HeaderMain = styled.div`
 `;
 
 export const Logo = styled.div`
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   color: black;
 
@@ -67,7 +67,7 @@ export const NavMenu = styled.ul<ResponsiveProps>`
 `;
 
 export const NavItem = styled.li`
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
 
@@ -87,7 +87,7 @@ export const IconGroup = styled.div`
   align-items: center;
 
   .anticon {
-    font-size: 18px;
+    font-size: 13px;
     cursor: pointer;
   }
 
@@ -99,7 +99,7 @@ export const IconGroup = styled.div`
 `;
 
 export const Icon = styled.div`
-  font-size: 16px;
+  font-size: 13px;
   cursor: pointer;
   color: black;
 
