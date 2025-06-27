@@ -29,7 +29,7 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
-    axios.get(`http://localhost:8080/api/products/${id}`)
+    axios.get(`http://localhost:3000/api/products/${id}`)
       .then(res => {
         const data = res.data.data;
         console.log('Product data:', data); // Thêm dòng này để kiểm tra dữ liệu

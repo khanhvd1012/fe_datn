@@ -13,8 +13,8 @@ const NewProducts: React.FC = () => {
 
   useEffect(() => {
     Promise.all([
-      axios.get('http://localhost:8080/api/products?limit=4'),
-      axios.get('http://localhost:8080/api/variants')
+      axios.get('http://localhost:3000/api/products?limit=4'),
+      axios.get('http://localhost:3000/api/variants')
     ])
       .then(([productsRes, variantsRes]) => {
         setProducts(productsRes.data?.data?.products || []);

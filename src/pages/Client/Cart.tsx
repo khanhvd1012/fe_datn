@@ -13,7 +13,7 @@ const Cart: React.FC = () => {
     useEffect(() => {
         const cart = JSON.parse(localStorage.getItem('cart') || '[]');
         // Lấy toàn bộ variants 1 lần
-        axios.get('http://localhost:8080/api/variants')
+        axios.get('http://localhost:3000/api/variants')
             .then(res => {
                 const allVariants = res.data.data || [];
                 Promise.all(
