@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAddProduct } from '../../../hooks/useProducts';
 import { useBrands } from '../../../hooks/useBrands';
 import { useCategories } from '../../../hooks/useCategories';
+import { useSizes } from '../../../hooks/useSizes';
 
 const CreateProduct = () => {
   const queryClient = useQueryClient();
@@ -12,28 +13,15 @@ const CreateProduct = () => {
   const { mutate, isPending } = useAddProduct();
   const { data: brands, isLoading: loadingBrands } = useBrands();
   const { data: categories, isLoading: loadingCategories } = useCategories();
+  const { data: sizes, isLoading: loadingSizes } = useSizes();
 
   const [form] = Form.useForm();
 
   const handleSubmit = (values: any) => {
-    // Chuyển images thành mảng
     const submitValues = {
-      ...values,
-      images: values.images
-        ? Array.isArray(values.images)
-          ? values.images
-          : values.images
-            .split(',')
-            .map((img: string) => img.trim())
-            .filter((img: string) => img)
-        : [],
-      variants: values.variants
-        ? Array.isArray(values.variants)
-          ? values.variants
-          : values.variants.split(',').map((v: string) => v.trim())
-        : [],
+      ...values
     };
-    console.log('submitValues', submitValues); 
+    console.log('submitValues', submitValues);
     mutate(submitValues, {
       onSuccess: () => {
         messageApi.success('Thêm sản phẩm thành công!');
@@ -48,7 +36,7 @@ const CreateProduct = () => {
     });
   };
 
-  if (loadingBrands || loadingCategories) return <Skeleton active />;
+  if (loadingBrands || loadingCategories || loadingSizes) return <Skeleton active />;
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -63,8 +51,7 @@ const CreateProduct = () => {
           description: '',
           brand: undefined,
           category: undefined,
-          images: '',
-          variants: '',
+          size: undefined,
         }}
       >
         <Form.Item
@@ -118,16 +105,27 @@ const CreateProduct = () => {
           </Select>
         </Form.Item>
 
-              <Form.Item
-                name="quantity"
-                label="Số lượng"
-                rules={[
-                  { required: true, message: 'Vui lòng nhập số lượng!' },
-                  { type: 'number', min: 0, message: 'Số lượng phải lớn hơn hoặc bằng 0!' }
-                ]}
+        <Form.Item
+          label="Kích thước sản phẩm"
+          name="size"
+          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Chọn kích thước"
+            allowClear
+          >
+            {sizes?.map((size: any) => (
+              <Select.Option
+                key={typeof size === 'string' ? size : size._id}
+                value={typeof size === 'string' ? size : size._id}
               >
-                <InputNumber style={{ width: '100%' }} min={0} placeholder="Nhập số lượng" />
-              </Form.Item>
+                {typeof size === 'string' ? size : size.size}
+              </Select.Option>
+            ))}
+          </Select>
+        </Form.Item>
+
         <Form.Item>
           <div className="flex justify-end gap-4">
             <Button onClick={() => navigate('/admin/products')}>

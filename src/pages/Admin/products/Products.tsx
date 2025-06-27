@@ -68,20 +68,15 @@ const Products = () => {
       render: (category: any) => typeof category === 'string' ? category : category?.name,
     },
     {
-      title: "Hình ảnh",
-      dataIndex: "images",
-      key: "images",
-      render: (images: any) => {
-        const arr = Array.isArray(images)
-          ? images
-          : typeof images === 'string'
-          ? images.split(',').map((img: string) => img.trim())
-          : [];
-        return arr.length > 0 ? (
-          <img src={arr[0]} alt="Ảnh sản phẩm" style={{ width: 50, height: 50, objectFit: 'cover' }} />
-        ) : null;
-      },
+      title: "Kích cỡ",
+      dataIndex: "size",
+      key: "size",
+      render: (sizes: any[]) =>
+        Array.isArray(sizes)
+          ? sizes.map(s => typeof s === 'string' ? s : s?.size).join(', ')
+          : '',
     },
+
     {
       title: "Biến thể",
       dataIndex: "variants",

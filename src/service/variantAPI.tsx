@@ -6,7 +6,7 @@ const API_URL = import.meta.env.VITE_API_URL;
 export const getVariants = async (): Promise<IVariant[]> => {
     try {
         const response = await axios.get(`${API_URL}/variants`);
-        return response.data;
+        return response.data.data;
     } catch (error) {
         console.error("Error fetching variants:", error);
         throw error;
@@ -16,6 +16,7 @@ export const getVariants = async (): Promise<IVariant[]> => {
 export const getVariantById = async (id: string) => {
     try {
         const response = await axios.get(`${API_URL}/variants/${id}`);
+        console.log("Fetched variant:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching variant:", error);

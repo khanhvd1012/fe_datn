@@ -39,17 +39,10 @@ const DrawerProduct = ({ visible, product, onClose, loading }: DrawerProductProp
               <Descriptions.Item label="Biến thể" className="bg-gray-50">
                 {product?.variants?.length || 0}
               </Descriptions.Item>
-              <Descriptions.Item label="Hình ảnh">
-                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                  {product?.images?.map((img, idx) => (
-                    <img
-                      key={idx}
-                      src={img}
-                      alt="Ảnh sản phẩm"
-                      style={{ width: 40, height: 40, objectFit: 'cover', borderRadius: 4, border: '1px solid #eee' }}
-                    />
-                  ))}
-                </div>
+              <Descriptions.Item label="Kích cỡ">
+                {Array.isArray(product?.size)
+                  ? product.size.map((s: any) => (typeof s === 'string' ? s : s.size)).join(', ')
+                  : '---'}
               </Descriptions.Item>
             </Descriptions>
           </div>

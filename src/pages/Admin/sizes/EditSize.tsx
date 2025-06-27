@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, Form, Input, Select, message, Skeleton, Card, Spin } from 'antd';
+import { Button, Empty, Form, Input, Select, message, Skeleton, Card, Spin, InputNumber } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ISize } from '../../../interface/size';
 import { useSize, useUpdateSize } from '../../../hooks/useSizes';
@@ -63,50 +63,13 @@ const EditSize = () => {
                     onFinish={handleSubmit}
                 >
                     <Form.Item
-                        label="Tên kích thước"
-                        name="name"
+                        label="Kích thước"
+                        name="size"
                         rules={[
-                            { required: true, message: 'Vui lòng nhập tên kích thước!' },
-                            { min: 2, message: 'Tên phải có ít nhất 2 ký tự!' },
-                            { max: 50, message: 'Tên không được vượt quá 50 ký tự!' }
+                            { required: true, message: 'Vui lòng nhập kích thước!' },
                         ]}
                     >
-                        <Input placeholder="Nhập tên kích thước" />
-                    </Form.Item>
-
-                    <Form.Item
-                        name="value"
-                        label="Giá trị"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập giá trị kích thước!' }
-                        ]}
-                    >
-                        <Input placeholder="Nhập giá trị kích thước (ví dụ: 35, XL, XXL)" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Mô tả"
-                        name="description"
-                        rules={[
-                            { required: true, message: 'Vui lòng nhập mô tả kích thước!' },
-                            { min: 10, message: 'Mô tả phải có ít nhất 10 ký tự!' },
-                            { max: 500, message: 'Mô tả không được vượt quá 500 ký tự!' }
-                        ]}
-                    >
-                        <TextArea rows={4} placeholder="Nhập mô tả kích thước" />
-                    </Form.Item>
-
-                    <Form.Item
-                        label="Trạng thái"
-                        name="status"
-                        rules={[
-                            { required: true, message: 'Vui lòng chọn trạng thái!' }
-                        ]}
-                    >
-                        <Select placeholder="Chọn trạng thái">
-                            <Select.Option value="active">Đang hoạt động</Select.Option>
-                            <Select.Option value="inactive">Ngừng hoạt động</Select.Option>
-                        </Select>
+                        <InputNumber style={{ width: '100%' }} type="number" placeholder="Nhập kích thước (ví dụ: 35, 42)" />
                     </Form.Item>
 
                     <Form.Item>
