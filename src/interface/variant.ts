@@ -5,7 +5,7 @@ export interface IVariant {
     color: string | { _id: string; name: string }[];
     size: string[] | { _id: string; name: string }[];
     price: number;
-    image_url: string[]
+    image_url: string[];
     import_price: number;
     gender?: 'unisex' | 'male' | 'female';
     status?: 'inStock' | 'outOfStock';

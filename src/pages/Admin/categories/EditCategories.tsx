@@ -13,11 +13,20 @@ const EditCategories = () => {
   const { mutate, isPending: isUpdating } = useUpdateCategory();
   const handleSubmit = (values: Partial<Omit<ICategory, '_id' | 'createdAt' | 'updatedAt'>>) => {
     if (!id) return;
-    
-    mutate({
-      id,
-      category: values
-    });
+
+    mutate(
+      {
+        id,
+        category: values,
+      },
+      {
+        onSuccess: () => {
+          messageApi.success("Tạo danh mục thành công");
+        },
+      }
+    );
+
+
   };
 
   if (isLoading) return <Skeleton active />;
@@ -70,7 +79,7 @@ const EditCategories = () => {
           <div className="flex justify-end gap-4">
             <Button onClick={() => navigate('/admin/categories')}>
               Hủy
-            </Button>            
+            </Button>
             <Button type="primary" htmlType="submit" loading={isUpdating}>
               {isUpdating ? 'Đang cập nhật...' : 'Cập nhật danh mục'}
             </Button>

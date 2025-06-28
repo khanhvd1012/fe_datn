@@ -5,7 +5,7 @@ import {
   FooterGrid,
   FooterSection,
   FooterBottom
-} from './style';
+} from '../css/style';
 
 const Footer = () => {
   return (

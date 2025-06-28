@@ -11,7 +11,7 @@ import {
   IconGroup,
   Icon,
   HamburgerIcon
-} from './style';
+} from '../css/style';
 import { NavLink, useNavigate } from 'react-router-dom';
 import SideCart from '../../pages/Client/SideCart';
 
