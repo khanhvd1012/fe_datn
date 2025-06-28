@@ -43,6 +43,9 @@ import EditVariant from '../../pages/Admin/variant/EditVariant';
 import Vouchers from '../../pages/Admin/vochers/Vocher';
 import CreateVoucher from '../../pages/Admin/vochers/CreateVoucher';
 import EditVoucher from '../../pages/Admin/vochers/EditVoucher';
+import Stock from '../../pages/Admin/stock/Stock';
+import EditStock from '../../pages/Admin/stock/EditStock';
+import StockHistory from '../../pages/Admin/stockHistory/StockHistory';
 
 
 // Component chính quản lý layout của trang admin
@@ -154,11 +157,15 @@ const IndexAdmin = () => {
                                 ],
                             },
                             // Quản lý Mã giảm giá
-                             { key: "vouchers", label: <Link to="/admin/vouchers">Vouchers</Link>, icon: <TagsOutlined /> },
+                            { key: "vouchers", label: <Link to="/admin/vouchers">Vouchers</Link>, icon: <TagsOutlined /> },
                             // Quản lý đơn hàng
                             { key: "9", label: <Link to="/admin/orders">Orders</Link>, icon: <ShoppingCartOutlined /> },
                             // Quản lý đánh giá
                             { key: "10", label: <Link to="/admin/reviews">Reviews</Link>, icon: <CommentOutlined /> },
+                            // Quản lý kho
+                            { key: "stocks", label: <Link to="/admin/stocks">Stocks</Link>, icon: <ShoppingCartOutlined /> },
+                            // Quản lý lịch sử kho
+                            { key: "stocks_history", label: <Link to="/admin/stocks_history">Stock History</Link>, icon: <ShoppingCartOutlined /> },
                         ]} 
                     />
                 </Sider>
@@ -273,6 +280,15 @@ const IndexAdmin = () => {
                                     <Route path="" element={<Reviews />} />
                                     <Route path="create" element={<CreateBrand />} />
                                     <Route path="edit/:id" element={<EditReviews />} />
+                                </Route>
+
+                                <Route path="stocks">
+                                    <Route path="" element={<Stock />} />
+                                    <Route path="edit/:id" element={<EditStock />} />
+                                </Route>
+
+                                <Route path="stocks_history">
+                                    <Route path="" element={<StockHistory />} />
                                 </Route>
                             </Routes>
                         </div>

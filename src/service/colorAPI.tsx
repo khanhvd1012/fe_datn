@@ -25,7 +25,12 @@ export const getColorById = async (id: string): Promise<IColor> => {
 
 export const createColor = async (color: Omit<IColor, '_id' | 'createdAt' | 'updatedAt'>): Promise<IColor> => {
     try {
-        const response = await axios.post(`${API_URL}/colors`, color);
+        const token = localStorage.getItem("token");
+        const response = await axios.post(`${API_URL}/colors`, color, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error creating color:", error);
@@ -35,7 +40,12 @@ export const createColor = async (color: Omit<IColor, '_id' | 'createdAt' | 'upd
 
 export const updateColor = async (id: string, color: Partial<Omit<IColor, '_id' | 'createdAt' | 'updatedAt'>>): Promise<IColor> => {
     try {
-        const response = await axios.put(`${API_URL}/colors/${id}`, color);
+        const token = localStorage.getItem("token");
+        const response = await axios.put(`${API_URL}/colors/${id}`, color, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error updating color:", error);
@@ -45,7 +55,12 @@ export const updateColor = async (id: string, color: Partial<Omit<IColor, '_id' 
 
 export const deleteColor = async (id: string): Promise<IColor> => {
     try {
-        const response = await axios.delete(`${API_URL}/colors/${id}`);
+        const token = localStorage.getItem("token");
+        const response = await axios.delete(`${API_URL}/colors/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error deleting color:", error);

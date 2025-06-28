@@ -25,7 +25,12 @@ export const getCategoryById = async (id: string) => {
 
 export const addCategory = async (category: ICategory) => {
     try {
-        const response = await axios.post(`${API_URL}/categories`, category);
+        const token = localStorage.getItem("token");
+        const response = await axios.post(`${API_URL}/categories`, category, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error creating category:", error);
@@ -35,7 +40,12 @@ export const addCategory = async (category: ICategory) => {
 
 export const updateCategory = async (id: string, category: Partial<Omit<ICategory, '_id' | 'createdAt' | 'updatedAt'>>) => {
     try {
-        const response = await axios.put(`${API_URL}/categories/${id}`, category);
+        const token = localStorage.getItem("token");
+        const response = await axios.put(`${API_URL}/categories/${id}`, category, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error updating category:", error);
@@ -45,7 +55,12 @@ export const updateCategory = async (id: string, category: Partial<Omit<ICategor
 
 export const deleteCategory = async (id: string) => {
     try {
-        await axios.delete(`${API_URL}/categories/${id}`);
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/categories/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return {
             message: "Category deleted successfully",
             status: 200

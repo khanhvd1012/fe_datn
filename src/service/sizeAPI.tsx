@@ -26,7 +26,12 @@ export const getSizeById = async (id: string) => {
 
 export const addSize = async (size: ISize) => {
     try {
-        const response = await axios.post(`${API_URL}/sizes`, size);
+        const token = localStorage.getItem("token");
+        const response = await axios.post(`${API_URL}/sizes`, size, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error creating size:", error);
@@ -36,7 +41,12 @@ export const addSize = async (size: ISize) => {
 
 export const updateSize = async (id: string, size: Partial<Omit<ISize, '_id' | 'createdAt' | 'updatedAt'>>) => {
     try {
-        const response = await axios.put(`${API_URL}/sizes/${id}`, size);
+        const token = localStorage.getItem("token");
+        const response = await axios.put(`${API_URL}/sizes/${id}`, size, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error updating size:", error);
@@ -46,7 +56,12 @@ export const updateSize = async (id: string, size: Partial<Omit<ISize, '_id' | '
 
 export const deleteSize = async (id: string) => {
     try {
-        await axios.delete(`${API_URL}/sizes/${id}`);
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/sizes/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return {
             message: "Size deleted successfully",
             status: 200

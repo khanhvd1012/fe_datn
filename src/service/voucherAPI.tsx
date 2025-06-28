@@ -25,23 +25,33 @@ export const getVoucherById = async (id: string) => {
 
 export const addVoucher = async (voucher: IVoucher) => {
     try {
-        const response = await axios.post(`${API_URL}/vouchers`, voucher);
-        console.log("Voucher gửi lên:", voucher); // Debugging line to check the voucher data`
+        const token = localStorage.getItem("token");
+        const response = await axios.post(`${API_URL}/vouchers`, voucher, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+        console.log("Voucher gửi lên:", voucher);
         return response.data;
-        
+
     }
-     catch (error) {
+    catch (error) {
         console.error("Error creating voucher:", error);
         throw error;
     }
 };
 
 export const updateVoucher = async (
-    id: string, 
+    id: string,
     voucher: Partial<Omit<IVoucher, '_id' | 'createdAt' | 'updatedAt'>>
 ) => {
     try {
-        const response = await axios.put(`${API_URL}/vouchers/${id}`, voucher);
+        const token = localStorage.getItem("token");
+        const response = await axios.put(`${API_URL}/vouchers/${id}`, voucher, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error updating voucher:", error);
@@ -51,7 +61,12 @@ export const updateVoucher = async (
 
 export const deleteVoucher = async (id: string) => {
     try {
-        await axios.delete(`${API_URL}/vouchers/${id}`);
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/vouchers/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return {
             message: "Voucher deleted successfully",
             status: 200

@@ -54,6 +54,7 @@ const CreateVariant = () => {
           import_price: '',
           image_url: '',
           status: 'inStock',
+          initial_stock: 0
         }}
       >
         <Form.Item
@@ -154,6 +155,25 @@ const CreateVariant = () => {
             style={{ width: '100%' }}
             tokenSeparators={[',']}
             placeholder="Nhập URL ảnh, cách nhau bằng dấu phẩy hoặc Enter"
+          />
+        </Form.Item>
+        <Form.Item
+          label="Số lượng nhập kho"
+          name="initial_stock"
+          rules={[
+            {
+              validator: (_, value) => {
+                if (value === undefined || value === null) return Promise.resolve();
+                if (value < 0) return Promise.reject('Số lượng không được âm!');
+                return Promise.resolve();
+              }
+            }
+          ]}
+        >
+          <InputNumber
+            style={{ width: '100%' }}
+            type="number"
+            placeholder="Nhập số lượng"
           />
         </Form.Item>
         <Form.Item

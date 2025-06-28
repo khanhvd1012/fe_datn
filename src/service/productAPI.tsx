@@ -15,6 +15,7 @@ export const getProducts = async (): Promise<IProduct[]> => {
 
 export const getProductById = async (id: string) => {
     try {
+
         const response = await axios.get(`${API_URL}/products/${id}`);
         return response.data;
     } catch (error) {
@@ -25,7 +26,12 @@ export const getProductById = async (id: string) => {
 
 export const addProduct = async (product: IProduct) => {
     try {
-        const response = await axios.post(`${API_URL}/products`, product);
+        const token = localStorage.getItem("token");
+        const response = await axios.post(`${API_URL}/products`, product, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
         return response.data;
     } catch (error) {
         console.error("Error creating product:", error);
@@ -38,7 +44,12 @@ export const updateProduct = async (
     product: Partial<Omit<IProduct, "_id" | "createdAt" | "updatedAt">>
 ) => {
     try {
-        const response = await axios.put(`${API_URL}/products/${id}`, product);
+        const token = localStorage.getItem("token");
+        const response = await axios.put(`${API_URL}/products/${id}`, product, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
         return response.data;
     } catch (error) {
         console.error("Error updating product:", error);
@@ -48,7 +59,12 @@ export const updateProduct = async (
 
 export const deleteProduct = async (id: string) => {
     try {
-        await axios.delete(`${API_URL}/products/${id}`);
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/products/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
         return {
             message: "Product deleted successfully",
             status: 200,

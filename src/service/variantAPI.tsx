@@ -26,7 +26,12 @@ export const getVariantById = async (id: string) => {
 
 export const addVariant = async (variant: IVariant) => {
     try {
-        const response = await axios.post(`${API_URL}/variants`, variant);
+        const token = localStorage.getItem("token");
+        const response = await axios.post(`${API_URL}/variants`, variant, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error creating variant:", error);
@@ -36,7 +41,12 @@ export const addVariant = async (variant: IVariant) => {
 
 export const updateVariant = async (id: string, variant: Partial<Omit<IVariant, '_id' | 'createdAt' | 'updatedAt'>>) => {
     try {
-        const response = await axios.put(`${API_URL}/variants/${id}`, variant);
+        const token = localStorage.getItem("token");
+        const response = await axios.put(`${API_URL}/variants/${id}`, variant, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return response.data;
     } catch (error) {
         console.error("Error updating variant:", error);
@@ -46,7 +56,12 @@ export const updateVariant = async (id: string, variant: Partial<Omit<IVariant, 
 
 export const deleteVariant = async (id: string) => {
     try {
-        await axios.delete(`${API_URL}/variants/${id}`);
+        const token = localStorage.getItem("token");
+        await axios.delete(`${API_URL}/variants/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
         return {
             message: "Variant deleted successfully",
             status: 200

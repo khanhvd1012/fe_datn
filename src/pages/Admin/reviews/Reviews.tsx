@@ -1,105 +1,107 @@
-// src/pages/admin/reviews/Reviews.tsx
-import { useState } from 'react';
-import { Table, Button, Drawer, Rate, Typography, Spin, Empty } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
-import { useQuery } from "@tanstack/react-query";
-import { getAllReviews } from '../../../service/reviewAPI';
-import type { IReview } from '../../../interface/review';
+import { useQueryClient } from "@tanstack/react-query";
+import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag } from "antd";
+import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
+import { useState } from "react";
+import type { IReview } from "../../../interface/review";
+import { useDeleteReview, useProductReviews } from "../../../hooks/useReview";
 
-const { Paragraph, Text, Title } = Typography;
+const Reviews = () => {
+  const queryClient = useQueryClient();
+  const [messageApi, contextHolder] = message.useMessage();
 
-const Reviews: React.FC = () => {
-  const { data: reviews, isLoading, isError } = useQuery<IReview[]>({
-    queryKey: ['reviews'],
-    queryFn: getAllReviews,
-  });
+  const { data, isLoading } = useProductReviews();
+  const { mutate } = useDeleteReview();
 
-  const [selectedReview, setSelectedReview] = useState<IReview | null>(null);
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  const showDrawer = (review: IReview) => {
-    setSelectedReview(review);
-    setIsDrawerOpen(true);
+  const handleDelete = (id: string, product_id: string) => {
+    mutate(
+      { id, product_id },
+      {
+        onSuccess: () => {
+          messageApi.success("Xóa đánh giá thành công");
+          queryClient.invalidateQueries({ queryKey: ["reviews"] });
+        },
+        onError: () => {
+          messageApi.error("Xóa đánh giá thất bại");
+        },
+      }
+    );
   };
+
+  if (isLoading) return <Skeleton active />;
+  if (!data || !Array.isArray(data)) return <Empty description="Không có đánh giá nào" />;
 
   const columns = [
     {
-      title: 'Số sao',
-      dataIndex: 'rating',
-      key: 'rating',
-      render: (rating: number) => <Rate disabled value={rating} />,
+      title: "Sản phẩm",
+      dataIndex: "product_id",
+      key: "product_id",
+      render: (id: string) => <Tag color="blue">{id}</Tag>,
     },
     {
-      title: 'Bình luận',
-      dataIndex: 'comment',
-      key: 'comment',
+      title: "Người dùng",
+      dataIndex: "user_id",
+      key: "user_id",
+      render: (id: string) => <Tag>{id}</Tag>,
     },
     {
-      title: 'Người dùng',
-      dataIndex: 'user_id',
-      key: 'user_id',
-      render: (user_id: string) => <Text code>{user_id}</Text>,
+      title: "Số sao",
+      dataIndex: "rating",
+      key: "rating",
+      render: (rate: number) => <span>{rate} ⭐</span>,
     },
     {
-      title: 'Sản phẩm',
-      dataIndex: 'product_id',
-      key: 'product_id',
-      render: (product_id: string) => <Text code>{product_id}</Text>,
+      title: "Bình luận",
+      dataIndex: "comment",
+      key: "comment",
+      render: (comment: string) => <div style={{ maxWidth: 250 }}>{comment}</div>,
     },
     {
-      title: 'Ngày tạo',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (createdAt: string) =>
-        createdAt ? new Date(createdAt).toLocaleString('vi-VN') : 'N/A',
+      title: "Trả lời (Admin)",
+      dataIndex: "admin_reply",
+      key: "admin_reply",
+      render: (reply: string) =>
+        reply ? <Tag color="green">Đã trả lời</Tag> : <Tag color="red">Chưa</Tag>,
     },
     {
-      title: 'Thao tác',
-      key: 'actions',
-      render: (_: any, review: IReview) => (
-        <Button icon={<EyeOutlined />} onClick={() => showDrawer(review)} />
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: Date) => new Date(date).toLocaleDateString(),
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_: any, record: IReview) => (
+        <div style={{ display: "flex", gap: "8px" }}>
+          <Popconfirm
+            title="Xóa đánh giá"
+            description="Bạn có chắc muốn xóa đánh giá này?"
+            onConfirm={() => handleDelete(record._id!, record.product_id)}
+            okText="Đồng ý"
+            cancelText="Hủy"
+          >
+            <Button type="primary" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </div>
       ),
     },
   ];
 
-  if (isLoading) return <Spin tip="Đang tải đánh giá..." />;
-  if (isError || !reviews) return <Empty description="Không có đánh giá nào" />;
-
   return (
     <div>
-      <Title level={4}>Tất cả đánh giá sản phẩm</Title>
-
+      {contextHolder}
       <Table
-        dataSource={reviews}
         columns={columns}
+        dataSource={data}
         rowKey="_id"
-        pagination={{ pageSize: 5 }}
-        bordered
-        locale={{ emptyText: <Empty description="Chưa có đánh giá" /> }}
-      />
-
-      <Drawer
-        title="Chi tiết đánh giá"
-        open={isDrawerOpen}
-        onClose={() => {
-          setIsDrawerOpen(false);
-          setSelectedReview(null);
+        pagination={{
+          total: data.length,
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `Tổng ${total} đánh giá`,
         }}
-        width={400}
-      >
-        {selectedReview ? (
-          <div>
-            <p><Text strong>Số sao:</Text> <Rate disabled value={selectedReview.rating} /></p>
-            <p><Text strong>Bình luận:</Text></p>
-            <Paragraph>{selectedReview.comment}</Paragraph>
-            <p><Text strong>Người dùng:</Text> {selectedReview.user_id}</p>
-            <p><Text strong>Sản phẩm:</Text> {selectedReview.product_id}</p>
-            <p><Text strong>Ngày tạo:</Text> {new Date(selectedReview.createdAt!).toLocaleString('vi-VN')}</p>
-          </div>
-        ) : (
-          <Spin />
-        )}
-      </Drawer>
+      />
     </div>
   );
 };

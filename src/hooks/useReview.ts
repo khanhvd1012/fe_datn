@@ -1,16 +1,68 @@
-// src/hooks/useReview.ts
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import type { IReview } from "../interface/review";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import {
+  getProductReviews,
+  createReview,
+  updateReview,
+  deleteReview,
+  replyToReview
+} from '../service/reviewAPI';
+import type { IReview } from '../interface/review';
 
-const API_URL = import.meta.env.VITE_API_URL;
+// Lấy danh sách đánh giá theo sản phẩm
+export const useProductReviews = (product_id: string) => {
+  return useQuery({
+    queryKey: ['reviews', product_id],
+    queryFn: () => getProductReviews(product_id || ''),
+    enabled: !!product_id
+  });
+};
 
-export const useAllReviews = () => {
-  return useQuery<IReview[]>({
-    queryKey: ['reviews'],
-    queryFn: async () => {
-      const res = await axios.get(`${API_URL}/reviews`);
-      return res.data.reviews;
-    },
+// Thêm đánh giá mới
+export const useCreateReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (review: Omit<IReview, '_id' | 'createdAt' | 'updatedAt'>) => createReview(review),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', variables.product_id] });
+    }
+  });
+};
+
+// Cập nhật đánh giá
+export const useUpdateReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { id: string; review: Partial<Omit<IReview, '_id' | 'createdAt' | 'updatedAt'>> }) =>
+      updateReview(data.id, data.review),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', variables.review.product_id] });
+    }
+  });
+};
+
+// Xóa đánh giá
+export const useDeleteReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { id: string; product_id: string }) => deleteReview(data.id),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', variables.product_id] });
+    }
+  });
+};
+
+// Admin trả lời đánh giá
+export const useReplyToReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { id: string; reply: string; product_id: string }) =>
+      replyToReview(data.id, data.reply),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', variables.product_id] });
+    }
   });
 };

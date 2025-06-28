@@ -1,5 +1,5 @@
 export interface IVariant {
-  _id: string;
+  _id?: string;
   sku: string;
   color: string;
   size: string[] | string;
@@ -14,11 +14,11 @@ export interface IVariant {
 }
 
 export interface IProduct {
-    _id?: string;
-    name: string;
-    description?: string;
-    brand: string | { _id: string; name: string };
-    category: string | { _id: string; name: string };
-    variants: IVariant[]; 
-    size: string[] | { _id: string; name: string }[];
+  _id?: string;
+  name: string;
+  description?: string;
+  brand: string | { _id: string; name: string };
+  category: string | { _id: string; name: string };
+  variants: IVariant[];
+  size: string[] | { _id: string; name: string }[];
 }
