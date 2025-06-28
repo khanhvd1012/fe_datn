@@ -152,7 +152,7 @@ const Profile: React.FC = () => {
         </div>
 
         <div className="text-center mt-10 text-sm text-gray-500">
-          Đang cập nhật danh sách.
+          Đang cập nhật danh sách..
         </div>
       </div>
     </div>
