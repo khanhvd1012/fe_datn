@@ -9,6 +9,7 @@ import type { IProduct } from '../../interface/product';
 import type { ISize } from '../../interface/size';
 import '../css/Product_detail.css';
 
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 const ProductDetail = () => {
   const { slug } = useParams();
   const [product, setProduct] = useState<IProduct | null>(null);
@@ -25,6 +26,8 @@ const ProductDetail = () => {
     return found ? found.size : id;
   };
 
+  const [vouchers, setVouchers] = useState<any[]>([]);
+  const [showVouchers, setShowVouchers] = useState(false);
   useEffect(() => {
     if (!slug) return;
     axios.get(`http://localhost:3000/api/products/slug/${slug}`)
@@ -51,6 +54,7 @@ const ProductDetail = () => {
         message.error('Không thể tải chi tiết sản phẩm');
         setLoading(false);
       });
+
   }, [slug]);
 
   const getSelectedVariant = () => {
@@ -94,6 +98,27 @@ const ProductDetail = () => {
   }
 
   if (!product) return <div>Không tìm thấy sản phẩm</div>;
+
+  const handleToggleVouchers = () => {
+    if (!showVouchers && vouchers.length === 0) {
+      axios.get("http://localhost:3000/api/vouchers")
+        .then(res => {
+          const allVouchers = res.data || [];
+          const now = new Date();
+          const activeVouchers = allVouchers.filter((voucher: any) => {
+            const end = new Date(voucher.endDate);
+            return now <= end && voucher.quantity > 0;
+          });
+          setVouchers(activeVouchers);
+          setShowVouchers(true);
+        })
+        .catch(() => {
+          message.error("Không thể tải danh sách voucher");
+        });
+    } else {
+      setShowVouchers(!showVouchers); // Toggle hiển thị
+    }
+  };
 
   const brandName = typeof product.brand === 'object' ? product.brand.name : '';
 
@@ -170,9 +195,49 @@ const ProductDetail = () => {
               </Button>
             </div>
 
-            <Button type="primary" block className="voucher-btn">
+            {/* <Button type="primary" block className="voucher-btn" onClick={handleShowVouchers}>
               CLICK NHẬN MÃ GIẢM GIÁ NGAY !
+            </Button> */}
+            
+            <Button type="primary" block className="voucher-btn" onClick={handleToggleVouchers} icon={showVouchers ? <UpOutlined /> : <DownOutlined />} >
+              {showVouchers ? 'ĐÓNG DANH SÁCH GIẢM GIÁ' : 'CLICK NHẬN MÃ GIẢM GIÁ NGAY'}
             </Button>
+
+            {showVouchers && (
+              <div className="voucher-list">
+                <h3>Mã giảm giá đang hoạt động:</h3>
+              {vouchers.length === 0 ? (
+                <p>Không có mã giảm giá nào</p>
+              ) : (
+                <ul>
+                  {vouchers.map(voucher => {
+                    const end = new Date(voucher.endDate);
+                    const now = new Date();
+                    const diffMs = end.getTime() - now.getTime();
+
+                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                    const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+                    const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
+
+                    const timeLeft = diffMs <= 0
+                      ? "Đã hết hạn"
+                      : `${diffDays} ngày ${diffHours} giờ ${diffMinutes} phút`;
+
+                    return (
+                      <li key={voucher._id}>
+                        <strong>{voucher.code}</strong>: Giảm {voucher.type === 'percentage' ? `${voucher.value}%` : `${voucher.value.toLocaleString()}₫`}<br />
+                        <small>Đơn tối thiểu: {voucher.minOrderValue.toLocaleString()}₫</small><br />
+                        <small>Còn lại: {timeLeft}</small>
+                      </li>
+                    );
+                  })}
+
+                </ul>
+              )}
+              </div>
+            )}
+
+
 
             <div className="product-description">
               <h3><u>Mô tả sản phẩm</u></h3>
