@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getAllStock, updateStock, getAllStockHistory, deleteStockHistory, getOneStockHistory } from "../service/stockAPI";
 import type { IStock, IStockHistory } from "../interface/stock";
 
+
 // Lấy danh sách tất cả kho
 export const useStocks = () => {
     return useQuery<IStock[]>({
@@ -12,14 +13,21 @@ export const useStocks = () => {
 
 // Cập nhật số lượng kho
 export const useUpdateStock = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: (data: { id: string; quantity: number }) =>
-            updateStock(data.id, { quantity: data.quantity }),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["stocks"] });
-        },
-    });
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { id: string; quantity_change: number; reason: string }) => {
+      console.log("Gửi updateStock với:", data);
+
+      return updateStock(data.id, {
+        quantity_change: data.quantity_change,
+        reason: data.reason,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['stocks'] });
+    },
+  });
 };
 
 // Lấy toàn bộ lịch sử kho

@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, InputNumber, message, Skeleton } from 'antd';
+import { Button, Form, Input, InputNumber, message, Skeleton } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useUpdateStock } from '../../../hooks/useStock';
-import type { IStock } from '../../../interface/stock';
+import { useStocks, useUpdateStock } from '../../../hooks/useStock';
+// import type { IStock } from '../../../interface/stock';
 
 const EditStock = () => {
   const { id } = useParams();
@@ -10,33 +10,37 @@ const EditStock = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
 
-  const { data: stock, isLoading } = useStock(id!);
+  const { data: stock, isLoading } = useStocks(id!);
   const { mutate, isPending: isUpdating } = useUpdateStock();
+
+  const [form] = Form.useForm();
 
   const initialValues = stock
     ? {
-      product_variant_id: stock.product_variant_id,
-      quantity: stock.quantity,
-    }
+        product_variant_id: stock.product_variant_id,
+        quantity: stock.quantity,
+        reason: '', // mặc định trống
+      }
     : {};
 
-  const handleSubmit = (values: Partial<IStock>) => {
-    if (!id) return;
+  const handleSubmit = (values: { quantity: number; reason: string }) => {
+    if (!id || !stock) return;
 
-    // Đảm bảo quantity có giá trị
-    if (values.quantity === undefined) {
-      messageApi.error('Thiếu số lượng!');
+    const quantity_change = values.quantity;
+
+    if (quantity_change === 0) {
+      messageApi.warning('Số lượng không thay đổi!');
       return;
     }
 
     mutate(
-      { id, quantity: values.quantity },
+      { id, quantity_change, reason: values.reason },
       {
         onSuccess: () => {
           messageApi.success('Cập nhật số lượng thành công!');
           queryClient.invalidateQueries({ queryKey: ['stocks'] });
           setTimeout(() => {
-            navigate('/admin/stock');
+            navigate('/admin/stocks');
           }, 1000);
         },
         onError: () => {
@@ -52,17 +56,13 @@ const EditStock = () => {
     <div className="max-w-md mx-auto p-4">
       {contextHolder}
       <h2 className="text-2xl font-bold mb-4">Cập nhật Số Lượng</h2>
-      <Form layout="vertical" initialValues={initialValues} onFinish={handleSubmit}>
-        <Form.Item
-          label="Biến Thể"
-          name="product_variant_id"
-          rules={[{ required: true, message: 'Vui lòng nhập mã biến thể!' }]}
-        >
+      <Form form={form} layout="vertical" initialValues={initialValues} onFinish={handleSubmit}>
+        <Form.Item label="Biến Thể" name="product_variant_id">
           <InputNumber style={{ width: '100%' }} disabled />
         </Form.Item>
 
         <Form.Item
-          label="Số lượng"
+          label="Số lượng mới"
           name="quantity"
           rules={[
             { required: true, message: 'Vui lòng nhập số lượng!' },
@@ -72,9 +72,17 @@ const EditStock = () => {
           <InputNumber style={{ width: '100%' }} />
         </Form.Item>
 
+        <Form.Item
+          label="Lý do"
+          name="reason"
+          rules={[{ required: true, message: 'Vui lòng nhập lý do!' }]}
+        >
+          <Input placeholder="Nhập lý do thay đổi" />
+        </Form.Item>
+
         <Form.Item>
           <div className="flex justify-end gap-4">
-            <Button onClick={() => navigate('/admin/stock')}>Hủy</Button>
+            <Button onClick={() => navigate('/admin/stocks')}>Hủy</Button>
             <Button type="primary" htmlType="submit" loading={isUpdating}>
               {isUpdating ? 'Đang cập nhật...' : 'Cập nhật'}
             </Button>
