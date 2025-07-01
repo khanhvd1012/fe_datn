@@ -1,46 +1,62 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, message } from 'antd';
+import { Button, Form, Input, message, Upload } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import type { ICategory } from '../../../interface/category';
 import { useAddCategory } from '../../../hooks/useCategories';
+import { useState } from 'react';
+import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
+import ImgCrop from 'antd-img-crop';
 
 const CreateCategories = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const { mutate } = useAddCategory();
+  const [form] = Form.useForm();
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const handleSubmit = (values: ICategory) => {
-    mutate(values, {
+  const handleSubmit = (values: any) => {
+    if (!logoFile) {
+      messageApi.error("Vui lòng chọn ảnh logo!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("description", values.description);
+    formData.append("logo_image", logoFile);
+
+    mutate(formData, {
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["categories"],
-        });
+        queryClient.invalidateQueries({ queryKey: ["categories"] });
         messageApi.success("Tạo danh mục thành công");
-        setTimeout(() => {
-          navigate("/admin/categories");
-        }, 1000);
+        setTimeout(() => navigate("/admin/categories"), 1000);
       },
       onError: (error: any) => {
-        if (error?.response?.data?.errors) {
-          error.response.data.errors.forEach((err: any) => {
-            messageApi.error(err.message);
-          });
-        } else {
-          messageApi.error("Lỗi khi tạo danh mục");
-        }
-      },
+        console.error("Lỗi khi tạo danh mục:", error);
+        messageApi.error("Lỗi khi tạo danh mục");
+      }
     });
+  };
+
+  const handleFileChange = (info: UploadChangeParam) => {
+    const file = info.fileList[0]?.originFileObj;
+
+    setFileList(info.fileList);
+
+    if (file) {
+      setLogoFile(file as File);
+    } else {
+      setLogoFile(null);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-4">
       {contextHolder}
       <h2 className="text-2xl font-bold mb-4">Tạo Danh Mục Mới</h2>
-      <Form
-        layout="vertical"
-        onFinish={handleSubmit}
-      >
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item
           label="Tên Danh Mục"
           name="name"
@@ -64,25 +80,34 @@ const CreateCategories = () => {
           <Input.TextArea rows={4} placeholder="Nhập mô tả danh mục" />
         </Form.Item>
 
-        <Form.Item
-          label="URL Hình Ảnh Logo"
-          name="logo_image"
-          rules={[
-            { required: true, message: 'Vui lòng nhập URL hình ảnh logo!' },
-            { type: 'url', message: 'Vui lòng nhập một URL hợp lệ!' }
-          ]}
-        >
-          <Input placeholder="Nhập URL hình ảnh logo" />
+        <Form.Item label="Ảnh Logo">
+          <ImgCrop
+            rotationSlider
+            aspect={1}
+            showGrid
+          >
+            <Upload
+              name="logo_image"
+              beforeUpload={() => false}
+              onChange={handleFileChange}
+              maxCount={1}
+              fileList={fileList}
+              listType="picture-card"
+            >
+              {fileList.length < 1 && (
+                <div>
+                  <UploadOutlined />
+                  <div style={{ marginTop: 8 }}>Chọn ảnh</div>
+                </div>
+              )}
+            </Upload>
+          </ImgCrop>
         </Form.Item>
 
         <Form.Item>
           <div className="flex justify-end gap-4">
-            <Button onClick={() => navigate('/admin/categories')}>
-              Hủy
-            </Button>
-            <Button type="primary" htmlType="submit">
-              Tạo Danh Mục
-            </Button>
+            <Button onClick={() => navigate('/admin/categories')}>Hủy</Button>
+            <Button type="primary" htmlType="submit">Tạo Danh Mục</Button>
           </div>
         </Form.Item>
       </Form>

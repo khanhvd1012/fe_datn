@@ -2,7 +2,7 @@ import { Avatar, Dropdown, Space, theme } from 'antd';
 import { Header } from 'antd/es/layout/layout';
 import { UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { Logo } from '../LayoutClient/style';
+import { Logo } from '../css/style';
 
 
 const Headers = () => {

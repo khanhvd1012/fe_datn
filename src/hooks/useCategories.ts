@@ -18,9 +18,9 @@ export const useCategory = (id: string) => {
 
 export const useAddCategory = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (category: ICategory) => addCategory(category),
+    mutationFn: (formData: FormData) => addCategory(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
     }
@@ -29,9 +29,9 @@ export const useAddCategory = () => {
 
 export const useUpdateCategory = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (data: { id: string; category: Partial<Omit<ICategory, '_id' | 'createdAt' | 'updatedAt'>> }) => 
+    mutationFn: (data: { id: string; category: FormData }) =>
       updateCategory(data.id, data.category),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });

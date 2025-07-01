@@ -23,35 +23,41 @@ export const getCategoryById = async (id: string) => {
     }
 }
 
-export const addCategory = async (category: ICategory) => {
+export const addCategory = async (category: FormData) => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.post(`${API_URL}/categories`, category, {
             headers: {
-                Authorization: `Bearer ${token}`
-            }
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data",
+            },
         });
         return response.data;
     } catch (error) {
         console.error("Error creating category:", error);
         throw error;
     }
-}
+};
 
-export const updateCategory = async (id: string, category: Partial<Omit<ICategory, '_id' | 'createdAt' | 'updatedAt'>>) => {
+
+export const updateCategory = async (
+    id: string,
+    category: FormData
+) => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.put(`${API_URL}/categories/${id}`, category, {
             headers: {
-                Authorization: `Bearer ${token}`
-            }
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data", 
+            },
         });
         return response.data;
     } catch (error) {
         console.error("Error updating category:", error);
         throw error;
     }
-}
+};
 
 export const deleteCategory = async (id: string) => {
     try {

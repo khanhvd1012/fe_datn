@@ -1,36 +1,39 @@
+import { Drawer, Descriptions, Divider, Skeleton, Empty } from 'antd';
 import type { ICategory } from '../../interface/category';
-import Title from 'antd/es/typography/Title';
-import { Drawer, Empty, Skeleton } from 'antd';
 
 interface DrawerCategoryProps {
   visible: boolean;
   category: ICategory | null;
-  loading: boolean;
   onClose: () => void;
+  loading?: boolean;
 }
 
-const DrawerCategory = ({ visible, category, loading, onClose }: DrawerCategoryProps) => {
+const DrawerCategory = ({ visible, category, onClose, loading }: DrawerCategoryProps) => {
   return (
-    <div>
-      <Drawer
-        title={<Title level={4}>{category?.name || 'Chi tiết danh mục'}</Title>}
-        placement="right"
-        width={500}
-        onClose={onClose}
-        open={visible}
-      >
-        {loading ? (
-          <Skeleton active paragraph={{ rows: 6 }} />
-        ) : category ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div>
-              <strong>Mô tả:</strong>
-              <p>{category.description || 'Không có mô tả'}</p>
-            </div>
-
-            <div>
-              <strong>Hình ảnh:</strong>
-              <div style={{ marginTop: '8px' }}>
+    <Drawer
+      title={<span className="text-lg font-semibold">Chi tiết danh mục</span>}
+      placement="right"
+      onClose={onClose}
+      open={visible}
+      width={500}
+    >
+      {loading ? (
+        <Skeleton active />
+      ) : category ? (
+        <>
+          <div className="mb-4">
+            <h3 className="text-base font-medium mb-2">Thông tin cơ bản</h3>
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="Tên danh mục" className="bg-gray-50">
+                {category.name}
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả">
+                {category.description || '---'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Số sản phẩm" className="bg-gray-50">
+                {category.products?.length || 0}
+              </Descriptions.Item>
+              <Descriptions.Item label="Hình ảnh">
                 {category.logo_image ? (
                   <img
                     src={category.logo_image}
@@ -39,36 +42,43 @@ const DrawerCategory = ({ visible, category, loading, onClose }: DrawerCategoryP
                       width: 120,
                       height: 120,
                       objectFit: 'cover',
-                      borderRadius: '8px',
+                      borderRadius: 8,
                       border: '1px solid #f0f0f0',
                     }}
                   />
                 ) : (
-                  <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Không có ảnh" />
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="Không có ảnh"
+                    style={{ margin: 0, textAlign: 'center' }}
+                  />
                 )}
-              </div>
-            </div>
-
-            <div>
-              <strong>Sản phẩm:</strong>
-              <p>{category.products?.length || 0} sản phẩm trong danh mục này</p>
-            </div>
-
-            <div>
-              <strong>Ngày tạo:</strong>
-              <p>{category.createdAt ? new Date(category.createdAt).toLocaleDateString() : 'N/A'}</p>
-            </div>
-
-            <div>
-              <strong>Cập nhật lần cuối:</strong>
-              <p>{category.updatedAt ? new Date(category.updatedAt).toLocaleDateString() : 'N/A'}</p>
-            </div>
+              </Descriptions.Item>
+            </Descriptions>
           </div>
-        ) : (
-          <Empty description="Không có danh mục được chọn" />
-        )}
-      </Drawer>
-    </div>
+
+          <Divider />
+
+          <div>
+            <h3 className="text-base font-medium mb-2">Thông tin thời gian</h3>
+            <Descriptions column={1} bordered size="small">
+              <Descriptions.Item label="Ngày tạo" className="bg-gray-50">
+                {category.createdAt
+                  ? new Date(category.createdAt).toLocaleString('vi-VN')
+                  : '---'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Cập nhật lần cuối">
+                {category.updatedAt
+                  ? new Date(category.updatedAt).toLocaleString('vi-VN')
+                  : '---'}
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+        </>
+      ) : (
+        <Empty description="Không có danh mục được chọn" />
+      )}
+    </Drawer>
   );
 };
 

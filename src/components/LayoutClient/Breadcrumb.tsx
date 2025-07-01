@@ -15,7 +15,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ current }) => {
         alignItems: 'center',
         fontSize: '14px',
         fontFamily: "'Quicksand', sans-serif",
-        margin: '24px 0',
+        margin: '24px 20px',
         gap: '6px',
       }}
     >

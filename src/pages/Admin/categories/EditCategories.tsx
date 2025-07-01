@@ -1,8 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, Form, Input, message, Skeleton } from 'antd';
+import { Button, Empty, Form, Input, message, Skeleton, Upload } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { ICategory } from '../../../interface/category';
 import { useCategory, useUpdateCategory } from '../../../hooks/useCategories';
+import { useEffect, useState } from 'react';
+import ImgCrop from 'antd-img-crop';
+import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
 
 const EditCategories = () => {
   const { id } = useParams();
@@ -11,13 +14,71 @@ const EditCategories = () => {
   const navigate = useNavigate();
   const { data: category, isLoading } = useCategory(id!);
   const { mutate, isPending: isUpdating } = useUpdateCategory();
-  const handleSubmit = (values: Partial<Omit<ICategory, '_id' | 'createdAt' | 'updatedAt'>>) => {
+  const [form] = Form.useForm();
+
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [fileList, setFileList] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (category?.logo_image) {
+      setFileList([
+        {
+          uid: '-1',
+          name: 'Ảnh hiện tại',
+          status: 'done',
+          url: category.logo_image,
+        } as UploadFile,
+      ]);
+    }
+  }, [category]);
+
+  const handleFileChange = (info: UploadChangeParam) => {
+    const file = info.fileList[0]?.originFileObj;
+
+    if (file) {
+      const newFileList = [
+        {
+          uid: '-1',
+          name: file.name,
+          status: 'done',
+          originFileObj: file,
+          url: URL.createObjectURL(file),
+        } as UploadFile,
+      ];
+      setFileList(newFileList);
+      setLogoFile(file);
+    } else {
+      setFileList([]);
+      setLogoFile(null);
+    }
+  };
+
+  const handleSubmit = (values: any) => {
     if (!id) return;
-    
-    mutate({
-      id,
-      category: values
-    });
+
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("description", values.description);
+    if (logoFile) {
+      formData.append("logo_image", logoFile);
+    }
+
+    mutate(
+      {
+        id,
+        category: formData,
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["categories"] });
+          messageApi.success("Cập nhật danh mục thành công");
+          setTimeout(() => navigate('/admin/categories'), 1000);
+        },
+        onError: () => {
+          messageApi.error("Cập nhật danh mục thất bại");
+        },
+      }
+    );
   };
 
   if (isLoading) return <Skeleton active />;
@@ -28,6 +89,7 @@ const EditCategories = () => {
       {contextHolder}
       <h2 className="text-2xl font-bold mb-4">Chỉnh Sửa Danh Mục</h2>
       <Form
+        form={form}
         layout="vertical"
         initialValues={category}
         onFinish={handleSubmit}
@@ -55,22 +117,34 @@ const EditCategories = () => {
           <Input.TextArea rows={4} placeholder="Nhập mô tả danh mục" />
         </Form.Item>
 
-        <Form.Item
-          label="URL Hình Ảnh Logo"
-          name="logo_image"
-          rules={[
-            { required: true, message: 'Vui lòng nhập URL hình ảnh logo!' },
-            { type: 'url', message: 'Vui lòng nhập một URL hợp lệ!' }
-          ]}
-        >
-          <Input placeholder="Nhập URL hình ảnh logo" />
+        <Form.Item label="Ảnh logo">
+          <ImgCrop
+            rotationSlider
+            showGrid
+            aspect={1}
+          >
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              onChange={handleFileChange}
+              beforeUpload={() => false} 
+              maxCount={1}
+            >
+              {fileList.length < 1 && (
+                <div>
+                  <UploadOutlined />
+                  <div style={{ marginTop: 8 }}>Chọn ảnh</div>
+                </div>
+              )}
+            </Upload>
+          </ImgCrop>
         </Form.Item>
 
         <Form.Item>
           <div className="flex justify-end gap-4">
             <Button onClick={() => navigate('/admin/categories')}>
               Hủy
-            </Button>            
+            </Button>
             <Button type="primary" htmlType="submit" loading={isUpdating}>
               {isUpdating ? 'Đang cập nhật...' : 'Cập nhật danh mục'}
             </Button>

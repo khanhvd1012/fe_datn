@@ -15,6 +15,8 @@ const Categories = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteCategory();
   const { data, isLoading } = useCategories();
+  console.log("Categories data:", data);
+  
 
   const handleDelete = async (id: string) => {
     try {

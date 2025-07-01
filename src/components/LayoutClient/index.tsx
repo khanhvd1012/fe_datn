@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
 
 import Header from './Header';
 import Footer from './Footer';
@@ -21,10 +21,12 @@ import Collection from '../../pages/Client/Collection';
 
 const IndexClient = () => {
   const location = useLocation();
+  const matchProductDetail = useMatch('/products/:slug');
 
-  // Chỉ ẩn Slideshow ở các trang này
-  const isNoSlidePage = ['/login', '/register','/profile','/cart'].includes(location.pathname);
-
+  // Kiểm tra các trang cần ẩn slideshow
+  const isNoSlidePage =
+    ['/login', '/register', '/profile', '/cart'].includes(location.pathname) ||
+    Boolean(matchProductDetail);
 
   return (
     <div>
@@ -36,19 +38,19 @@ const IndexClient = () => {
           {/* Trang chính */}
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
-           <Route path="/collection" element={<Collection />} />
-          <Route path="/products/:slug" element={<ProductDetail />} />
+          <Route path="/collection" element={<Collection />} />
           <Route path="/brand" element={<Brand />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
-
           <Route path="/contact" element={<Contact />} />
 
           {/* Auth pages - không slideshow */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
-           <Route path="/cart" element={<Cart />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/products/:slug" element={<ProductDetail />} />
+
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
