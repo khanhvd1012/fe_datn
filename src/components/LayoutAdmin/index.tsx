@@ -44,8 +44,8 @@ import Vouchers from '../../pages/Admin/vochers/Vocher';
 import CreateVoucher from '../../pages/Admin/vochers/CreateVoucher';
 import EditVoucher from '../../pages/Admin/vochers/EditVoucher';
 import Stock from '../../pages/Admin/stock/Stock';
-import EditStock from '../../pages/Admin/stock/EditStock';
 import StockHistory from '../../pages/Admin/stockHistory/StockHistory';
+import EditStock from '../../pages/Admin/stock/EditStock';
 
 
 // Component chính quản lý layout của trang admin

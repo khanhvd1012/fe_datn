@@ -1,8 +1,9 @@
 import { useStockHistory, useDeleteStockHistory } from "../../../hooks/useStock";
 import type { IStockHistory } from "../../../interface/stock";
 import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag } from "antd";
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 
 const StockHistory = () => {
   const { data, isLoading } = useStockHistory();
@@ -61,16 +62,21 @@ const StockHistory = () => {
       title: "Thao tác",
       key: "actions",
       render: (_: any, record: IStockHistory) => (
-        <Popconfirm
-          title="Xác nhận xóa"
-          description="Bạn có chắc muốn xóa bản ghi này?"
-          onConfirm={() => handleDelete(record._id!)}
-          okText="Xóa"
-          cancelText="Hủy"
-        >
-          <Button type="primary" danger icon={<DeleteOutlined />} />
-        </Popconfirm>
-      ),
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Link to={`/admin/stocks_history/edit/${record._id}`}>
+            <Button type="default" icon={<EditOutlined />} />
+          </Link>
+          <Popconfirm
+            title="Xác nhận xóa"
+            description="Bạn có chắc muốn xóa bản ghi này?"
+            onConfirm={() => handleDelete(record._id!)}
+            okText="Xóa"
+            cancelText="Hủy"
+          >
+            <Button type="primary" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </div>
+      )
     },
   ];
 
