@@ -148,7 +148,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                         XEM GIỎ HÀNG
                     </Link>
                     <Link
-                        to="/pay"
+                        to="/checkout"
                         className="bg-black text-white w-1/2 py-2 text-sm text-center flex items-center justify-center"
                     >
                         THANH TOÁN

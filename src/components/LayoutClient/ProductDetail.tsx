@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { Button, Spin, message } from 'antd';
 import { MinusOutlined, PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -190,15 +190,18 @@ const ProductDetail = () => {
               <Button type="default" size="large" className="add-cart" onClick={addToCart}>
                 THÊM VÀO GIỎ
               </Button>
-              <Button type="primary" size="large" danger className="buy-now">
-                MUA NGAY
-              </Button>
+
+              <Link to="/checkout-access">
+                <Button type="primary" size="large" danger className="buy-now">
+                  Mua Ngay
+                </Button>
+              </Link>
             </div>
 
             {/* <Button type="primary" block className="voucher-btn" onClick={handleShowVouchers}>
               CLICK NHẬN MÃ GIẢM GIÁ NGAY !
             </Button> */}
-            
+
             <Button type="primary" block className="voucher-btn" onClick={handleToggleVouchers} icon={showVouchers ? <UpOutlined /> : <DownOutlined />} >
               {showVouchers ? 'ĐÓNG DANH SÁCH GIẢM GIÁ' : 'CLICK NHẬN MÃ GIẢM GIÁ NGAY'}
             </Button>
@@ -206,34 +209,34 @@ const ProductDetail = () => {
             {showVouchers && (
               <div className="voucher-list">
                 <h3>Mã giảm giá đang hoạt động:</h3>
-              {vouchers.length === 0 ? (
-                <p>Không có mã giảm giá nào</p>
-              ) : (
-                <ul>
-                  {vouchers.map(voucher => {
-                    const end = new Date(voucher.endDate);
-                    const now = new Date();
-                    const diffMs = end.getTime() - now.getTime();
+                {vouchers.length === 0 ? (
+                  <p>Không có mã giảm giá nào</p>
+                ) : (
+                  <ul>
+                    {vouchers.map(voucher => {
+                      const end = new Date(voucher.endDate);
+                      const now = new Date();
+                      const diffMs = end.getTime() - now.getTime();
 
-                    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                    const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-                    const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
+                      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                      const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+                      const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
 
-                    const timeLeft = diffMs <= 0
-                      ? "Đã hết hạn"
-                      : `${diffDays} ngày ${diffHours} giờ ${diffMinutes} phút`;
+                      const timeLeft = diffMs <= 0
+                        ? "Đã hết hạn"
+                        : `${diffDays} ngày ${diffHours} giờ ${diffMinutes} phút`;
 
-                    return (
-                      <li key={voucher._id}>
-                        <strong>{voucher.code}</strong>: Giảm {voucher.type === 'percentage' ? `${voucher.value}%` : `${voucher.value.toLocaleString()}₫`}<br />
-                        <small>Đơn tối thiểu: {voucher.minOrderValue.toLocaleString()}₫</small><br />
-                        <small>Còn lại: {timeLeft}</small>
-                      </li>
-                    );
-                  })}
+                      return (
+                        <li key={voucher._id}>
+                          <strong>{voucher.code}</strong>: Giảm {voucher.type === 'percentage' ? `${voucher.value}%` : `${voucher.value.toLocaleString()}₫`}<br />
+                          <small>Đơn tối thiểu: {voucher.minOrderValue.toLocaleString()}₫</small><br />
+                          <small>Còn lại: {timeLeft}</small>
+                        </li>
+                      );
+                    })}
 
-                </ul>
-              )}
+                  </ul>
+                )}
               </div>
             )}
 
