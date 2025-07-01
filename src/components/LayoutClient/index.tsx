@@ -18,6 +18,7 @@ import Login from '../../pages/Auth/login';
 import Register from '../../pages/Auth/register';
 import Profile from '../../pages/Client/Profile';
 import Collection from '../../pages/Client/Collection';
+import Checkout from './Checkout';
 
 const IndexClient = () => {
   const location = useLocation();
@@ -25,7 +26,7 @@ const IndexClient = () => {
 
   // Kiểm tra các trang cần ẩn slideshow
   const isNoSlidePage =
-    ['/login', '/register', '/profile', '/cart'].includes(location.pathname) ||
+    ['/login', '/register', '/profile', '/cart' ,'/checkout'].includes(location.pathname) ||
     Boolean(matchProductDetail);
 
   return (
@@ -50,6 +51,7 @@ const IndexClient = () => {
           <Route path="/profile" element={<Profile />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
+           <Route path="/checkout" element={<Checkout />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />

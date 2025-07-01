@@ -4,6 +4,7 @@ import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import { useSizes } from '../../hooks/useSizes';
 import axios from 'axios';
 import type { ISize } from '../../interface/size';
+import { Link } from 'react-router-dom';
 
 const Cart: React.FC = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
@@ -143,12 +144,13 @@ const Cart: React.FC = () => {
                 <span>Tổng cộng</span>
                 <span>{formatCurrency(total)}</span>
               </div>
-              <button
-                className="w-full bg-black text-white py-3 font-semibold rounded hover:opacity-90 transition"
-                disabled={cartItems.length === 0}
+              <Link
+                to="/checkout"
+                className={`w-full block text-center bg-black text-white py-3 font-semibold rounded transition ${cartItems.length === 0 ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:opacity-90"
+                  }`}
               >
                 TIẾN HÀNH THANH TOÁN
-              </button>
+              </Link>
               <div className="mt-4 text-xs text-gray-500 text-center">
                 Giá đã bao gồm VAT (nếu có). Phí vận chuyển sẽ được tính ở bước thanh toán tiếp theo.
               </div>
