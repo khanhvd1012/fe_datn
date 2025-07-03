@@ -1,14 +1,12 @@
-import { useQueryClient } from "@tanstack/react-query";
 import { Button, Empty, message, Skeleton, Table, Tag } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { EditOutlined, EyeOutlined } from "@ant-design/icons";
 import type { IUser } from '../../../../interface/user';
 import { useUsers } from '../../../../hooks/useUser';
-import DrawerUserAdmin from '../../../../components/drawer/DrawerUserAdmin';
+import DrawerUserAdmin from '../../../../components/drawer/DrawerUser';
 
 const Admin = () => {
-  const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
@@ -43,12 +41,6 @@ const Admin = () => {
       title: "Email",
       dataIndex: "email",
       key: "email",
-    },
-    {
-      title: "Địa chỉ giao hàng",
-      dataIndex: "shipping_addresses",
-      key: "shipping_addresses",
-      render: (shipping_addresses: any) => typeof shipping_addresses === 'string' ? shipping_addresses : shipping_addresses?.full_name,
     },
     {
       title: "Role",

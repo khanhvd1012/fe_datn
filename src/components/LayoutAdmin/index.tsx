@@ -23,7 +23,6 @@ import Products from '../../pages/Admin/products/Products';
 import EditReviews from '../../pages/Admin/reviews/EditReviews';
 import Reviews from '../../pages/Admin/reviews/Reviews';
 import Admin from '../../pages/Admin/users/admin/Admin';
-import CreateAdmin from '../../pages/Admin/users/admin/CreateAdmin';
 import EditAdmin from '../../pages/Admin/users/admin/EditAdmin';
 import Customers from '../../pages/Admin/users/customer/Customers';
 import EditCustomers from '../../pages/Admin/users/customer/EditCustomers';
@@ -246,7 +245,6 @@ const IndexAdmin = () => {
                                     {/* Quản lý admin */}
                                     <Route path="admin_users">
                                         <Route path="" element={<Admin />} />
-                                        <Route path="create" element={<CreateAdmin />} />
                                         <Route path="edit/:id" element={<EditAdmin />} />
                                     </Route>
                                     {/* Quản lý nhân viên */}

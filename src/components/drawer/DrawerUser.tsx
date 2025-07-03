@@ -1,14 +1,14 @@
 import { Descriptions, Divider, Drawer, Skeleton } from "antd";
 import type { IUser } from "../../interface/user";
 
-interface DrawerUserAdminProps {
+interface DrawerUserProps {
   visible: boolean;
   user: IUser | null;
   onClose: () => void;
   loading?: boolean;
 }
 
-const DrawerUserAdmin = ({ visible, user, onClose, loading }: DrawerUserAdminProps) => {
+const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
   return (
     <Drawer
       title={<span className="text-lg font-semibold">Chi tiết người dùng</span>}
@@ -46,13 +46,13 @@ const DrawerUserAdmin = ({ visible, user, onClose, loading }: DrawerUserAdminPro
           <Divider />
 
           <div className="mb-4">
-            <h3 className="text-base font-medium mb-2">Địa chỉ giao hàng</h3>
+            <h3 className="text-base font-medium mb-2">Thông tin cá nhân </h3>
             {user?.shipping_addresses?.length ? (
               <Descriptions column={1} bordered size="small">
                 {user.shipping_addresses.map((addr, idx) => (
                   <Descriptions.Item
                     key={addr._id || idx}
-                    label={`Địa chỉ ${idx + 1}${addr.is_default ? ' (Mặc định)' : ''}`}
+                    label={`Thông tin chi tiết`}
                   >
                     <div>
                       <div><strong>Họ tên:</strong> {addr.full_name}</div>
@@ -90,4 +90,4 @@ const DrawerUserAdmin = ({ visible, user, onClose, loading }: DrawerUserAdminPro
   );
 };
 
-export default DrawerUserAdmin;
+export default DrawerUser;

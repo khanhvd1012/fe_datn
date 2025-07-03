@@ -1,7 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Button, Form, Input, message, Select, Skeleton } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useUpdateUser, useUser } from '../../../../hooks/useUser';
+import { useUpdateUser } from '../../../../hooks/useUser';
 import { useShippingAddresses } from '../../../../hooks/useShippingAddress';
 
 const EditAdmin = () => {
@@ -68,19 +68,17 @@ const EditAdmin = () => {
         <Form.Item
           label="Địa chỉ giao hàng"
           name="shipping_addresses"
-          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
         >
           <Select
             mode="multiple"
-            placeholder="Địa chỉ giao hàng"
+            placeholder="Chọn địa chỉ giao hàng"
             allowClear
+            showSearch
+            optionFilterProp="children"
           >
-            {shipping_addresses?.map((shipping_addresses: any) => (
-              <Select.Option
-                key={typeof shipping_addresses === 'string' ? shipping_addresses : shipping_addresses._id}
-                value={typeof shipping_addresses === 'string' ? shipping_addresses : shipping_addresses._id}
-              >
-                {typeof shipping_addresses === 'string' ? shipping_addresses : shipping_addresses.shipping_addresses}
+            {shipping_addresses?.map((addr: any) => (
+              <Select.Option key={addr._id} value={addr._id}>
+                {addr.full_name} - {addr.address} - {addr.phone}
               </Select.Option>
             ))}
           </Select>

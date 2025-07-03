@@ -28,7 +28,7 @@ export interface DashboardStats {
 
 export const getDashboardStats = async (): Promise<DashboardStats> => {
     try {
-        const response = await axios.get(`${API_URL}/dashboard/stats`);
+        const response = await axios.get(`${API_URL}/dashboards/stats`);
         return response.data.data;
     } catch (error) {
         console.error("Error fetching dashboard stats:", error);
