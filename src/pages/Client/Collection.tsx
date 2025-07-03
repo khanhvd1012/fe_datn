@@ -7,6 +7,7 @@ const Collection = () => {
       <Breadcrumb current="Bộ sưu tập" />
       <div>
         {/* viết code ở đây */}
+        
       </div>
     </>
   )
