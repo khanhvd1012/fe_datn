@@ -1,21 +1,50 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, InputNumber, message, Select, Skeleton } from 'antd';
+import { Button, Form, InputNumber, message, Select, Skeleton, Upload } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateVariant, useVariant } from '../../../hooks/useVariants';
 import { useProducts } from '../../../hooks/useProducts';
 import { useColors } from '../../../hooks/useColors';
 import { useSizes } from '../../../hooks/useSizes';
+import { useEffect, useState } from 'react';
+import type { UploadFile, UploadChangeParam } from 'antd/es/upload';
 
 const EditVariant = () => {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
+
   const { data: variant, isLoading } = useVariant(id!);
   const { mutate, isPending: isUpdating } = useUpdateVariant();
   const { data: products } = useProducts();
   const { data: colors } = useColors();
   const { data: sizes } = useSizes();
+
+  const [form] = Form.useForm();
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+
+  // Chuyển URL ảnh sang dạng UploadFile (cho preview)
+  useEffect(() => {
+    if (variant?.data?.image_url && Array.isArray(variant.data.image_url)) {
+      const fileListFromUrls: UploadFile[] = variant.data.image_url.map((url: string, index: number) => ({
+        uid: `${index}`,
+        name: `image-${index}`,
+        status: 'done',
+        url,
+      }));
+      setFileList(fileListFromUrls);
+    }
+  }, [variant]);
+
+  const handleFileChange = (info: UploadChangeParam) => {
+    setFileList(info.fileList);
+    const files = info.fileList
+      .filter(file => file.originFileObj)
+      .map(file => file.originFileObj as File);
+    setImageFiles(files);
+  };
 
   const initialValues = variant && variant.data ? {
     ...variant.data,
@@ -28,11 +57,23 @@ const EditVariant = () => {
 
   const handleSubmit = (values: any) => {
     if (!id) return;
-    const submitValues = {
-      ...values,
-    };
+
+    const formData = new FormData();
+    formData.append("product_id", values.product_id);
+    values.size.forEach((s: string) => formData.append("size[]", s));
+    formData.append("color", values.color);
+    formData.append("price", values.price);
+    formData.append("import_price", values.import_price);
+    formData.append("gender", values.gender);
+    formData.append("status", values.status);
+
+    // Nếu có file mới upload thì append
+    imageFiles.forEach((file: File) => {
+      formData.append("images", file);
+    });
+
     mutate(
-      { id, variant: submitValues },
+      { id, variant: formData },
       {
         onSuccess: () => {
           messageApi.success('Cập nhật biến thể thành công!');
@@ -41,8 +82,10 @@ const EditVariant = () => {
             navigate("/admin/variants");
           }, 1000);
         },
-        onError: () => {
-          messageApi.error('Cập nhật biến thể thất bại!');
+        onError: (err: any) => {
+          const errorMessage = err?.response?.data?.message || 'Cập nhật biến thể thất bại!';
+          messageApi.error(errorMessage);
+          console.error("Lỗi khi cập nhật:", err);
         },
       }
     );
@@ -57,122 +100,84 @@ const EditVariant = () => {
         layout="vertical"
         initialValues={initialValues}
         onFinish={handleSubmit}
+        form={form}
       >
-        <Form.Item
-          label="Sản phẩm"
-          name="product_id"
-          rules={[{ required: true, message: 'Vui lòng chọn sản phẩm!' }]}
-        >
+        <Form.Item label="Sản phẩm" name="product_id" rules={[{ required: true }]}>
           <Select placeholder="Chọn sản phẩm">
             {products?.map((p: any) => (
-              <Select.Option key={typeof p === 'string' ? p : p._id} value={typeof p === 'string' ? p : p._id}>
-                {typeof p === 'string' ? p : p.name}
-              </Select.Option>
+              <Select.Option key={p._id} value={p._id}>{p.name}</Select.Option>
             ))}
           </Select>
         </Form.Item>
-        <Form.Item
-          label="Kích thước sản phẩm"
-          name="size"
-          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Chọn kích thước"
-            allowClear
-          >
+
+        <Form.Item label="Kích thước" name="size" rules={[{ required: true }]}>
+          <Select mode="multiple" placeholder="Chọn kích thước">
             {sizes?.map((size: any) => (
-              <Select.Option
-                key={typeof size === 'string' ? size : size._id}
-                value={typeof size === 'string' ? size : size._id}
-              >
-                {typeof size === 'string' ? size : size.size}
-              </Select.Option>
+              <Select.Option key={size._id} value={size._id}>{size.size}</Select.Option>
             ))}
           </Select>
         </Form.Item>
-        <Form.Item
-          label="Màu sắc"
-          name="color"
-          rules={[{ required: true, message: 'Vui lòng nhập màu sắc!' }]}
-        >
+
+        <Form.Item label="Màu sắc" name="color" rules={[{ required: true }]}>
           <Select placeholder="Chọn màu sắc">
-            {colors?.map((p: any) => (
-              <Select.Option key={typeof p === 'string' ? p : p._id} value={typeof p === 'string' ? p : p._id}>
-                {typeof p === 'string' ? p : p.name}
-              </Select.Option>
+            {colors?.map((c: any) => (
+              <Select.Option key={c._id} value={c._id}>{c.name}</Select.Option>
             ))}
           </Select>
         </Form.Item>
-        <Form.Item
-          label="Giá bán"
-          name="price"
-          rules={[{ required: true, message: 'Vui lòng nhập giá bán!' }]}
-        >
-          <InputNumber style={{ width: '100%' }} type="number" placeholder="Nhập giá bán" />
+
+        <Form.Item label="Giá bán" name="price" rules={[{ required: true }]}>
+          <InputNumber style={{ width: '100%' }} />
         </Form.Item>
+
         <Form.Item
           label="Giá nhập"
           name="import_price"
           rules={[
-            { required: true, message: 'Vui lòng nhập giá nhập!' },
+            { required: true },
             ({ getFieldValue }) => ({
               validator(_, value) {
                 const price = getFieldValue('price');
-                if (value === undefined || value === null) {
-                  return Promise.reject('Vui lòng nhập giá nhập!');
-                }
-                if (value < 0) {
-                  return Promise.reject('Giá nhập không được âm!');
-                }
-                if (price !== undefined && value > price) {
-                  return Promise.reject('Giá nhập không được cao hơn giá bán!');
-                }
+                if (value < 0) return Promise.reject('Giá nhập không được âm!');
+                if (price !== undefined && value > price) return Promise.reject('Giá nhập không được cao hơn giá bán!');
                 return Promise.resolve();
-              },
-            }),
+              }
+            })
           ]}
         >
-          <InputNumber style={{ width: '100%' }} type="number" placeholder="Nhập giá nhập" />
+          <InputNumber style={{ width: '100%' }} />
         </Form.Item>
-        <Form.Item
-          label="Giới tính"
-          name="gender"
-          rules={[{ required: true, message: 'Vui lòng chọn giới tính!' }]}
-        >
-          <Select placeholder="Chọn giới tính">
+
+        <Form.Item label="Giới tính" name="gender" rules={[{ required: true }]}>
+          <Select>
             <Select.Option value="unisex">Unisex</Select.Option>
             <Select.Option value="male">Nam</Select.Option>
             <Select.Option value="female">Nữ</Select.Option>
           </Select>
         </Form.Item>
-        <Form.Item
-          label="Ảnh biến thể"
-          name="image_url"
-          rules={[{ required: true, message: 'Vui lòng nhập ít nhất 1 URL ảnh!' }]}
-        >
-          <Select
-            mode="tags"
-            style={{ width: '100%' }}
-            tokenSeparators={[',']}
-            placeholder="Nhập URL ảnh, cách nhau bằng dấu phẩy hoặc Enter"
-          />
+
+        <Form.Item label="Ảnh biến thể" required>
+          <Upload
+            multiple
+            listType="picture"
+            fileList={fileList}
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+          >
+            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          </Upload>
         </Form.Item>
-        <Form.Item
-          label="Trạng thái"
-          name="status"
-          rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
-        >
+
+        <Form.Item label="Trạng thái" name="status" rules={[{ required: true }]}>
           <Select>
             <Select.Option value="inStock">Còn hàng</Select.Option>
             <Select.Option value="outOfStock">Hết hàng</Select.Option>
           </Select>
         </Form.Item>
+
         <Form.Item>
           <div className="flex justify-end gap-4">
-            <Button onClick={() => navigate('/admin/variants')}>
-              Hủy
-            </Button>
+            <Button onClick={() => navigate('/admin/variants')}>Hủy</Button>
             <Button type="primary" htmlType="submit" loading={isUpdating}>
               {isUpdating ? 'Đang cập nhật...' : 'Cập nhật biến thể'}
             </Button>
@@ -180,7 +185,7 @@ const EditVariant = () => {
         </Form.Item>
       </Form>
     </div>
-  )
-}
+  );
+};
 
-export default EditVariant
+export default EditVariant;

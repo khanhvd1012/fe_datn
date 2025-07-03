@@ -2,7 +2,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button, Form, Input, InputNumber, message, Skeleton } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStocks, useUpdateStock } from '../../../hooks/useStock';
-// import type { IStock } from '../../../interface/stock';
 
 const EditStock = () => {
   const { id } = useParams();

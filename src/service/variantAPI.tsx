@@ -24,12 +24,13 @@ export const getVariantById = async (id: string) => {
     }
 }
 
-export const addVariant = async (variant: IVariant) => {
+export const addVariant = async (variant: FormData) => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.post(`${API_URL}/variants`, variant, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data" 
             }
         });
         return response.data;
@@ -39,12 +40,13 @@ export const addVariant = async (variant: IVariant) => {
     }
 }
 
-export const updateVariant = async (id: string, variant: Partial<Omit<IVariant, '_id' | 'createdAt' | 'updatedAt'>>) => {
+export const updateVariant = async (id: string, variant: FormData) => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.put(`${API_URL}/variants/${id}`, variant, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data"
             }
         });
         return response.data;

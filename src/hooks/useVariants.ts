@@ -21,7 +21,7 @@ export const useAddVariant = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (variant: IVariant) => addVariant(variant),
+    mutationFn: (formData: FormData) => addVariant(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['variants'] });
     }
@@ -32,7 +32,7 @@ export const useUpdateVariant = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: string; variant: Partial<Omit<IVariant, '_id' | 'createdAt' | 'updatedAt'>> }) =>
+    mutationFn: (data: { id: string; variant: FormData}) =>
       updateVariant(data.id, data.variant),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['variants'] });
