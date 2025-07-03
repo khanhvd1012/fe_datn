@@ -1,10 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, Form, Input, message, Skeleton, Upload } from 'antd';
+import { Button, Empty, Form, Input, message, Select, Skeleton, Upload } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCategory, useUpdateCategory } from '../../../hooks/useCategories';
 import { useEffect, useState } from 'react';
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
+import { useBrands } from '../../../hooks/useBrands';
 
 const EditCategories = () => {
   const { id } = useParams();
@@ -13,23 +14,33 @@ const EditCategories = () => {
   const navigate = useNavigate();
   const { data: category, isLoading } = useCategory(id!);
   const { mutate, isPending: isUpdating } = useUpdateCategory();
+  const { data: brands } = useBrands();
+
   const [form] = Form.useForm();
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [fileList, setFileList] = useState<any[]>([]);
 
   useEffect(() => {
-    if (category?.logo_image) {
-      setFileList([
-        {
-          uid: '-1',
-          name: 'Ảnh hiện tại',
-          status: 'done',
-          url: category.logo_image,
-        } as UploadFile,
-      ]);
+    if (category) {
+      form.setFieldsValue({
+        ...category,
+        brand: category.brand?.map((b: any) => typeof b === 'string' ? b : b._id)
+      });
+
+      if (category.logo_image) {
+        setFileList([
+          {
+            uid: '-1',
+            name: 'Ảnh hiện tại',
+            status: 'done',
+            url: category.logo_image,
+          } as UploadFile,
+        ]);
+      }
     }
   }, [category]);
+
 
   const handleFileChange = (info: UploadChangeParam) => {
     const file = info.fileList[0]?.originFileObj;
@@ -58,6 +69,11 @@ const EditCategories = () => {
     const formData = new FormData();
     formData.append("name", values.name);
     formData.append("description", values.description);
+    if (values.brand && Array.isArray(values.brand)) {
+      values.brand.forEach((id: string) => {
+        formData.append("brand", id); 
+      });
+    }
     if (logoFile) {
       formData.append("logo_image", logoFile);
     }
@@ -116,21 +132,38 @@ const EditCategories = () => {
           <Input.TextArea rows={4} placeholder="Nhập mô tả danh mục" />
         </Form.Item>
 
-        <Form.Item label="Ảnh logo">
-            <Upload
-              listType="picture"
-              fileList={fileList}
-              onChange={handleFileChange}
-              beforeUpload={() => false} 
-              maxCount={1}
-            >
-              {fileList.length < 1 && (
-                <div>
-                  <UploadOutlined />
-                  <div style={{ marginTop: 8 }}>Chọn ảnh</div>
-                </div>
-              )}
-            </Upload>
+        <Form.Item
+          label="Thương Hiệu"
+          name="brand"
+          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một thương hiệu!' }]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Chọn các thương hiệu"
+            options={brands?.map((brand) => ({
+              label: brand.name,
+              value: brand._id,
+            }))}
+            loading={isLoading}
+            allowClear
+          />
+        </Form.Item>
+
+        <Form.Item label="Ảnh ">
+          <Upload
+            listType="picture"
+            fileList={fileList}
+            onChange={handleFileChange}
+            beforeUpload={() => false}
+            maxCount={1}
+          >
+            {fileList.length < 1 && (
+              <div>
+                <UploadOutlined />
+                <div style={{ marginTop: 8 }}>Chọn ảnh</div>
+              </div>
+            )}
+          </Upload>
         </Form.Item>
 
         <Form.Item>
