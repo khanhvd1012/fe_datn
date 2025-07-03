@@ -3,7 +3,8 @@ export interface IBrand {
     name: string;
     description: string;
     logo_image: string;
-    products?: string[];  // Array of product IDs
+    products?: string[]; 
+    category?: { _id: string; name: string }[];  
     createdAt?: Date;
     updatedAt?: Date;
 }

@@ -30,8 +30,13 @@ const DrawerCategory = ({ visible, category, onClose, loading }: DrawerCategoryP
               <Descriptions.Item label="Mô tả">
                 {category.description || '---'}
               </Descriptions.Item>
-              <Descriptions.Item label="Số sản phẩm" className="bg-gray-50">
+              <Descriptions.Item label="Số lượng sản phẩm" className="bg-gray-50">
                 {category.products?.length || 0}
+              </Descriptions.Item>
+              <Descriptions.Item label="Thương hiệu">
+                {category.brand && category.brand.length > 0
+                  ? category.brand.map((brand) => brand?.name).join(", ")
+                  : "---"}
               </Descriptions.Item>
               <Descriptions.Item label="Hình ảnh">
                 {category.logo_image ? (

@@ -1,43 +1,67 @@
-import { Form, Input, Button, message, Typography } from 'antd';
+import { Form, Input, Button, message, Typography, Upload } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import type { IBrand } from '../../../interface/brand';
 import { useAddBrand } from '../../../hooks/useBrands';
+import { useState } from 'react';
+import { UploadOutlined } from '@ant-design/icons';
+import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
+import { useQueryClient } from '@tanstack/react-query';
 
 const { Title } = Typography;
 
 const CreateBrand = () => {
+  const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const { mutate, isPending } = useAddBrand();
+  const [form] = Form.useForm();
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
 
-  const onFinish = (values: Omit<IBrand, '_id' | 'createdAt' | 'updatedAt'>) => {
-    mutate(values, {
+  const handleSubmit = (values: any) => {
+    if (!logoFile) {
+      messageApi.error("Vui lòng chọn ảnh !");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("description", values.description);
+    formData.append("logo_image", logoFile);
+
+    mutate(formData, {
       onSuccess: () => {
-        messageApi.success("Thêm thương hiệu thành công");
-        setTimeout(() => {
-          navigate("/admin/brands");
-        }, 1000);
+        queryClient.invalidateQueries({ queryKey: ["brands"] });
+        messageApi.success("Tạo thương hiệu thành công");
+        setTimeout(() => navigate("/admin/brands"), 1000);
       },
       onError: (error: any) => {
-        if (error?.response?.data?.errors) {
-          error.response.data.errors.forEach((err: any) => {
-            messageApi.error(err.message);
-          });
-        } else {
-          messageApi.error("Lỗi khi thêm thương hiệu");
-        }
-      },
+        console.error("Lỗi khi tạo thương hiệu:", error);
+        messageApi.error("Lỗi khi tạo thương hiệu");
+      }
     });
+  };
+
+  const handleFileChange = (info: UploadChangeParam) => {
+    const file = info.fileList[0]?.originFileObj;
+
+    setFileList(info.fileList);
+
+    if (file) {
+      setLogoFile(file as File);
+    } else {
+      setLogoFile(null);
+    }
   };
 
   return (
     <div className="max-w-4xl mx-auto p-4">
       {contextHolder}
       <Title level={2} className="mb-4">Thêm Thương Hiệu Mới</Title>
-      
+
       <Form
         layout="vertical"
-        onFinish={onFinish}
+        form={form}
+        onFinish={handleSubmit}
       >
         <Form.Item
           label="Tên Thương Hiệu"
@@ -62,15 +86,17 @@ const CreateBrand = () => {
           <Input.TextArea rows={4} placeholder="Nhập mô tả thương hiệu" />
         </Form.Item>
 
-        <Form.Item
-          label="URL Logo"
-          name="logo_image"
-          rules={[
-            { required: true, message: 'Vui lòng nhập URL logo!' },
-            { type: 'url', message: 'Vui lòng nhập URL hợp lệ!' }
-          ]}
-        >
-          <Input placeholder="Nhập URL logo" />
+        <Form.Item label="Ảnh">
+          <Upload
+            name="logo_image"
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+            maxCount={1}
+            fileList={fileList}
+            listType="picture"
+          >
+            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          </Upload>
         </Form.Item>
 
         <Form.Item>

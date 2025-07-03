@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getBrands, getBrandById, createBrand, updateBrand, deleteBrand } from '../service/brandAPI';
-import type { IBrand } from '../interface/brand';
 
 export const useBrands = () => {
   return useQuery({
@@ -18,9 +17,9 @@ export const useBrand = (id: string) => {
 
 export const useAddBrand = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (brand: IBrand) => createBrand(brand),
+    mutationFn: (formData: FormData) => createBrand(formData),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands'] });
     }
@@ -29,9 +28,9 @@ export const useAddBrand = () => {
 
 export const useUpdateBrand = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: (data: { id: string; brand: Partial<Omit<IBrand, '_id' | 'createdAt' | 'updatedAt'>> }) => 
+    mutationFn: (data: { id: string; brand: FormData }) =>
       updateBrand(data.id, data.brand),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands'] });
@@ -41,7 +40,7 @@ export const useUpdateBrand = () => {
 
 export const useDeleteBrand = () => {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (id: string) => deleteBrand(id),
     onSuccess: () => {

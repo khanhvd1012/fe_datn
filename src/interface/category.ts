@@ -6,4 +6,5 @@ export interface ICategory {
     createdAt?: Date;  // Optional, for tracking creation date
     updatedAt?: Date;  // Optional, for tracking last update date
     products?: string[];  // Array of product IDs associated with this category
+    brand?: { _id: string; name: string }[];  // Array of brand IDs associated with this category
 }

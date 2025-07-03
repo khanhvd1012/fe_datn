@@ -1,24 +1,25 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, message, Upload } from 'antd';
+import { Button, Form, Input, message, Upload, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAddCategory } from '../../../hooks/useCategories';
+import { useBrands } from '../../../hooks/useBrands';
 import { useState } from 'react';
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
-import ImgCrop from 'antd-img-crop';
 
 const CreateCategories = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const { mutate } = useAddCategory();
+  const { data: brands, isLoading } = useBrands();
   const [form] = Form.useForm();
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
 
   const handleSubmit = (values: any) => {
     if (!logoFile) {
-      messageApi.error("Vui lòng chọn ảnh logo!");
+      messageApi.error("Vui lòng chọn ảnh !");
       return;
     }
 
@@ -26,6 +27,12 @@ const CreateCategories = () => {
     formData.append("name", values.name);
     formData.append("description", values.description);
     formData.append("logo_image", logoFile);
+
+    if (values.brand && Array.isArray(values.brand)) {
+      values.brand.forEach((brandId: string) => {
+        formData.append("brand", brandId); 
+      });
+    }
 
     mutate(formData, {
       onSuccess: () => {
@@ -80,28 +87,34 @@ const CreateCategories = () => {
           <Input.TextArea rows={4} placeholder="Nhập mô tả danh mục" />
         </Form.Item>
 
-        <Form.Item label="Ảnh Logo">
-          <ImgCrop
-            rotationSlider
-            aspect={1}
-            showGrid
+        <Form.Item
+          label="Thương Hiệu"
+          name="brand"
+          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một thương hiệu!' }]}
+        >
+          <Select
+            mode="multiple"
+            placeholder="Chọn các thương hiệu"
+            options={brands?.map((brand) => ({
+              label: brand.name,
+              value: brand._id,
+            }))}
+            loading={isLoading}
+            allowClear
+          />
+        </Form.Item>
+
+        <Form.Item label="Ảnh">
+          <Upload
+            name="logo_image"
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+            maxCount={1}
+            fileList={fileList}
+            listType="picture"
           >
-            <Upload
-              name="logo_image"
-              beforeUpload={() => false}
-              onChange={handleFileChange}
-              maxCount={1}
-              fileList={fileList}
-              listType="picture-card"
-            >
-              {fileList.length < 1 && (
-                <div>
-                  <UploadOutlined />
-                  <div style={{ marginTop: 8 }}>Chọn ảnh</div>
-                </div>
-              )}
-            </Upload>
-          </ImgCrop>
+            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          </Upload>
         </Form.Item>
 
         <Form.Item>

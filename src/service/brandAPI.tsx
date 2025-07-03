@@ -23,12 +23,13 @@ export const getBrandById = async (id: string): Promise<IBrand> => {
     }
 }
 
-export const createBrand = async (brand: Omit<IBrand, '_id' | 'createdAt' | 'updatedAt'>): Promise<IBrand> => {
+export const createBrand = async (brand: FormData) => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.post(`${API_URL}/brands`, brand, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data"
             }
         });
         return response.data;
@@ -38,12 +39,13 @@ export const createBrand = async (brand: Omit<IBrand, '_id' | 'createdAt' | 'upd
     }
 }
 
-export const updateBrand = async (id: string, brand: Partial<Omit<IBrand, '_id' | 'createdAt' | 'updatedAt'>>): Promise<IBrand> => {
+export const updateBrand = async (id: string, brand: FormData) => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.put(`${API_URL}/brands/${id}`, brand, {
             headers: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "multipart/form-data"
             }
         });
         return response.data;

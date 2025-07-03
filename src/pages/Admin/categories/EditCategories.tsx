@@ -4,7 +4,6 @@ import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCategory, useUpdateCategory } from '../../../hooks/useCategories';
 import { useEffect, useState } from 'react';
-import ImgCrop from 'antd-img-crop';
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
 
 const EditCategories = () => {
@@ -118,13 +117,8 @@ const EditCategories = () => {
         </Form.Item>
 
         <Form.Item label="Ảnh logo">
-          <ImgCrop
-            rotationSlider
-            showGrid
-            aspect={1}
-          >
             <Upload
-              listType="picture-card"
+              listType="picture"
               fileList={fileList}
               onChange={handleFileChange}
               beforeUpload={() => false} 
@@ -137,7 +131,6 @@ const EditCategories = () => {
                 </div>
               )}
             </Upload>
-          </ImgCrop>
         </Form.Item>
 
         <Form.Item>

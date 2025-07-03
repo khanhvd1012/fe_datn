@@ -1,8 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, Form, Input, message, Skeleton } from 'antd';
+import { Button, Empty, Form, Input, message, Skeleton, Upload } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
-import type { IBrand } from '../../../interface/brand';
+import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
 import { useBrand, useUpdateBrand } from '../../../hooks/useBrands';
+import { useEffect, useState } from 'react';
+import { UploadOutlined } from '@ant-design/icons';
+
 
 const EditBrand = () => {
   const { id } = useParams();
@@ -11,31 +14,70 @@ const EditBrand = () => {
   const navigate = useNavigate();
   const { data: brand, isLoading } = useBrand(id!);
   const { mutate, isPending: isUpdating } = useUpdateBrand();
+  const [form] = Form.useForm();
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [fileList, setFileList] = useState<any[]>([]);
 
-  const handleSubmit = (values: Partial<Omit<IBrand, '_id' | 'createdAt' | 'updatedAt'>>) => {
+  useEffect(() => {
+    if (brand?.logo_image) {
+      setFileList([
+        {
+          uid: '-1',
+          name: 'Ảnh hiện tại',
+          status: 'done',
+          url: brand.logo_image,
+        } as UploadFile,
+      ]);
+    }
+  }, [brand]);
+
+  const handleFileChange = (info: UploadChangeParam) => {
+    const file = info.fileList[0]?.originFileObj;
+
+    if (file) {
+      const newFileList = [
+        {
+          uid: '-1',
+          name: file.name,
+          status: 'done',
+          originFileObj: file,
+          url: URL.createObjectURL(file),
+        } as UploadFile,
+      ];
+      setFileList(newFileList);
+      setLogoFile(file);
+    } else {
+      setFileList([]);
+      setLogoFile(null);
+    }
+  };
+
+  const handleSubmit = (values: any) => {
     if (!id) return;
-    
-    mutate({
-      id,
-      brand: values
-    }, {
-      onSuccess: () => {
-        messageApi.success('Cập nhật thương hiệu thành công',);
-        queryClient.invalidateQueries({ queryKey: ['brands'] });
-        setTimeout(() => {
-          navigate('/admin/brands');
-        }, 1000);
+
+    const formData = new FormData();
+    formData.append("name", values.name);
+    formData.append("description", values.description);
+    if (logoFile) {
+      formData.append("logo_image", logoFile);
+    }
+
+    mutate(
+      {
+        id,
+        brand: formData,
       },
-      onError: (error: any) => {
-        if (error?.response?.data?.errors) {
-          error.response.data.errors.forEach((err: any) => {
-            messageApi.error(err.message);
-          });
-        } else {
-          messageApi.error('Lỗi khi cập nhật thương hiệu');
-        }
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: ["brands"] });
+          messageApi.success("Cập nhật thương hiệu thành công");
+          setTimeout(() => navigate('/admin/brands'), 1000);
+        },
+        onError: () => {
+          messageApi.error("Cập nhật thương hiệu thất bại");
+        },
       }
-    });
+    );
   };
 
   if (isLoading) return <Skeleton active />;
@@ -47,6 +89,7 @@ const EditBrand = () => {
       <h2 className="text-2xl font-bold mb-4">Chỉnh Sửa Thương Hiệu</h2>
       <Form
         layout="vertical"
+        form={form}
         initialValues={brand}
         onFinish={handleSubmit}
       >
@@ -73,15 +116,17 @@ const EditBrand = () => {
           <Input.TextArea rows={4} placeholder="Nhập mô tả thương hiệu" />
         </Form.Item>
 
-        <Form.Item
-          label="URL Logo"
-          name="logo_image"
-          rules={[
-            { required: true, message: 'Vui lòng nhập URL logo!' },
-            { type: 'url', message: 'Vui lòng nhập URL hợp lệ!' }
-          ]}
-        >
-          <Input placeholder="Nhập URL logo" />
+        <Form.Item label="Ảnh">
+          <Upload
+            name="logo_image"
+            beforeUpload={() => false}
+            onChange={handleFileChange}
+            maxCount={1}
+            fileList={fileList}
+            listType="picture"
+          >
+            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          </Upload>
         </Form.Item>
 
         <Form.Item>

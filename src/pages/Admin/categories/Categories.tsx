@@ -16,7 +16,7 @@ const Categories = () => {
   const { mutate } = useDeleteCategory();
   const { data, isLoading } = useCategories();
   console.log("Categories data:", data);
-  
+
 
   const handleDelete = async (id: string) => {
     try {
@@ -70,6 +70,12 @@ const Categories = () => {
       dataIndex: "products",
       key: "products",
       render: (products: string[]) => products?.length || 0,
+    },
+    {
+      title: "Số lượng thương hiệu",
+      dataIndex: "brand",
+      key: "brand",
+      render: (brand: any[]) => brand?.length || 0,
     },
     {
       title: "Thao tác",

@@ -15,6 +15,8 @@ const Brands = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteBrand();
   const { data, isLoading } = useBrands();
+  console.log("Brands data:", data);
+  
 
   const handleDelete = async (id: string) => {
     try {
@@ -74,6 +76,12 @@ const Brands = () => {
       dataIndex: "products",
       key: "products",
       render: (products: string[]) => products?.length || 0,
+    },
+    {
+      title: "Số lượng danh mục",
+      dataIndex: "category",
+      key: "category",
+      render: (category: string[]) => category?.length || 0,
     },
     {
       title: "Thao tác",
