@@ -1,12 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag } from "antd";
+import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag, Select  } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { EyeOutlined } from "@ant-design/icons";
 import type { IOrder } from "../../../interface/order";
+import { useCancelOrder, useOrders, useUsers,useUpdateOrderStatus } from "../../../hooks/useOrder";
 import type { IUser } from '../../../interface/user';
-import { useCancelOrder, useOrders, useUsers } from "../../../hooks/useOrder";
-
 
 const Orders = () => {
   const queryClient = useQueryClient();
@@ -14,6 +13,7 @@ const Orders = () => {
   const { data, isLoading } = useOrders();
   const { mutate: cancelOrder } = useCancelOrder();
   const { data: users} = useUsers();
+  const { mutate: updateStatus } = useUpdateOrderStatus();
 
 
   const handleCancelOrder = (id: string) => {
@@ -29,10 +29,27 @@ const Orders = () => {
     );
   };
 
+  const handleUpdateStatus = (orderId: string, newStatus: IOrder["status"]) => { //
+    updateStatus(
+      { id: orderId, status: newStatus },
+      {
+        onSuccess: () => {
+          message.success("Cập nhật trạng thái thành công");
+          queryClient.invalidateQueries({ queryKey: ["orders"] });
+        },
+        onError: () => {
+          message.error("Cập nhật trạng thái thất bại");
+        },
+      }
+    );
+  };
+
+
+
   if (isLoading) return <Skeleton active />;
   if (!data) return <Empty description="Không có đơn hàng nào" />;
 
-  const userMap = new Map(users?.map((u) => [u._id, u.username]));
+  const userMap = new Map((users as IUser[])?.map((u) => [u._id, u.username]));
 
   const columns = [
     {
@@ -89,24 +106,79 @@ const Orders = () => {
       },
     },
     {
+      title: "Cập nhật trạng thái",
+      key: "updateStatus",
+      render: (_: any, order: IOrder) => {
+        const statusOrder = {
+          pending: 0,
+          processing: 1,
+          shipped: 2,
+          delivered: 3,
+          canceled: 4,
+        };
+
+        const labelMap: Record<IOrder["status"], string> = {
+          pending: "Chờ xử lý",
+          processing: "Đang xử lý",
+          shipped: "Đang giao",
+          delivered: "Đã giao",
+        };
+
+        const valueMap: Record<string, IOrder["status"]> = {
+          "Chờ xử lý": "pending",
+          "Đang xử lý": "processing",
+          "Đang giao": "shipped",
+          "Đã giao": "delivered",
+        };
+
+        const currentStatusIndex = statusOrder[order.status];
+
+        return (
+          <Select
+            defaultValue={labelMap[order.status]} 
+            style={{ width: 140 }}
+            onChange={(label) => {
+              const statusEng = valueMap[label];
+              handleUpdateStatus(order._id!, statusEng);
+            }}
+            disabled={order.status === "delivered" || order.status === "canceled"}
+          >
+            {Object.entries(labelMap)
+              .filter(([key]) => statusOrder[key as IOrder["status"]] > currentStatusIndex)
+              .map(([key, label]) => (
+                <Select.Option key={label} value={label}>
+                  {label}
+                </Select.Option>
+              ))}
+          </Select>
+        );
+      },
+    },
+
+
+
+    {
       title: "Thao tác",
       key: "actions",
       render: (_: any, order: IOrder) => (
         <div style={{ display: "flex", gap: 8 }}>
-          <Link to={`/admin/orders/edit/${order._id}`}>
+          {/* <Link to={`/admin/orders/edit/${order._id}`}>
             <Button icon={<EyeOutlined />} />
-          </Link>
-          {order.status !== "canceled" && (
-            <Popconfirm
-              title="Hủy đơn hàng"
-              description="Bạn có chắc muốn hủy đơn hàng này?"
-              onConfirm={() => handleCancelOrder(order._id!)}
-              okText="Hủy đơn"
-              cancelText="Không"
-            >
-              {/* <Button danger>Hủy</Button> */}
-            </Popconfirm>
-          )}
+          </Link> */}
+          {
+            order.status !== "canceled" && order.status !== "delivered" && order.status !== "shipped" && (
+              <Popconfirm
+                title="Hủy đơn hàng"
+                description="Bạn có chắc muốn hủy đơn hàng này?"
+                onConfirm={() => handleCancelOrder(order._id!)}
+                okText="Hủy đơn"
+                cancelText="Không"
+              >
+                <Button danger>Hủy</Button>
+              </Popconfirm>
+            )
+          }
+
         </div>
       ),
     },

@@ -52,7 +52,10 @@ export const updateOrderStatus = async (
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'canceled'
 ): Promise<IOrder> => {
   try {
-    const res = await axios.put(`${API_URL}/orders/${id}`, { status });
+    const token = localStorage.getItem("token");
+    const res = await axios.put(`${API_URL}/orders/${id}`,{ status },{
+    headers: { Authorization: `Bearer ${token}` },
+    });
     return res.data.data;
   } catch (err) {
     console.error("Error updating order status:", err);
@@ -63,7 +66,10 @@ export const updateOrderStatus = async (
 // Hủy đơn hàng
 export const cancelOrder = async (id: string, cancel_reason: string): Promise<IOrder> => {
   try {
-    const res = await axios.put(`${API_URL}/orders/${id}/cancel`, { cancel_reason });
+    const token = localStorage.getItem("token");
+    const res = await axios.put(`${API_URL}/orders/${id}/cancel`, { cancel_reason },{
+    headers: { Authorization: `Bearer ${token}` },
+    });
     return res.data.data;
   } catch (err) {
     console.error("Error canceling order:", err);
