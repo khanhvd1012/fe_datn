@@ -4,13 +4,17 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { EyeOutlined } from "@ant-design/icons";
 import type { IOrder } from "../../../interface/order";
-import { useCancelOrder, useOrders } from "../../../hooks/useOrder";
+import type { IUser } from '../../../interface/user';
+import { useCancelOrder, useOrders, useUsers } from "../../../hooks/useOrder";
+
 
 const Orders = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const { data, isLoading } = useOrders();
   const { mutate: cancelOrder } = useCancelOrder();
+  const { data: users} = useUsers();
+
 
   const handleCancelOrder = (id: string) => {
     cancelOrder(
@@ -28,6 +32,8 @@ const Orders = () => {
   if (isLoading) return <Skeleton active />;
   if (!data) return <Empty description="Không có đơn hàng nào" />;
 
+  const userMap = new Map(users?.map((u) => [u._id, u.username]));
+
   const columns = [
     {
       title: "Mã đơn",
@@ -39,7 +45,11 @@ const Orders = () => {
       title: "Người đặt",
       dataIndex: "user_id",
       key: "user_id",
-      render: (user: any) => user?.name || "Không rõ",
+      render: (user: any) => {
+         const username = userMap.get(user);
+         console.log("username field:", username);
+         return username || "Không rõ";
+      }
     },
     {
       title: "Tổng tiền",
@@ -94,7 +104,7 @@ const Orders = () => {
               okText="Hủy đơn"
               cancelText="Không"
             >
-              <Button danger>Hủy</Button>
+              {/* <Button danger>Hủy</Button> */}
             </Popconfirm>
           )}
         </div>
