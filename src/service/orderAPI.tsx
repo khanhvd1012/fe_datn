@@ -1,18 +1,28 @@
 import axios from "axios";
 import type { IOrder } from "../interface/order";
-
+import type { IUser } from "../interface/user";
 const API_URL = import.meta.env.VITE_API_URL;
 
-// Lấy tất cả đơn hàng
+// Admin lấy toàn bộ đơn hàng
 export const getOrders = async (): Promise<IOrder[]> => {
-  try {
-    const res = await axios.get(`${API_URL}/orders`);
-    return res.data.data;
-  } catch (err) {
-    console.error("Error fetching orders:", err);
-    throw err;
-  }
+  const token = localStorage.getItem("token");
+  const res = await axios.get(`${API_URL}/orders`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data.data;
 };
+
+export const getUserById = async (): Promise<IUser> => {
+  const token = localStorage.getItem("token");
+  const res = await axios.get(`${API_URL}/auth/user`, {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  return res.data.data;
+};
+
+
 
 // Lấy đơn hàng theo ID
 export const getOrderById = async (id: string): Promise<IOrder> => {
@@ -42,7 +52,10 @@ export const updateOrderStatus = async (
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'canceled'
 ): Promise<IOrder> => {
   try {
-    const res = await axios.put(`${API_URL}/orders/${id}`, { status });
+    const token = localStorage.getItem("token");
+    const res = await axios.put(`${API_URL}/orders/${id}`,{ status },{
+    headers: { Authorization: `Bearer ${token}` },
+    });
     return res.data.data;
   } catch (err) {
     console.error("Error updating order status:", err);
@@ -53,7 +66,10 @@ export const updateOrderStatus = async (
 // Hủy đơn hàng
 export const cancelOrder = async (id: string, cancel_reason: string): Promise<IOrder> => {
   try {
-    const res = await axios.put(`${API_URL}/orders/${id}/cancel`, { cancel_reason });
+    const token = localStorage.getItem("token");
+    const res = await axios.put(`${API_URL}/orders/${id}/cancel`, { cancel_reason },{
+    headers: { Authorization: `Bearer ${token}` },
+    });
     return res.data.data;
   } catch (err) {
     console.error("Error canceling order:", err);

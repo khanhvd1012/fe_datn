@@ -81,6 +81,7 @@ const ProductDetail = () => {
     );
     if (existing) {
       existing.quantity += quantity;
+      existing.voucher = selectedVoucherId || null;
     } else {
       cart.push({
         _id: product._id,
@@ -88,6 +89,7 @@ const ProductDetail = () => {
         price: displayPrice,
         size: selectedSize,
         quantity,
+        voucher: selectedVoucherId || null,
       });
     }
     localStorage.setItem("cart", JSON.stringify(cart));
@@ -122,9 +124,15 @@ const ProductDetail = () => {
   };
 
   const handleApplyVoucher = (voucher: any) => {
-    setSelectedVoucherId(voucher._id);
-    message.success(`Đã chọn mã: ${voucher.code}`);
+    if (selectedVoucherId === voucher._id) {
+      setSelectedVoucherId(null);
+      message.info(`Đã bỏ chọn mã: ${voucher.code}`);
+    } else {
+      setSelectedVoucherId(voucher._id);
+      message.success(`Đã chọn mã: ${voucher.code}`);
+    }
   };
+
 
   const brandName = typeof product.brand === 'object' ? product.brand.name : '';
 

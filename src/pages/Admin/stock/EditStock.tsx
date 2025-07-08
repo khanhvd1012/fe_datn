@@ -10,18 +10,11 @@ const EditStock = () => {
   const navigate = useNavigate();
 
   const { data: stock, isLoading } = useStocks(id!);
-
   const { mutate, isPending: isUpdating } = useUpdateStock();
 
   const [form] = Form.useForm();
 
-  const initialValues = stock
-    ? {
-      product_variant_id: stock.product_variant_id,
-      quantity: stock.quantity,
-      reason: '',
-    }
-    : {};
+  const selectedStock = stock?.find(stock => stock._id === id!);
 
   const handleSubmit = (values: { quantity: number; reason: string }) => {
     if (!id || !stock) return;
@@ -56,13 +49,9 @@ const EditStock = () => {
     <div className="max-w-md mx-auto p-4">
       {contextHolder}
       <h2 className="text-2xl font-bold mb-4">Cập nhật Số Lượng</h2>
-      <Form form={form} layout="vertical" initialValues={initialValues} onFinish={handleSubmit}>
-
-        <Form.Item label="Biến Thể" name="product_variant_id">
-          <Input
-            value={stock?.product_variant_id?.product_id?.name || 'Không xác định'}
-            disabled
-          />
+      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+        <Form.Item label="Biến Thể">
+          <InputNumber style={{ width: '100%',color: 'black',fontWeight: 'bold'}} value={selectedStock?.product_variant_id?.product_id?.name} disabled />
         </Form.Item>
 
         <Form.Item
