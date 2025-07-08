@@ -1,9 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag } from "antd";
+import { Button, Empty, Input, InputNumber, message, Popconfirm, Select, Skeleton, Table, Tag } from "antd";
 import { useState } from "react";
 import type { IVariant } from "../../../interface/variant";
 import { Link } from "react-router-dom";
-import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import DrawerVariant from "../../../components/drawer/DrawerVariant";
 import { useDeleteVariant, useVariants } from "../../../hooks/useVariants";
 
@@ -14,8 +14,86 @@ const Variant = () => {
   const [selectedVariant, setSelectedVariant] = useState<IVariant | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteVariant();
-  const { data, isLoading } = useVariants();
-  console.log("variants data:", data);
+  const { data: variant, isLoading } = useVariants();
+  const [filters, setFilters] = useState({
+    product_id: '',
+    color: '',
+    size: '',
+    gender: '',
+    priceMin: '',
+    priceMax: '',
+    importPriceMin: '',
+    importPriceMax: '',
+    status: '',
+  });
+
+  const normalizeText = (value: any) =>
+    typeof value === 'string'
+      ? value.toLowerCase()
+      : value?.name?.toLowerCase?.() || '';
+
+  const filteredData = variant?.filter((variant: IVariant) => {
+    if (
+      filters.product_id &&
+      !normalizeText(variant.product_id).includes(filters.product_id.toLowerCase())
+    ) {
+      return false;
+    }
+
+    if (
+      filters.color &&
+      !normalizeText(variant.color).includes(filters.color.toLowerCase())
+    ) {
+      return false;
+    }
+
+    if (
+      filters.size &&
+      !variant.size?.some((s: any) =>
+        normalizeText(s).includes(filters.size.toLowerCase())
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      filters.gender &&
+      variant.gender?.toLowerCase() !== filters.gender.toLowerCase()
+    ) {
+      return false;
+    }
+
+    if (
+      (filters.priceMin && Number(variant.price) < Number(filters.priceMin)) ||
+      (filters.priceMax && Number(variant.price) > Number(filters.priceMax))
+    ) {
+      return false;
+    }
+
+    if (
+      (filters.importPriceMin && Number(variant.import_price) < Number(filters.importPriceMin)) ||
+      (filters.importPriceMax && Number(variant.import_price) > Number(filters.importPriceMax))
+    ) {
+      return false;
+    }
+
+    if (
+      filters.status &&
+      variant.status?.toLowerCase() !== filters.status.toLowerCase()
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const handleFilterChange = (value: string | number, type: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
+
   const handleDelete = async (id: string) => {
     try {
       mutate(id, {
@@ -40,7 +118,7 @@ const Variant = () => {
   };
 
   if (isLoading) return <Skeleton active />;
-  if (!data) return <Empty />;
+  if (!variant) return <Empty />;
 
   const columns = [
     {
@@ -52,12 +130,36 @@ const Variant = () => {
       title: "Sản phẩm",
       dataIndex: "product_id",
       key: "product_id",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên sản phẩm"
+            value={filters.product_id}
+            onChange={(e) => handleFilterChange(e.target.value, 'product_id')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.product_id ? '#1890ff' : undefined }} />,
       render: (product: any) => typeof product === 'string' ? product : product?.name,
     },
     {
       title: "Màu sắc",
       dataIndex: "color",
       key: "color",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm màu sắc"
+            value={filters.color}
+            onChange={(e) => handleFilterChange(e.target.value, 'color')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.color ? '#1890ff' : undefined }} />,
       render: (color: any) => (
         <Tag color="blue">
           {typeof color === 'string' ? color : color?.name || 'Không rõ'}
@@ -68,6 +170,18 @@ const Variant = () => {
       title: "Kích cỡ",
       dataIndex: "size",
       key: "size",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm kích cỡ"
+            value={filters.size}
+            onChange={(e) => handleFilterChange(e.target.value, 'size')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.size ? '#1890ff' : undefined }} />,
       render: (sizes: any[]) =>
         Array.isArray(sizes)
           ? sizes.map(s => typeof s === 'string' ? s : s?.size).join(', ')
@@ -77,6 +191,22 @@ const Variant = () => {
       title: "Giới tính",
       dataIndex: "gender",
       key: "gender",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Select
+            style={{ width: '200px' }}
+            placeholder="Chọn giới tính"
+            allowClear
+            value={filters.gender}
+            onChange={(value) => handleFilterChange(value || '', 'gender')}
+          >
+            <Select.Option value="male">Nam</Select.Option>
+            <Select.Option value="female">Nữ</Select.Option>
+            <Select.Option value="unisex">Unisex</Select.Option>
+          </Select>
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.gender ? '#1890ff' : undefined }} />,
       render: (gender: string) => {
         let color = "default";
         let label = "";
@@ -106,12 +236,46 @@ const Variant = () => {
       title: "Giá bán",
       dataIndex: "price",
       key: "price",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6, width: 220 }}>
+          <InputNumber
+            placeholder="Giá bán min"
+            value={filters.priceMin}
+            onChange={(e) => handleFilterChange(e ?? '', 'priceMin')}
+            style={{ width: '100%', marginRight: 8 }}
+          />
+          <InputNumber
+            placeholder="Giá bán max"
+            value={filters.priceMax}
+            onChange={(e) => handleFilterChange(e ?? '', 'priceMax')}
+            style={{ width: '100%', marginTop: 8 }}
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.priceMin || filters.priceMax ? '#1890ff' : undefined }} />,
       render: (price: number) => price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
     },
     {
       title: "Giá nhập",
       dataIndex: "import_price",
       key: "import_price",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6, width: 220 }}>
+          <InputNumber
+            placeholder="Giá nhập min"
+            value={filters.importPriceMin}
+            onChange={(e) => handleFilterChange(e ?? '', 'importPriceMin')}
+            style={{ width: '100%', marginRight: 8 }}
+          />
+          <InputNumber
+            placeholder="Giá nhập max"
+            value={filters.importPriceMax}
+            onChange={(e) => handleFilterChange(e ?? '', 'importPriceMax')}
+            style={{ width: '100%', marginTop: 8 }}
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.importPriceMin || filters.importPriceMax ? '#1890ff' : undefined }} />,
       render: (price: number) => price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
     },
     {
@@ -138,6 +302,21 @@ const Variant = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Select
+            style={{ width: '200px' }}
+            placeholder="Chọn trạng thái"
+            allowClear
+            value={filters.status}
+            onChange={(value) => handleFilterChange(value || '', 'status')}
+          >
+            <Select.Option value="inStock">Còn hàng</Select.Option>
+            <Select.Option value="outOfStock">Hết hàng</Select.Option>
+          </Select>
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.status ? '#1890ff' : undefined }} />,
       render: (status: string) => status === 'inStock' ? <Tag color="success">Còn hàng</Tag> : <Tag color="red">Hết hàng</Tag>,
     },
     {
@@ -177,10 +356,10 @@ const Variant = () => {
       </div>
       <Table
         columns={columns}
-        dataSource={Array.isArray(data) ? data : []}
+        dataSource={filteredData}
         rowKey="_id"
         pagination={{
-          total: data.length,
+          total: filteredData?.length,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,

@@ -33,6 +33,9 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
               <Descriptions.Item label="Email" className="bg-gray-50">
                 {user?.email}
               </Descriptions.Item>
+              <Descriptions.Item label="Avata" className="bg-gray-50">
+                {user?.image}
+              </Descriptions.Item>
               <Descriptions.Item label="Vai trò">
                 {user?.role === 'admin'
                   ? 'Quản trị viên'

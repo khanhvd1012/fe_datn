@@ -36,7 +36,7 @@ const Stock = () => {
       key: "actions",
       render: (_: any, stock: IStock) => (
         <div style={{ display: 'flex', gap: '8px' }}>
-          <Link to={`/admin/stocks/edit/${stock._id}`}>
+          <Link to={`/admin/stocks/stock/edit/${stock._id}`}>
             <Button type="default" icon={<EditOutlined />} />
           </Link>
         </div>

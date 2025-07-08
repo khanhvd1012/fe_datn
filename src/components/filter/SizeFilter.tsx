@@ -1,4 +1,4 @@
-import { Input, Select, Dropdown } from 'antd';
+import { Input, Dropdown } from 'antd';
 import { FilterOutlined, SearchOutlined } from '@ant-design/icons';
 
 interface SizeFilterProps {

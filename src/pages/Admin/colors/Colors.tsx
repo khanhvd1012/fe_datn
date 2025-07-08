@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Button, Empty, Input, message, Popconfirm, Select, Skeleton, Space, Table, Tag, Dropdown } from 'antd';
+import { useState } from 'react';
+import { Button, Empty, Input, message, Popconfirm, Select, Skeleton, Table, Tag } from 'antd';
 import { Link } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
@@ -7,7 +7,7 @@ import type { IColor } from '../../../interface/color';
 import { useColors, useDeleteColor } from '../../../hooks/useColors';
 import DrawerColor from '../../../components/drawer/DrawerColor';
 
-const Colors: React.FC = () => {
+const Colors = () => {
     const queryClient = useQueryClient();
     const [messageApi, contextHolder] = message.useMessage();
     const [isDrawerVisible, setIsDrawerVisible] = useState(false);
@@ -71,54 +71,38 @@ const Colors: React.FC = () => {
 
     const columns = [
         {
-            title: (
-                <Space size="middle">
-                    Tên màu sắc
-                    <Dropdown
-                        trigger={['click']}
-                        dropdownRender={() => (
-                            <div style={{ backgroundColor: 'white', padding: '8px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                                <Input
-                                    placeholder="Tìm kiếm theo tên"
-                                    value={filters.name}
-                                    onChange={(e) => handleFilterChange(e.target.value, 'name')}
-                                    prefix={<SearchOutlined />}
-                                    allowClear
-                                />
-                            </div>
-                        )}
-                    >
-                        <FilterOutlined style={{ cursor: 'pointer', marginLeft: 8 }} />
-                    </Dropdown>
-                </Space>
-            ),
+            title: "Tên màu sắc",
             dataIndex: "name",
             key: "name",
+            filterDropdown: () => (
+                <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+                    <Input
+                        placeholder="Tìm tên màu sắc"
+                        value={filters.name}
+                        onChange={(e) => handleFilterChange(e.target.value, 'name')}
+                        prefix={<SearchOutlined />}
+                        allowClear
+                    />
+                </div>
+            ),
+            filterIcon: () => <FilterOutlined style={{ color: filters.name ? '#1890ff' : undefined }} />,
         },
         {
-            title: (
-                <Space size="middle">
-                    Mã màu
-                    <Dropdown
-                        trigger={['click']}
-                        dropdownRender={() => (
-                            <div style={{ backgroundColor: 'white', padding: '8px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                                <Input
-                                    placeholder="Tìm kiếm theo mã màu"
-                                    value={filters.code}
-                                    onChange={(e) => handleFilterChange(e.target.value, 'code')}
-                                    prefix={<SearchOutlined />}
-                                    allowClear
-                                />
-                            </div>
-                        )}
-                    >
-                        <FilterOutlined style={{ cursor: 'pointer', marginLeft: 8 }} />
-                    </Dropdown>
-                </Space>
-            ),
+            title: "Mã màu",
             dataIndex: "code",
             key: "code",
+            filterDropdown: () => (
+                <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+                    <Input
+                        placeholder="Tìm kiếm theo mã màu"
+                        value={filters.code}
+                        onChange={(e) => handleFilterChange(e.target.value, 'code')}
+                        prefix={<SearchOutlined />}
+                        allowClear
+                    />
+                </div>
+            ),
+            filterIcon: () => <FilterOutlined style={{ color: filters.code ? '#1890ff' : undefined }} />,
             render: (code: string) => (
                 <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-full" style={{ backgroundColor: code }}></div>
@@ -127,32 +111,24 @@ const Colors: React.FC = () => {
             )
         },
         {
-            title: (
-                <Space size="middle">
-                    Trạng thái
-                    <Dropdown
-                        trigger={['click']}
-                        dropdownRender={() => (
-                            <div style={{ backgroundColor: 'white', padding: '8px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)' }}>
-                                <Select
-                                    style={{ width: '200px' }}
-                                    placeholder="Chọn trạng thái"
-                                    allowClear
-                                    value={filters.status}
-                                    onChange={(value) => handleFilterChange(value || '', 'status')}
-                                >
-                                    <Select.Option value="active">Đang hoạt động</Select.Option>
-                                    <Select.Option value="inactive">Ngừng hoạt động</Select.Option>
-                                </Select>
-                            </div>
-                        )}
-                    >
-                        <FilterOutlined style={{ cursor: 'pointer', marginLeft: 8 }} />
-                    </Dropdown>
-                </Space>
-            ),
+            title: "Trạng thái",
             dataIndex: "status",
             key: "status",
+            filterDropdown: () => (
+                <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+                    <Select
+                        style={{ width: '200px' }}
+                        placeholder="Chọn trạng thái"
+                        allowClear
+                        value={filters.status}
+                        onChange={(value) => handleFilterChange(value || '', 'status')}
+                    >
+                        <Select.Option value="active">Đang hoạt động</Select.Option>
+                        <Select.Option value="inactive">Ngừng hoạt động</Select.Option>
+                    </Select>
+                </div>
+            ),
+            filterIcon: () => <FilterOutlined style={{ color: filters.status ? '#1890ff' : undefined }} />,
             render: (status: string) => {
                 const color = status === 'active' ? 'success' : 'error';
                 return <Tag color={color}>{status === 'active' ? 'Đang hoạt động' : 'Ngừng hoạt động'}</Tag>

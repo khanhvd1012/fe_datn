@@ -23,7 +23,7 @@ export const useUsers = () => {
 // Lấy chi tiết 1 đơn hàng theo ID
 export const useOrder = (id: string) => {
   return useQuery({
-    queryKey: ['order', id],
+    queryKey: ['orders', id],
     queryFn: () => getOrderById(id),
     enabled: !!id,
   });

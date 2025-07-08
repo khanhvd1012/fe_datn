@@ -33,7 +33,7 @@ const EditStock = () => {
           messageApi.success('Cập nhật số lượng thành công!');
           queryClient.invalidateQueries({ queryKey: ['stocks'] });
           setTimeout(() => {
-            navigate('/admin/stocks');
+            navigate('/admin/stocks/stock');
           }, 1000);
         },
         onError: () => {

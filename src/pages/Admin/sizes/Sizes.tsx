@@ -1,12 +1,11 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag, Space } from 'antd';
+import { Button, Empty, message, Popconfirm, Skeleton, Table, Input } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import type { ISize } from '../../../interface/size';
 import { useSizes, useDeleteSize } from '../../../hooks/useSizes';
 import DrawerSize from '../../../components/drawer/DrawerSize';
-import SizeFilter from '../../../components/filter/SizeFilter';
 
 const Sizes = () => {
   const queryClient = useQueryClient();
@@ -65,14 +64,27 @@ const Sizes = () => {
 
   const columns = [
     {
-      title: (
-        <Space size="middle">
-          Kích thước
-          <SizeFilter filters={filters} handleFilterChange={handleFilterChange} type="size" />
-        </Space>
-      ),
+      title: "Kích thước",
       dataIndex: "size",
       key: "size",
+      filterDropdown: () => (
+        <div
+          style={{
+            padding: 8,
+            backgroundColor: 'white',
+            borderRadius: 6,
+          }}
+        >
+          <Input
+            placeholder="Tìm kiếm theo kích thước"
+            value={filters.size}
+            onChange={(e) => handleFilterChange(e.target.value, 'size')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.size ? '#1890ff' : undefined }} />,
     },
     {
       title: "Thao tác",
@@ -100,6 +112,7 @@ const Sizes = () => {
       ),
     },
   ];
+
 
   return (
     <div>

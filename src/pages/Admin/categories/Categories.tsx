@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, message, Popconfirm, Skeleton, Table } from 'antd';
+import { Button, Empty, Input, message, Popconfirm, Skeleton, Table } from 'antd';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import type { ICategory } from '../../../interface/category';
 import { useCategories, useDeleteCategory } from '../../../hooks/useCategories';
 import DrawerCategory from '../../../components/drawer/DrawerCategory';
@@ -15,8 +15,22 @@ const Categories = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteCategory();
   const { data, isLoading } = useCategories();
-  console.log("Categories data:", data);
 
+  const [filters, setFilters] = useState({ name: '' });
+
+  const handleFilterChange = (value: string, type: 'name') => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: value,
+    }));
+  };
+
+  const filteredData = data?.filter((category: ICategory) => {
+    if (filters.name && !category.name.toLowerCase().includes(filters.name.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
 
   const handleDelete = async (id: string) => {
     try {
@@ -51,6 +65,18 @@ const Categories = () => {
       title: "Tên danh mục",
       dataIndex: "name",
       key: "name",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên danh mục"
+            value={filters.name}
+            onChange={(e) => handleFilterChange(e.target.value, 'name')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.name ? '#1890ff' : undefined }} />,
     },
     {
       title: "Mô tả",
@@ -115,10 +141,10 @@ const Categories = () => {
 
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={filteredData}
         rowKey="_id"
         pagination={{
-          total: data.length,
+          total: filteredData.length,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,

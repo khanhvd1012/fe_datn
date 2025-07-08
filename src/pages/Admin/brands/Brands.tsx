@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Button, Empty, message, Popconfirm, Skeleton, Table } from 'antd';
+import { Button, Empty, Input, message, Popconfirm, Skeleton, Table } from 'antd';
 import { Link } from 'react-router-dom';
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IBrand } from '../../../interface/brand';
 import { useBrands, useDeleteBrand } from '../../../hooks/useBrands';
@@ -15,8 +15,21 @@ const Brands = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteBrand();
   const { data, isLoading } = useBrands();
-  console.log("Brands data:", data);
-  
+  const [filters, setFilters] = useState({ name: '' });
+
+  const handleFilterChange = (value: string, type: 'name') => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: value,
+    }));
+  };
+
+  const filteredData = (data ?? []).filter((brand: IBrand) => {
+    if (filters.name && !brand.name.toLowerCase().includes(filters.name.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
 
   const handleDelete = async (id: string) => {
     try {
@@ -57,6 +70,18 @@ const Brands = () => {
       title: "Tên thương hiệu",
       dataIndex: "name",
       key: "name",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên thương hiệu"
+            value={filters.name}
+            onChange={(e) => handleFilterChange(e.target.value, 'name')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.name ? '#1890ff' : undefined }} />,
     },
     {
       title: "Mô tả",
@@ -121,10 +146,10 @@ const Brands = () => {
 
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={filteredData}
         rowKey="_id"
         pagination={{
-          total: data.length,
+          total: filteredData.length,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
@@ -134,11 +159,11 @@ const Brands = () => {
 
       <DrawerBrand
         visible={isDrawerVisible}
-        brand={selectedBrand} 
+        brand={selectedBrand}
         loading={drawerLoading}
         onClose={() => {
           setIsDrawerVisible(false);
-          setSelectedBrand(null); 
+          setSelectedBrand(null);
         }}
       />
     </div>

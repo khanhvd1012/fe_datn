@@ -1,9 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, Empty, message, Popconfirm, Skeleton, Table } from "antd";
+import { Button, Empty, Input, message, Popconfirm, Skeleton, Table } from "antd";
 import { useState } from "react";
 import type { IProduct } from "../../../interface/product";
 import { Link } from "react-router-dom";
-import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import DrawerProduct from "../../../components/drawer/DrawerProduct";
 import { useDeleteProduct, useProducts } from "../../../hooks/useProducts";
 
@@ -15,6 +15,42 @@ const Products = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteProduct();
   const { data, isLoading } = useProducts();
+  const [filters, setFilters] = useState({
+    name: '',
+    brand: '',
+    category: '',
+    size: '',
+  });
+
+  const filteredData = data?.filter((product: IProduct) => {
+    const nameMatch = filters.name ? product.name.toLowerCase().includes(filters.name.toLowerCase()) : true;
+    const brandMatch = filters.brand
+      ? typeof product.brand === 'string'
+        ? product.brand.includes(filters.brand)
+        : product.brand?.name?.toLowerCase().includes(filters.brand.toLowerCase())
+      : true;
+    const categoryMatch = filters.category
+      ? typeof product.category === 'string'
+        ? product.category.includes(filters.category)
+        : product.category?.name?.toLowerCase().includes(filters.category.toLowerCase())
+      : true;
+    const sizeMatch = filters.size
+      ? product.size?.some(s =>
+        typeof s === 'string'
+          ? s.includes(filters.size)
+          : s.name?.toLowerCase().includes(filters.size.toLowerCase())
+      )
+      : true;
+
+    return nameMatch && brandMatch && categoryMatch && sizeMatch;
+  });
+
+  const handleFilterChange = (value: string | number, type: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -49,28 +85,79 @@ const Products = () => {
       title: "Tên sản phẩm",
       dataIndex: "name",
       key: "name",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên sản phẩm"
+            value={filters.name}
+            onChange={(e) => handleFilterChange(e.target.value, 'name')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.name ? '#1890ff' : undefined }} />,
     },
+
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
     },
+
     {
       title: "Thương hiệu",
       dataIndex: "brand",
       key: "brand",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm theo thương hiệu"
+            value={filters.brand}
+            onChange={(e) => handleFilterChange(e.target.value, 'brand')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.brand ? '#1890ff' : undefined }} />,
       render: (brand: any) => typeof brand === 'string' ? brand : brand?.name,
     },
+
     {
       title: "Danh mục",
       dataIndex: "category",
       key: "category",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm theo danh mục"
+            value={filters.category}
+            onChange={(e) => handleFilterChange(e.target.value, 'category')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.category ? '#1890ff' : undefined }} />,
       render: (category: any) => typeof category === 'string' ? category : category?.name,
     },
     {
       title: "Kích cỡ",
       dataIndex: "size",
       key: "size",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm theo kích cỡ"
+            value={filters.size}
+            onChange={(e) => handleFilterChange(e.target.value, 'size')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.size ? '#1890ff' : undefined }} />,
       render: (sizes: any[]) =>
         Array.isArray(sizes)
           ? sizes.map(s => typeof s === 'string' ? s : s?.size).join(', ')
@@ -121,10 +208,10 @@ const Products = () => {
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(data) ? data : []}
+        dataSource={filteredData}
         rowKey="_id"
         pagination={{
-          total: data.length,
+          total: filteredData?.length,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,

@@ -1,5 +1,5 @@
 // Import các icon và components cần thiết từ antd và react-router-dom
-import { DashboardOutlined, ShoppingOutlined, AppstoreOutlined, TagsOutlined, UserOutlined, ShoppingCartOutlined, CommentOutlined, HomeOutlined, EditOutlined, PlusOutlined, BgColorsOutlined } from '@ant-design/icons';
+import { DashboardOutlined, ShoppingOutlined, AppstoreOutlined, TagsOutlined, UserOutlined, ShoppingCartOutlined, CommentOutlined, HomeOutlined, EditOutlined, PlusOutlined, BgColorsOutlined, GiftOutlined, SkinOutlined, HistoryOutlined, BarChartOutlined, TeamOutlined, CrownOutlined, IdcardOutlined, UsergroupAddOutlined, StockOutlined } from '@ant-design/icons';
 import Sider from 'antd/es/layout/Sider'
 import { Breadcrumb, Layout, Menu, theme } from 'antd'
 import { Content } from 'antd/es/layout/layout'
@@ -26,7 +26,6 @@ import Admin from '../../pages/Admin/users/admin/Admin';
 import EditAdmin from '../../pages/Admin/users/admin/EditAdmin';
 import Customers from '../../pages/Admin/users/customer/Customers';
 import EditCustomers from '../../pages/Admin/users/customer/EditCustomers';
-import CreateEmployee from '../../pages/Admin/users/employee/CreateEmployee';
 import EditEmployee from '../../pages/Admin/users/employee/EditEmployee';
 import Employee from '../../pages/Admin/users/employee/Employee';
 import Footers from './Footer';
@@ -51,19 +50,19 @@ import EditStock from '../../pages/Admin/stock/EditStock';
 const IndexAdmin = () => {
     const [collapsed, setCollapsed] = useState(false);
     const location = useLocation();
-    
+
     // Tạo breadcrumb items dựa trên đường dẫn hiện tại
     const getBreadcrumbItems = () => {
         const pathSnippets = location.pathname.split('/').filter(i => i && i !== 'admin');
         const items: { title: React.ReactNode }[] = [];
-        
+
         let url = '/admin';
         pathSnippets.forEach((snippet) => {
             url += `/${snippet}`;
             let icon;
-            
+
             // Xác định icon dựa trên đường dẫn
-            switch(snippet) {
+            switch (snippet) {
                 case 'dashboard':
                     icon = <DashboardOutlined />;
                     break;
@@ -97,10 +96,34 @@ const IndexAdmin = () => {
                 case 'colors':
                     icon = <BgColorsOutlined />;
                     break;
+                case 'vouchers':
+                    icon = <GiftOutlined />;
+                    break;
+                case 'stocks':
+                    icon = <SkinOutlined />;
+                    break;
+                case 'stocks_history':
+                    icon = <HistoryOutlined />;
+                    break;
+                case 'analytics':
+                    icon = <BarChartOutlined />;
+                    break;
+                case 'team':
+                    icon = <TeamOutlined />;
+                    break;
+                case 'roles':
+                    icon = <CrownOutlined />;
+                    break;
+                case 'permissions':
+                    icon = <IdcardOutlined />;
+                    break;
+                case 'customers_group':
+                    icon = <UsergroupAddOutlined />;
+                    break;
                 default:
                     icon = null;
             }
-            
+
             const title = snippet.charAt(0).toUpperCase() + snippet.slice(1);
             items.push({
                 title: (
@@ -111,7 +134,7 @@ const IndexAdmin = () => {
                 )
             });
         });
-        
+
         return items;
     };
 
@@ -126,46 +149,51 @@ const IndexAdmin = () => {
                 {/* Sidebar có thể collapse */}
                 <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)}>
                     <div className="demo-logo-vertical" />
-                    {/* Menu chính của admin với các chức năng */}                    
+                    {/* Menu chính của admin với các chức năng */}
                     <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline"
                         items={[
                             // Dashboard
                             {
                                 key: "dashboard",
                                 label: <Link to="/admin/dashboard">Dashboard</Link>,
-                                icon: <DashboardOutlined />,
+                                icon: <BarChartOutlined />,
                             },
                             // Quản lý sản phẩm
                             { key: "2", label: <Link to="/admin/products">Products</Link>, icon: <ShoppingOutlined /> },
                             // Quản lý danh mục
-                            { key: "3", label: <Link to="/admin/categories">Categories</Link>, icon: <AppstoreOutlined /> },                            // Quản lý thương hiệu
-                            { key: "brands", label: <Link to="/admin/brands">Brands</Link>, icon: <TagsOutlined /> },
+                            { key: "3", label: <Link to="/admin/categories">Categories</Link>, icon: <AppstoreOutlined /> },
+                            // Quản lý thương hiệu
+                            { key: "brands", label: <Link to="/admin/brands">Brands</Link>, icon: <CrownOutlined /> },
                             // Quản lý size
-                            { key: "sizes", label: <Link to="/admin/sizes">Sizes</Link>, icon: <TagsOutlined /> },
+                            { key: "sizes", label: <Link to="/admin/sizes">Sizes</Link>, icon: <SkinOutlined /> },
                             // Quản lý màu sắc
                             { key: "colors", label: <Link to="/admin/colors">Colors</Link>, icon: <BgColorsOutlined /> },
                             // Quản lý variant
                             { key: "variants", label: <Link to="/admin/variants">Variants</Link>, icon: <TagsOutlined /> },
-                            // Quản lý người dùng với submenu
-                            {
-                                key: "5", label: <Link to="/admin/users">Users</Link>, icon: <UserOutlined />,
-                                children: [
-                                    { key: '6', label: <Link to="/admin/users/admin_users">Admin</Link> },
-                                    { key: '7', label: <Link to="/admin/users/employees">Employee</Link> },
-                                    { key: '8', label: <Link to="/admin/users/customers">Customer</Link> },
-                                ],
-                            },
-                            // Quản lý Mã giảm giá
-                            { key: "vouchers", label: <Link to="/admin/vouchers">Vouchers</Link>, icon: <TagsOutlined /> },
                             // Quản lý đơn hàng
                             { key: "9", label: <Link to="/admin/orders">Orders</Link>, icon: <ShoppingCartOutlined /> },
                             // Quản lý đánh giá
                             { key: "10", label: <Link to="/admin/reviews">Reviews</Link>, icon: <CommentOutlined /> },
                             // Quản lý kho
-                            { key: "stocks", label: <Link to="/admin/stocks">Stocks</Link>, icon: <ShoppingCartOutlined /> },
-                            // Quản lý lịch sử kho
-                            { key: "stocks_history", label: <Link to="/admin/stocks_history">Stock History</Link>, icon: <ShoppingCartOutlined /> },
-                        ]} 
+                            {
+                                key: "11", label: <Link to="/admin/stocks">Stocks</Link>, icon: <StockOutlined />,
+                                children: [
+                                    { key: '12', label: <Link to="/admin/stocks/stock">Stock</Link>, icon: <DashboardOutlined /> },
+                                    { key: '13', label: <Link to="/admin/stocks/stocks_history">Stock History</Link>, icon: <HistoryOutlined /> }
+                                ]
+                            },
+                            // Quản lý Mã giảm giá
+                            { key: "vouchers", label: <Link to="/admin/vouchers">Vouchers</Link>, icon: <GiftOutlined /> },
+                            // Quản lý người dùng với submenu
+                            {
+                                key: "5", label: <Link to="/admin/users">Users</Link>, icon: <TeamOutlined />,
+                                children: [
+                                    { key: '6', label: <Link to="/admin/users/admin_users">Admin</Link>, icon: <UserOutlined /> },
+                                    { key: '7', label: <Link to="/admin/users/employees">Employee</Link>, icon: <IdcardOutlined /> },
+                                    { key: '8', label: <Link to="/admin/users/customers">Customer</Link>, icon: <UsergroupAddOutlined /> },
+                                ],
+                            },
+                        ]}
                     />
                 </Sider>
 
@@ -173,16 +201,16 @@ const IndexAdmin = () => {
                 <Layout>
                     {/* Header */}
                     <Headers />
-                    {/* Content area */}                    
+                    {/* Content area */}
                     <Content style={{ margin: '0 16px' }}>
                         <Breadcrumb style={{ margin: '16px 0' }} items={[
-                            { 
+                            {
                                 title: (
                                     <span>
-                                        <HomeOutlined  style={{ marginRight: '8px' }} />
+                                        <HomeOutlined style={{ marginRight: '8px' }} />
                                         <Link to="/admin">Admin</Link>
                                     </span>
-                                ) 
+                                )
                             },
                             ...getBreadcrumbItems()
                         ]} />
@@ -212,7 +240,9 @@ const IndexAdmin = () => {
                                     <Route path='' element={<Categories />} />
                                     <Route path="create" element={<CreateCategories />} />
                                     <Route path="edit/:id" element={<EditCategories />} />
-                                </Route>                                {/* Routes quản lý thương hiệu */}
+                                </Route>
+
+                                {/* Routes quản lý thương hiệu */}
                                 <Route path="brands">
                                     <Route path="" element={<Brands />} />
                                     <Route path="create" element={<CreateBrand />} />
@@ -250,7 +280,6 @@ const IndexAdmin = () => {
                                     {/* Quản lý nhân viên */}
                                     <Route path="employees">
                                         <Route path="" element={<Employee />} />
-                                        <Route path="create" element={<CreateEmployee />} />
                                         <Route path="edit/:id" element={<EditEmployee />} />
                                     </Route>
                                     {/* Quản lý khách hàng */}
@@ -265,7 +294,7 @@ const IndexAdmin = () => {
                                     <Route path="" element={<Orders />} />
                                     <Route path="edit/:id" element={<EditOrders />} />
                                 </Route>
-                                
+
                                 {/* Routes quản lý mã giảm giá */}
                                 <Route path="vouchers">
                                     <Route path="" element={<Vouchers />} />
@@ -280,14 +309,17 @@ const IndexAdmin = () => {
                                     <Route path="edit/:id" element={<EditReviews />} />
                                 </Route>
 
+                                {/* Routes quản lý kho */}
                                 <Route path="stocks">
-                                    <Route path="" element={<Stock />} />
-                                    <Route path="edit/:id" element={<EditStock />} />
+                                    <Route path="stock">
+                                        <Route path="" element={<Stock />} />
+                                        <Route path="edit/:id" element={<EditStock />} />
+                                    </Route>
+                                    <Route path="stocks_history">
+                                        <Route path="" element={<StockHistory />} />
+                                    </Route>
                                 </Route>
 
-                                <Route path="stocks_history">
-                                    <Route path="" element={<StockHistory />} />
-                                </Route>
                             </Routes>
                         </div>
                     </Content>

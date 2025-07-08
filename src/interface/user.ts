@@ -12,6 +12,7 @@ export interface IUser {
   username: string;
   email: string;
   password?: string;
+  image?: string; 
   shipping_addresses: IShippingAddress[];
   role: "user" | "employee" | "admin";
 }
