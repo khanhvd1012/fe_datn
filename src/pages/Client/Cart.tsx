@@ -5,7 +5,7 @@ import { useSizes } from '../../hooks/useSizes';
 import axios from 'axios';
 import type { ISize } from '../../interface/size';
 import { Link } from 'react-router-dom';
-
+import { message , Button } from 'antd';
 const Cart: React.FC = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const { data: sizes = [] } = useSizes();
@@ -42,11 +42,38 @@ const Cart: React.FC = () => {
               const foundSize = sizes.find((s: ISize) => s._id === item.size);
               if (foundSize) sizeName = foundSize.size || foundSize.name || item.size;
             }
-            return { ...item, image, sizeName };
+            return { ...item, image, sizeName , variant_id: variant?._id,};
           })
         ).then(setCartItems);
       });
   }, [sizes]);
+
+  const addAllToCart = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await Promise.all(cartItems.map(item => {
+        console.log(" Đẩy variant_id:", item.variant_id, "SL:", item.quantity);
+        return axios.post(
+          'http://localhost:3000/api/carts',
+          {
+            variant_id: item.variant_id, 
+            quantity: item.quantity,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+      }));
+      message.success('Đã cập nhật giỏ hàng!');
+      window.location.href = "/checkout";
+    } catch (err: any) {
+      console.error(err);
+      message.error('Có lỗi khi cập nhật giỏ hàng!');
+    }
+  };
+
 
   const formatCurrency = (value: number) =>
     value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
@@ -144,13 +171,16 @@ const Cart: React.FC = () => {
                 <span>Tổng cộng</span>
                 <span>{formatCurrency(total)}</span>
               </div>
-              <Link
-                to="/checkout"
-                className={`w-full block text-center bg-black text-white py-3 font-semibold rounded transition ${cartItems.length === 0 ? "opacity-50 cursor-not-allowed pointer-events-none" : "hover:opacity-90"
-                  }`}
-              >
-                TIẾN HÀNH THANH TOÁN
-              </Link>
+                <Button
+                  type="primary"
+                  block
+                  className={`bg-black text-white font-semibold py-3 rounded ${cartItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  onClick={addAllToCart}
+                  disabled={cartItems.length === 0}
+                >
+                  TIẾN HÀNH THANH TOÁN
+                </Button>
+
               <div className="mt-4 text-xs text-gray-500 text-center">
                 Giá đã bao gồm VAT (nếu có). Phí vận chuyển sẽ được tính ở bước thanh toán tiếp theo.
               </div>
