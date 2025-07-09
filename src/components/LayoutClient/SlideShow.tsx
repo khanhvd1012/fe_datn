@@ -5,7 +5,7 @@ import styled from 'styled-components';
 
 const SlideContainer = styled.div`
   width: 100%;
-  height: 500px;
+  height: 400px;
   position: relative;
   overflow: hidden;
 
@@ -29,7 +29,7 @@ const SlideContainer = styled.div`
 
 const SlideImage = styled.img`
   width: 100%;
-  height: 500px;
+  height: 400px;
   object-fit: cover;
 `;
 
