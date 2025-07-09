@@ -11,7 +11,9 @@ export const getOrders = async (): Promise<IOrder[]> => {
       Authorization: `Bearer ${token}`,
     },
   });
-  return res.data.data;
+  const orders = res?.data;
+  console.log("Fetched Orders:", orders);
+  return orders || [];
 };
 
 export const getUserById = async (): Promise<IUser> => {

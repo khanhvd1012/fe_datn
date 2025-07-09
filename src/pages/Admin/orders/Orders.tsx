@@ -1,17 +1,16 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag, Select  } from "antd";
+import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag, Select } from "antd";
 import type { IOrder } from "../../../interface/order";
-import { useCancelOrder, useOrders, useUsers,useUpdateOrderStatus } from "../../../hooks/useOrder";
-import type { IUser } from '../../../interface/user';
+import { useCancelOrder, useOrders, useUsers, useUpdateOrderStatus } from "../../../hooks/useOrder";
+import type { IUser } from "../../../interface/user";
 
 const Orders = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const { data, isLoading } = useOrders();
   const { mutate: cancelOrder } = useCancelOrder();
-  const { data: users} = useUsers();
+  const { data: users } = useUsers();
   const { mutate: updateStatus } = useUpdateOrderStatus();
-
 
   const handleCancelOrder = (id: string) => {
     cancelOrder(
@@ -26,7 +25,7 @@ const Orders = () => {
     );
   };
 
-  const handleUpdateStatus = (orderId: string, newStatus: IOrder["status"]) => { //
+  const handleUpdateStatus = (orderId: string, newStatus: IOrder["status"]) => {
     updateStatus(
       { id: orderId, status: newStatus },
       {
@@ -41,11 +40,10 @@ const Orders = () => {
     );
   };
 
-
-
   if (isLoading) return <Skeleton active />;
   if (!data) return <Empty description="Không có đơn hàng nào" />;
 
+  // Map user_id (string) -> username
   const userMap = new Map((users as IUser[])?.map((u) => [u._id, u.username]));
 
   const columns = [
@@ -60,10 +58,9 @@ const Orders = () => {
       dataIndex: "user_id",
       key: "user_id",
       render: (user: any) => {
-         const username = userMap.get(user);
-         console.log("username field:", username);
-         return username || "Không rõ";
-      }
+        const username = userMap.get(user?._id);
+        return username || "Không rõ";
+      },
     },
     {
       title: "Tổng tiền",
@@ -132,7 +129,7 @@ const Orders = () => {
 
         return (
           <Select
-            defaultValue={labelMap[order.status]} 
+            defaultValue={labelMap[order.status]}
             style={{ width: 140 }}
             onChange={(label) => {
               const statusEng = valueMap[label];
@@ -151,19 +148,14 @@ const Orders = () => {
         );
       },
     },
-
-
-
     {
       title: "Thao tác",
       key: "actions",
       render: (_: any, order: IOrder) => (
         <div style={{ display: "flex", gap: 8 }}>
-          {/* <Link to={`/admin/orders/edit/${order._id}`}>
-            <Button icon={<EyeOutlined />} />
-          </Link> */}
-          {
-            order.status !== "canceled" && order.status !== "delivered" && order.status !== "shipped" && (
+          {order.status !== "canceled" &&
+            order.status !== "delivered" &&
+            order.status !== "shipped" && (
               <Popconfirm
                 title="Hủy đơn hàng"
                 description="Bạn có chắc muốn hủy đơn hàng này?"
@@ -173,9 +165,7 @@ const Orders = () => {
               >
                 <Button danger>Hủy</Button>
               </Popconfirm>
-            )
-          }
-
+            )}
         </div>
       ),
     },
