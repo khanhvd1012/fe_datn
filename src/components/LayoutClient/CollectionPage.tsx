@@ -99,7 +99,7 @@ const CollectionPage: React.FC = () => {
                 {loading ? (
                     <div style={{ textAlign: 'center' }}><Spin /></div>
                 ) : products.length === 0 ? (
-                    <div style={{ textAlign: 'center' }}>Không có sản phẩm nào</div>
+                    <div style={{ textAlign: 'center' }}>Không có sản phẩm nào !!!</div>
                 ) : (
                     <div
                         ref={sliderRef}

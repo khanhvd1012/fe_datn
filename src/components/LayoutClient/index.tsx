@@ -23,11 +23,12 @@ import CollectionPage from './CollectionPage';
 const IndexClient = () => {
   const location = useLocation();
   const matchProductDetail = useMatch('/products/:slug');
-
+  const matchCollectionPage = useMatch('/collection/:slug');
   // Kiểm tra các trang cần ẩn slideshow
   const isNoSlidePage =
     ['/login', '/register', '/profile', '/cart' ,'/checkout'].includes(location.pathname) ||
-    Boolean(matchProductDetail);
+    Boolean(matchProductDetail) ||
+    Boolean(matchCollectionPage);
 
   return (
     <div>
@@ -44,8 +45,7 @@ const IndexClient = () => {
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/collection/:slug" element={<CollectionPage />} />
-
+         
           {/* Auth pages - không slideshow */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -53,6 +53,7 @@ const IndexClient = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
            <Route path="/checkout" element={<Checkout />} />
+           <Route path="/collection/:slug" element={<CollectionPage />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
