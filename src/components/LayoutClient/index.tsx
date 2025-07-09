@@ -18,6 +18,7 @@ import Register from '../../pages/Auth/register';
 import Profile from '../../pages/Client/Profile';
 import Collection from '../../pages/Client/Collection';
 import Checkout from './Checkout';
+import CollectionPage from './CollectionPage';
 
 const IndexClient = () => {
   const location = useLocation();
@@ -43,6 +44,7 @@ const IndexClient = () => {
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/collection/:slug" element={<CollectionPage />} />
 
           {/* Auth pages - không slideshow */}
           <Route path="/login" element={<Login />} />
