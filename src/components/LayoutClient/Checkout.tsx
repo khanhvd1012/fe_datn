@@ -31,7 +31,6 @@ const Checkout = () => {
     note: '',
     shipping_type: 'standard',
     payment_method: 'cod',
-    voucher_code: 'SALE_HUNG2'
   });
 
   useEffect(() => {
@@ -86,7 +85,6 @@ const Checkout = () => {
 
     const payload = {
       cart_id: cartData._id,
-      voucher_code: formData.voucher_code,
       shipping_address: formData.shipping_address,
       full_name: formData.full_name,
       phone: formData.phone,
@@ -104,6 +102,7 @@ const Checkout = () => {
       message.error("Đặt hàng thất bại!");
     }
   };
+
 
   return (
     <>
