@@ -61,16 +61,19 @@ const Header: React.FC = () => {
   // Đóng Collection khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        collectionRef.current &&
-        !collectionRef.current.contains(event.target as Node)
-      ) {
+      if (collectionRef.current && !collectionRef.current.contains(event.target as Node)) {
         setShowCollectionMenu(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Đóng Collection khi cuộn trang
+  useEffect(() => {
+    const handleScroll = () => setShowCollectionMenu(false);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
@@ -79,45 +82,60 @@ const Header: React.FC = () => {
         MIỄN PHÍ VẬN CHUYỂN VỚI ĐƠN HÀNG NỘI THÀNH &gt; 300K - ĐỔI TRẢ TRONG 30 NGÀY - ĐẢM BẢO CHẤT LƯỢNG
       </HeaderTop>
 
-      <HeaderMain>
-        <Logo>
-          SNEAKER<span>TREND</span>
-        </Logo>
+      <div style={{ position: 'relative', zIndex: 100 }}>
+        <HeaderMain>
+          <Logo>
+            SNEAKER<span>TREND</span>
+          </Logo>
 
-        <NavMenu isOpen={isOpen}>
-          <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>
-          <NavItem>
-            <span className="cursor-pointer" onClick={() => setShowCollectionMenu(true)}>BỘ SƯU TẬP</span>
-          </NavItem>
-          <NavItem onClick={toggleMenu}><NavLink to="/products">SẢN PHẨM</NavLink></NavItem>
-          <NavItem onClick={toggleMenu}><NavLink to="/about">GIỚI THIỆU</NavLink></NavItem>
-          <NavItem onClick={toggleMenu}><NavLink to="/blog">BLOG</NavLink></NavItem>
-          <NavItem onClick={toggleMenu}><NavLink to="/contact">LIÊN HỆ</NavLink></NavItem>
-        </NavMenu>
+          <NavMenu isOpen={isOpen}>
+            <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>
+            <NavItem>
+              <span className="cursor-pointer" onClick={() => setShowCollectionMenu(true)}>BỘ SƯU TẬP</span>
+            </NavItem>
+            <NavItem onClick={toggleMenu}><NavLink to="/products">SẢN PHẨM</NavLink></NavItem>
+            <NavItem onClick={toggleMenu}><NavLink to="/about">GIỚI THIỆU</NavLink></NavItem>
+            <NavItem onClick={toggleMenu}><NavLink to="/blog">BLOG</NavLink></NavItem>
+            <NavItem onClick={toggleMenu}><NavLink to="/contact">LIÊN HỆ</NavLink></NavItem>
+          </NavMenu>
 
-        <IconGroup>
-          <Dropdown overlay={menu} trigger={['hover']} placement="bottomRight">
-            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-              <Icon><UserOutlined /></Icon>
-              {token && <span style={{ marginLeft: 8, fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>}
-            </div>
-          </Dropdown>
-          <Icon onClick={() => setShowSearch(true)} style={{ cursor: 'pointer' }}><SearchOutlined /></Icon>
-          <Icon onClick={() => setShowCart(true)} style={{ cursor: 'pointer' }}><ShoppingCartOutlined /></Icon>
-        </IconGroup>
+          <IconGroup>
+            <Dropdown overlay={menu} trigger={['hover']} placement="bottomRight">
+              <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
+                <Icon><UserOutlined /></Icon>
+                {token && <span style={{ marginLeft: 8, fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>}
+              </div>
+            </Dropdown>
+            <Icon onClick={() => setShowSearch(true)} style={{ cursor: 'pointer' }}><SearchOutlined /></Icon>
+            <Icon onClick={() => setShowCart(true)} style={{ cursor: 'pointer' }}><ShoppingCartOutlined /></Icon>
+          </IconGroup>
 
-        <HamburgerIcon onClick={toggleMenu} isOpen={isOpen}>
-          <span></span><span></span><span></span><span></span>
-        </HamburgerIcon>
-      </HeaderMain>
+          <HamburgerIcon onClick={toggleMenu} isOpen={isOpen}>
+            <span></span><span></span><span></span><span></span>
+          </HamburgerIcon>
+        </HeaderMain>
+
+        {/* Mega Menu Bộ Sưu Tập */}
+        {showCollectionMenu && (
+          <div
+            ref={collectionRef}
+            style={{
+              position: 'absolute',
+              top: '100%',
+              left: 0,
+              width: '100%',
+              backgroundColor: '#fff',
+              zIndex: 999,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            }}
+          >
+            <Collection onClose={() => setShowCollectionMenu(false)} />
+          </div>
+        )}
+      </div>
 
       {showCart && <SideCart onClose={() => setShowCart(false)} />}
       {showSearch && <SearchBox onClose={() => setShowSearch(false)} />}
-      {showCollectionMenu && (
-        <div ref={collectionRef}>
-          <Collection onClose={() => setShowCollectionMenu(false)} />
-        </div>
-      )}
     </>
   );
 };
