@@ -1,14 +1,15 @@
-import React from 'react';
 import { Card, Row, Col, Statistic, Table, DatePicker, Spin } from 'antd';
-import { 
-  ShoppingOutlined, 
-  ShoppingCartOutlined, 
-  UsergroupAddOutlined, 
-  DollarOutlined 
+import dayjs from 'dayjs';
+import {
+  ShoppingOutlined,
+  ShoppingCartOutlined,
+  UsergroupAddOutlined,
+  DollarOutlined
 } from '@ant-design/icons';
 import { Line } from '@ant-design/charts';
 import { useQuery } from '@tanstack/react-query';
 import { getDashboardStats } from '../../service/dashboardAPI';
+import { useState } from 'react';
 
 const { RangePicker } = DatePicker;
 
@@ -42,9 +43,19 @@ const styles = {
 };
 
 const DashBoard = () => {
-  const { data: stats, isLoading } = useQuery({
-    queryKey: ['dashboardStats'],
-    queryFn: getDashboardStats
+  const [dateRange, setDateRange] = useState<[any, any] | null>(null);
+  const { data: stats, isLoading, refetch } = useQuery({
+    queryKey: ['dashboardStats', dateRange],
+    queryFn: () => {
+      let params = {};
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        params = {
+          startDate: dayjs(dateRange[0]).format('YYYY-MM-DD'),
+          endDate: dayjs(dateRange[1]).format('YYYY-MM-DD'),
+        };
+      }
+      return getDashboardStats(params);
+    }
   });
 
   const columns = [
@@ -128,12 +139,18 @@ const DashBoard = () => {
       </Row>
 
       {/* Biểu đồ thống kê đơn hàng */}
-      <Card 
+      <Card
         size="small"
         title="Thống kê đơn hàng"
         style={styles.chartCard}
         bodyStyle={{ padding: '12px', height: '250px' }}
-        extra={<RangePicker size="small" />}
+        extra={
+          <RangePicker
+            size="small"
+            value={dateRange}
+            onChange={(dates) => setDateRange(dates)}
+          />
+        }
       >
         <Line
           data={stats?.ordersByDate || []}
@@ -149,15 +166,15 @@ const DashBoard = () => {
       </Card>
 
       {/* Bảng sản phẩm bán chạy */}
-      <Card 
-        size="small" 
+      <Card
+        size="small"
         title="Top sản phẩm bán chạy"
         style={styles.tableCard}
         bodyStyle={{ padding: '12px' }}
       >
-        <Table 
-          columns={columns} 
-          dataSource={stats?.topProducts || []} 
+        <Table
+          columns={columns}
+          dataSource={stats?.topProducts || []}
           pagination={false}
           size="small"
         />

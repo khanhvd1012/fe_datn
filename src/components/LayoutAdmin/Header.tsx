@@ -1,7 +1,7 @@
 import { Avatar, Dropdown, Space, theme } from 'antd';
 import { Header } from 'antd/es/layout/layout';
 import { UserOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Logo } from '../css/style';
 
 
@@ -25,14 +25,6 @@ const Headers = () => {
   const items = [
     {
       key: '1',
-      label: 'Thông tin cá nhân',
-    },
-    {
-      key: '2',
-      label: 'Đổi mật khẩu',
-    },
-    {
-      key: '3',
       label: 'Đăng xuất',
       danger: true,
       onClick: handleLogout,
@@ -45,15 +37,17 @@ const Headers = () => {
         padding: '0 24px',
         background: colorBgContainer,
         display: 'flex',
-        justifyContent: 'space-between', // 👉 chia trái (logo) và phải (avatar)
+        justifyContent: 'space-between',
         alignItems: 'center',
       }}
     >
       {/* Logo bên trái */}
-      <Logo>
-               SNEAKER<span>TREND</span>
-      </Logo>
-
+      <Link to={"/"}>
+        <Logo>
+          SNEAKER<span>TREND</span>
+        </Logo>
+      </Link>
+      
       {/* Avatar dropdown bên phải */}
       <Dropdown menu={{ items }} placement="bottomRight">
         <Space style={{ cursor: 'pointer' }}>
