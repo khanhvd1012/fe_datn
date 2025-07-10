@@ -5,7 +5,7 @@ import { DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
 import { useDeleteVoucher, useVouchers } from "../../../hooks/useVouchers";
 import type { IVoucher } from "../../../interface/voucher";
 import { useState } from "react";
-import DrawerVoucher from "../../../components/drawer/DrawerVoucher";
+import DrawerVoucher from "../../../components/LayoutAdmin/drawer/DrawerVoucher";
 
 const Vouchers = () => {
     const queryClient = useQueryClient();

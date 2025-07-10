@@ -4,7 +4,8 @@ import {
   createReview,
   updateReview,
   deleteReview,
-  replyToReview
+  replyToReview,
+  getAllReviews
 } from '../service/reviewAPI';
 import type { IReview } from '../interface/review';
 
@@ -16,6 +17,14 @@ export const useProductReviews = (product_id: string) => {
     enabled: !!product_id
   });
 };
+
+// Lấy tất cả đánh giá (dành cho admin)
+export const useReviews = () =>{
+  return useQuery({
+      queryKey: ['reviews'],
+      queryFn: getAllReviews
+    });
+}
 
 // Thêm đánh giá mới
 export const useCreateReview = () => {

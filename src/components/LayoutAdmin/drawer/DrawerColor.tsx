@@ -1,5 +1,5 @@
 import { Drawer, Descriptions, Tag, Skeleton, Divider } from 'antd';
-import type { IColor } from '../../interface/color';
+import type { IColor } from '../../../interface/color';
 
 interface DrawerColorProps {
     visible: boolean;

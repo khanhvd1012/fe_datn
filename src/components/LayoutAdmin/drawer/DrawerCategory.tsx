@@ -1,5 +1,5 @@
 import { Drawer, Descriptions, Divider, Skeleton, Empty } from 'antd';
-import type { ICategory } from '../../interface/category';
+import type { ICategory } from '../../../interface/category';
 
 interface DrawerCategoryProps {
   visible: boolean;

@@ -1,5 +1,5 @@
 import { Drawer, Descriptions, Skeleton, Divider, Empty } from 'antd';
-import type { ISize } from '../../interface/size';
+import type { ISize } from '../../../interface/size';
 
 interface DrawerSizeProps {
   visible: boolean;

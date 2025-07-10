@@ -15,7 +15,6 @@ import EditBrand from '../../pages/Admin/brands/EditBrand';
 import Categories from '../../pages/Admin/categories/Categories';
 import CreateCategories from '../../pages/Admin/categories/CreateCategories';
 import EditCategories from '../../pages/Admin/categories/EditCategories';
-import EditOrders from '../../pages/Admin/orders/EditOrders';
 import Orders from '../../pages/Admin/orders/Orders';
 import CreateProducts from '../../pages/Admin/products/CreateProducts';
 import EditProducts from '../../pages/Admin/products/EditProducts';
@@ -292,7 +291,6 @@ const IndexAdmin = () => {
                                 {/* Routes quản lý đơn hàng */}
                                 <Route path="orders">
                                     <Route path="" element={<Orders />} />
-                                    <Route path="edit/:id" element={<EditOrders />} />
                                 </Route>
 
                                 {/* Routes quản lý mã giảm giá */}

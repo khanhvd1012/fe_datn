@@ -1,5 +1,5 @@
 import { Drawer, Descriptions, Divider, Skeleton, Empty } from 'antd';
-import type { IBrand } from '../../interface/brand';
+import type { IBrand } from '../../../interface/brand';
 
 interface DrawerBrandProps {
   visible: boolean;

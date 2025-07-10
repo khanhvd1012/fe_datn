@@ -1,5 +1,5 @@
 import { Descriptions, Divider, Drawer, Skeleton } from "antd";
-import type { IUser } from "../../interface/user";
+import type { IUser } from "../../../interface/user";
 
 interface DrawerUserProps {
   visible: boolean;
@@ -33,7 +33,7 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
               <Descriptions.Item label="Email" className="bg-gray-50">
                 {user?.email}
               </Descriptions.Item>
-              <Descriptions.Item label="Avata" className="bg-gray-50">
+              <Descriptions.Item label="Avatar" className="bg-gray-50">
                 {user?.image}
               </Descriptions.Item>
               <Descriptions.Item label="Vai trò">

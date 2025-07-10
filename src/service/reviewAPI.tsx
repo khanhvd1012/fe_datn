@@ -14,6 +14,16 @@ export const getProductReviews = async (product_id: string): Promise<IReview[]> 
   }
 };
 
+export const getAllReviews = async (): Promise<IReview[]> => {
+  try {
+    const response = await axios.get(`${API_URL}/reviews`);
+    return response.data.reviews;
+  } catch (error) {
+    console.error("Error fetching all reviews:", error);
+    throw error;
+  }
+}
+
 // Tạo đánh giá mới
 export const createReview = async (review: Omit<IReview, "_id" | "createdAt" | "updatedAt">) => {
   try {

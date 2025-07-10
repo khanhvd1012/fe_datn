@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import type { ICategory } from '../../../interface/category';
 import { useCategories, useDeleteCategory } from '../../../hooks/useCategories';
-import DrawerCategory from '../../../components/drawer/DrawerCategory';
+import DrawerCategory from '../../../components/LayoutAdmin/drawer/DrawerCategory';
 
 const Categories = () => {
   const queryClient = useQueryClient();

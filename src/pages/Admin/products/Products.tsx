@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { IProduct } from "../../../interface/product";
 import { Link } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
-import DrawerProduct from "../../../components/drawer/DrawerProduct";
+import DrawerProduct from "../../../components/LayoutAdmin/drawer/DrawerProduct";
 import { useDeleteProduct, useProducts } from "../../../hooks/useProducts";
 
 const Products = () => {

@@ -1,5 +1,5 @@
 import { Drawer, Descriptions, Skeleton, Divider, Tag } from 'antd';
-import type { IVariant } from '../../interface/variant';
+import type { IVariant } from '../../../interface/variant';
 
 interface DrawerVariantProps {
   visible: boolean;

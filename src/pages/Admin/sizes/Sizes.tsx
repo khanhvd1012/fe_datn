@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from '@ant-design/icons';
 import type { ISize } from '../../../interface/size';
 import { useSizes, useDeleteSize } from '../../../hooks/useSizes';
-import DrawerSize from '../../../components/drawer/DrawerSize';
+import DrawerSize from '../../../components/LayoutAdmin/drawer/DrawerSize';
 
 const Sizes = () => {
   const queryClient = useQueryClient();

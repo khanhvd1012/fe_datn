@@ -1,5 +1,5 @@
 import { Drawer, Descriptions, Skeleton, Divider } from 'antd';
-import type { IProduct } from '../../interface/product';
+import type { IProduct } from '../../../interface/product';
 
 interface DrawerProductProps {
   visible: boolean;

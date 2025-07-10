@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { EditOutlined, EyeOutlined } from "@ant-design/icons";
 import type { IUser } from '../../../../interface/user';
 import { useUsers } from '../../../../hooks/useUser';
-import DrawerUser from "../../../../components/drawer/DrawerUser";
+import DrawerUser from "../../../../components/LayoutAdmin/drawer/DrawerUser";
 
 const Employee = () => {
   const [messageApi, contextHolder] = message.useMessage();

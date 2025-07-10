@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { IVariant } from "../../../interface/variant";
 import { Link } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
-import DrawerVariant from "../../../components/drawer/DrawerVariant";
+import DrawerVariant from "../../../components/LayoutAdmin/drawer/DrawerVariant";
 import { useDeleteVariant, useVariants } from "../../../hooks/useVariants";
 
 const Variant = () => {

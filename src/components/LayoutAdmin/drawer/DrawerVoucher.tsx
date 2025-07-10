@@ -1,4 +1,4 @@
-import type { IVoucher } from '../../interface/voucher';
+import type { IVoucher } from '../../../interface/voucher';
 import { Drawer, Descriptions, Skeleton, Divider, Tag } from 'antd';
 
 interface DrawerVoucherProps {

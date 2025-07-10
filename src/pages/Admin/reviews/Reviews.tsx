@@ -1,53 +1,116 @@
-import { useQueryClient } from "@tanstack/react-query";
-import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag } from "antd";
-import { DeleteOutlined, EyeOutlined } from "@ant-design/icons";
-import { useState } from "react";
+import { Empty, Input, message, Skeleton, Table, Tag } from "antd";
+import { useReviews } from "../../../hooks/useReview";
 import type { IReview } from "../../../interface/review";
-import { useDeleteReview, useProductReviews } from "../../../hooks/useReview";
+import { useState } from "react";
+import { FilterOutlined, SearchOutlined } from "@ant-design/icons";
+
 
 const Reviews = () => {
-  const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
+  const { data: review, isLoading } = useReviews();
+  const [filters, setFilters] = useState({
+    product_id: '',
+    user_id: '',
+    rating: '',
+  });
 
-  const { data, isLoading } = useProductReviews();
-  const { mutate } = useDeleteReview();
+  const normalizeText = (value: any) =>
+    typeof value === 'string'
+      ? value.toLowerCase()
+      : value?.name?.toLowerCase?.() || '';
 
-  const handleDelete = (id: string, product_id: string) => {
-    mutate(
-      { id, product_id },
-      {
-        onSuccess: () => {
-          messageApi.success("Xóa đánh giá thành công");
-          queryClient.invalidateQueries({ queryKey: ["reviews"] });
-        },
-        onError: () => {
-          messageApi.error("Xóa đánh giá thất bại");
-        },
-      }
-    );
+  const filteredData = review?.filter((reviews: IReview) => {
+    if (
+      filters.product_id &&
+      !normalizeText(reviews.product_id).includes(filters.product_id.toLowerCase())
+    ) {
+      return false;
+    }
+
+    if (
+      filters.user_id &&
+      !normalizeText(reviews.user_id).includes(filters.user_id.toLowerCase())
+    ) {
+      return false;
+    }
+
+    if (
+      filters.rating &&
+      !normalizeText(reviews.rating).includes(filters.rating.toLowerCase())
+    ) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const handleFilterChange = (value: string | number, type: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: value
+    }));
   };
-
   if (isLoading) return <Skeleton active />;
-  if (!data || !Array.isArray(data)) return <Empty description="Không có đánh giá nào" />;
+  if (!review) return <Empty />;
 
   const columns = [
     {
       title: "Sản phẩm",
       dataIndex: "product_id",
       key: "product_id",
-      render: (id: string) => <Tag color="blue">{id}</Tag>,
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên sản phẩm"
+            value={filters.product_id}
+            onChange={(e) => handleFilterChange(e.target.value, 'product_id')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.product_id ? '#1890ff' : undefined }} />,
+      render: (product: IReview["product_id"]) => (
+        <Tag color="blue">{typeof product === "object" ? product.name : product}</Tag>
+      ),
     },
     {
       title: "Người dùng",
       dataIndex: "user_id",
       key: "user_id",
-      render: (id: string) => <Tag>{id}</Tag>,
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên người dùng"
+            value={filters.user_id}
+            onChange={(e) => handleFilterChange(e.target.value, 'user_id')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.user_id ? '#1890ff' : undefined }} />,
+      render: (user: any) => (
+        <Tag>{typeof user === "object" ? user.username || user.email : user}</Tag>
+      ),
     },
     {
       title: "Số sao",
       dataIndex: "rating",
       key: "rating",
-      render: (rate: number) => <span>{rate} ⭐</span>,
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm số sao"
+            value={filters.rating}
+            onChange={(e) => handleFilterChange(e.target.value, 'rating')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.rating ? '#1890ff' : undefined }} />,
+      render: (rate: number) => <span>{rate}</span>,
     },
     {
       title: "Bình luận",
@@ -66,40 +129,25 @@ const Reviews = () => {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: Date) => new Date(date).toLocaleDateString(),
-    },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_: any, record: IReview) => (
-        <div style={{ display: "flex", gap: "8px" }}>
-          <Popconfirm
-            title="Xóa đánh giá"
-            description="Bạn có chắc muốn xóa đánh giá này?"
-            onConfirm={() => handleDelete(record._id!, record.product_id)}
-            okText="Đồng ý"
-            cancelText="Hủy"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </div>
-      ),
+      render: (date: string) => new Date(date).toLocaleDateString(),
     },
   ];
 
   return (
     <div>
       {contextHolder}
+      <div style={{ marginBottom: 16 }}>
+      </div>
       <Table
         columns={columns}
-        dataSource={data}
+        dataSource={filteredData}
         rowKey="_id"
         pagination={{
-          total: data.length,
+          total: filteredData?.length,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
-          showTotal: (total) => `Tổng ${total} đánh giá`,
+          showTotal: (total) => `Tổng ${total} bình luận`,
         }}
       />
     </div>
