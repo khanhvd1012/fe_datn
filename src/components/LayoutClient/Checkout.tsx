@@ -15,6 +15,7 @@ import {
   Spin,
   message
 } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 const Checkout = () => {
   const { TextArea } = Input;
@@ -23,6 +24,7 @@ const Checkout = () => {
   const [cartData, setCartData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [sizeMap, setSizeMap] = useState<Record<string, number>>({});
+  const navigate =useNavigate()
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -122,37 +124,37 @@ const Checkout = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.full_name || !formData.phone || !formData.shipping_address) {
-      return message.error("Vui lòng nhập đầy đủ họ tên, số điện thoại và địa chỉ.");
-    }
+  if (!formData.full_name || !formData.phone || !formData.shipping_address) {
+    return message.error("Vui lòng nhập đầy đủ họ tên, số điện thoại và địa chỉ.");
+  }
 
-    const payload = {
-      cart_id: cartData._id,
-      voucher_code: formData.voucher_code,
-      shipping_address: formData.shipping_address,
-      full_name: formData.full_name,
-      phone: formData.phone,
-      payment_method: formData.payment_method,
-    };
-
-    try {
-      const token = localStorage.getItem("token");
-      await axios.post('http://localhost:3000/api/orders', payload, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      message.success("Đặt hàng thành công!");
-
-      localStorage.removeItem('selected_voucher_id');
-      localStorage.removeItem('cart_backup');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1000);
-
-    } catch (err) {
-      console.error(err);
-      message.error("Đặt hàng thất bại!");
-    }
+  const payload = {
+    cart_id: cartData._id,
+    voucher_code: formData.voucher_code,
+    shipping_address: formData.shipping_address,
+    full_name: formData.full_name,
+    phone: formData.phone,
+    payment_method: formData.payment_method,
   };
+
+  try {
+    const token = localStorage.getItem("token");
+    await axios.post('http://localhost:3000/api/orders', payload, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    message.success("Đặt hàng thành công!");
+    localStorage.removeItem('selected_voucher_id');
+    localStorage.removeItem('cart_backup');
+
+    // 👉 Điều hướng tới trang thành công
+    navigate('/checkout/success');
+
+  } catch (err) {
+    console.error(err);
+    message.error("Đặt hàng thất bại!");
+  }
+};
 
   return (
     <>

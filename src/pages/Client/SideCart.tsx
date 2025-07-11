@@ -17,7 +17,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
     0
   );
 
-  // Lấy dữ liệu giỏ hàng từ localStorage và cập nhật ảnh + variant_id
   useEffect(() => {
     const fetchCartWithImages = async () => {
       const rawCart = JSON.parse(localStorage.getItem('cart') || '[]');
@@ -35,8 +34,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
           )
         );
 
-        const image =
-          variant?.image_url?.[0] || '/no-image.png';
+        const image = variant?.image_url?.[0] || '/no-image.png';
 
         return {
           ...item,
@@ -52,34 +50,27 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
   }, []);
 
   useEffect(() => {
-    setTimeout(() => setOpening(true), 10); // trigger open animation
+    setTimeout(() => setOpening(true), 10);
   }, []);
 
-  // Gửi toàn bộ item lên server
   const addAllToCart = async () => {
     try {
       const token = localStorage.getItem('token');
 
       if (!cart || cart.length === 0) {
-        console.warn(' Cart is empty!');
         message.warning('Không có sản phẩm nào để thêm vào giỏ!');
         return;
       }
 
-      const responses = await Promise.all(
+      await Promise.all(
         cart.map(async (item, idx) => {
           if (!item.variant_id) {
-            console.warn(` Item ${idx + 1} thiếu variant_id, bỏ qua`, item);
+            console.warn(` Item ${idx + 1} thiếu variant_id`);
             return null;
           }
 
-          console.log(` Gửi item ${idx + 1}:`, {
-            variant_id: item.variant_id,
-            quantity: item.quantity,
-          });
-
           try {
-            const res = await axios.post(
+            await axios.post(
               'http://localhost:3000/api/carts',
               {
                 variant_id: item.variant_id,
@@ -91,10 +82,9 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                 },
               }
             );
-            return res.data;
           } catch (err) {
             console.error(
-              ` Lỗi khi thêm item ${idx + 1}:`,
+              `Lỗi khi thêm item ${idx + 1}:`,
               err.response?.data || err.message
             );
             throw err;
@@ -102,13 +92,14 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
         })
       );
 
-      message.success(' Đã cập nhật giỏ hàng!');
-      window.location.href = "/checkout";
+      message.success('Đã cập nhật giỏ hàng!');
+      window.location.href = '/checkout';
     } catch (err) {
-      console.error(' Lỗi tổng khi thêm giỏ hàng:', err);
+      console.error('Lỗi khi thêm giỏ hàng:', err);
       message.error('Có lỗi khi cập nhật giỏ hàng!');
     }
   };
+
   const removeItem = (idx: number) => {
     const newCart = [...cart];
     newCart.splice(idx, 1);
@@ -117,13 +108,11 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
     message.success('Đã xóa sản phẩm khỏi giỏ hàng');
   };
 
-  // Trả tên size từ id
   const getSizeName = (id: string) => {
     const found = sizes.find((s: ISize) => s._id === id);
     return found ? found.size : id;
   };
 
-  // Cập nhật số lượng sản phẩm
   const updateQuantity = (idx: number, newQty: number) => {
     if (newQty < 1) return;
     const newCart = [...cart];
@@ -147,7 +136,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
           }`}
         style={{ fontFamily: 'Quicksand, sans-serif' }}
       >
-        {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-semibold mb-6">Giỏ hàng</h2>
           <button onClick={handleClose} className="text-lg">
@@ -155,7 +143,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
           </button>
         </div>
 
-        {/* Product List */}
         <div className="flex-1 overflow-y-auto">
           {cart.length === 0 ? (
             <div className="text-center text-gray-500 mt-10">
@@ -205,10 +192,11 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                     </span>
 
                     <button
-                      className="ml-auto text-red-500 text-sm underline"
+                      className="ml-auto text-gray-400 hover:text-red-500"
                       onClick={() => removeItem(idx)}
+                      title="Xóa sản phẩm"
                     >
-                      Xóa
+                      <CloseOutlined />
                     </button>
                   </div>
                 </div>
@@ -219,13 +207,11 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
 
         <div className="border-t mt-3 mb-3"></div>
 
-        {/* Tổng tiền */}
         <div className="flex justify-between text-sm mb-4">
           <span>TỔNG TIỀN:</span>
           <span>{total.toLocaleString('vi-VN')}₫</span>
         </div>
 
-        {/* Buttons */}
         <div className="flex gap-2 mb-2">
           <Link
             to="/cart"

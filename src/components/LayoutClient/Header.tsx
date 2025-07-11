@@ -1,5 +1,4 @@
-// Header.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { UserOutlined, SearchOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Dropdown, Menu } from 'antd';
 import {
@@ -14,22 +13,23 @@ import {
 } from '../css/style';
 import { NavLink, useNavigate } from 'react-router-dom';
 import SideCart from '../../pages/Client/SideCart';
-
-// Thêm import để lấy tên user từ database
 import { useQuery } from '@tanstack/react-query';
 import { getProfile } from '../../service/authAPI';
 import type { IUser } from '../../interface/user';
+import SearchBox from './SearchBox';
+import Collection from '../../pages/Client/Collection';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showCart, setShowCart] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [showCollectionMenu, setShowCollectionMenu] = useState(false);
+  const collectionRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // Lấy token và role từ localStorage
   const token = localStorage.getItem('token');
   const userRole = localStorage.getItem('role');
 
-  // Lấy tên user từ database (không lấy từ localStorage)
   const { data: user } = useQuery<IUser>({
     queryKey: ['profile'],
     queryFn: getProfile,
@@ -37,9 +37,7 @@ const Header: React.FC = () => {
     retry: false,
   });
 
-  const toggleMenu = () => {
-    setIsOpen(prev => !prev);
-  };
+  const toggleMenu = () => setIsOpen(prev => !prev);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -60,6 +58,21 @@ const Header: React.FC = () => {
 
   const menu = <Menu items={menuItems} />;
 
+  // Auto đóng Collection khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        collectionRef.current &&
+        !collectionRef.current.contains(event.target as Node)
+      ) {
+        setShowCollectionMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <>
       <HeaderTop>
@@ -73,7 +86,9 @@ const Header: React.FC = () => {
 
         <NavMenu isOpen={isOpen}>
           <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>
-          <NavItem onClick={toggleMenu}><NavLink to="/collection">BỘ SƯU TẬP</NavLink></NavItem>
+          <NavItem>
+            <span className="cursor-pointer" onClick={() => setShowCollectionMenu(true)}>BỘ SƯU TẬP</span>
+          </NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/products">SẢN PHẨM</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/about">GIỚI THIỆU</NavLink></NavItem>
           <NavItem onClick={toggleMenu}><NavLink to="/blog">BLOG</NavLink></NavItem>
@@ -87,24 +102,31 @@ const Header: React.FC = () => {
               {token && <span style={{ marginLeft: 8, fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>}
             </div>
           </Dropdown>
-          <Icon><SearchOutlined /></Icon>
+
+          <Icon onClick={() => setShowSearch(true)} style={{ cursor: 'pointer' }}>
+            <SearchOutlined />
+          </Icon>
+
           <Icon onClick={() => setShowCart(true)} style={{ cursor: 'pointer' }}>
             <ShoppingCartOutlined />
           </Icon>
         </IconGroup>
 
         <HamburgerIcon onClick={toggleMenu} isOpen={isOpen}>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
+          <span></span><span></span><span></span><span></span>
         </HamburgerIcon>
       </HeaderMain>
 
+      {/* Popup components */}
       {showCart && <SideCart onClose={() => setShowCart(false)} />}
+      {showSearch && <SearchBox onClose={() => setShowSearch(false)} />}
+      {showCollectionMenu && (
+        <div ref={collectionRef}>
+          <Collection onClose={() => setShowCollectionMenu(false)} />
+        </div>
+      )}
     </>
   );
 };
 
 export default Header;
-
