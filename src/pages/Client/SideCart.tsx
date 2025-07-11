@@ -73,7 +73,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
             return null;
           }
 
-          console.log(`📦 Gửi item ${idx + 1}:`, {
+          console.log(` Gửi item ${idx + 1}:`, {
             variant_id: item.variant_id,
             quantity: item.quantity,
           });
@@ -91,8 +91,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                 },
               }
             );
-
-            console.log(` Đã thêm vào cart:`, res.data);
             return res.data;
           } catch (err) {
             console.error(
@@ -110,6 +108,13 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
       console.error(' Lỗi tổng khi thêm giỏ hàng:', err);
       message.error('Có lỗi khi cập nhật giỏ hàng!');
     }
+  };
+  const removeItem = (idx: number) => {
+    const newCart = [...cart];
+    newCart.splice(idx, 1);
+    setCart(newCart);
+    localStorage.setItem('cart', JSON.stringify(newCart));
+    message.success('Đã xóa sản phẩm khỏi giỏ hàng');
   };
 
   // Trả tên size từ id
@@ -138,9 +143,8 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
   return (
     <>
       <div
-        className={`sidecart-transition fixed top-0 right-0 w-[400px] h-full bg-white shadow-2xl z-50 px-6 py-5 flex flex-col ${
-          closing ? 'sidecart-close' : opening ? 'sidecart-open' : 'sidecart-close'
-        }`}
+        className={`sidecart-transition fixed top-0 right-0 w-[400px] h-full bg-white shadow-2xl z-50 px-6 py-5 flex flex-col ${closing ? 'sidecart-close' : opening ? 'sidecart-open' : 'sidecart-close'
+          }`}
         style={{ fontFamily: 'Quicksand, sans-serif' }}
       >
         {/* Header */}
@@ -199,6 +203,13 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                     <span className="text-sm font-semibold ml-2">
                       {item.price?.toLocaleString('vi-VN')}₫
                     </span>
+
+                    <button
+                      className="ml-auto text-red-500 text-sm underline"
+                      onClick={() => removeItem(idx)}
+                    >
+                      Xóa
+                    </button>
                   </div>
                 </div>
               </div>

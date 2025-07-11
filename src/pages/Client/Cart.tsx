@@ -5,7 +5,7 @@ import { useSizes } from '../../hooks/useSizes';
 import axios from 'axios';
 import type { ISize } from '../../interface/size';
 import { Link } from 'react-router-dom';
-import { message , Button } from 'antd';
+import { message, Button } from 'antd';
 const Cart: React.FC = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const { data: sizes = [] } = useSizes();
@@ -42,7 +42,7 @@ const Cart: React.FC = () => {
               const foundSize = sizes.find((s: ISize) => s._id === item.size);
               if (foundSize) sizeName = foundSize.size || foundSize.name || item.size;
             }
-            return { ...item, image, sizeName , variant_id: variant?._id,};
+            return { ...item, image, sizeName, variant_id: variant?._id, };
           })
         ).then(setCartItems);
       });
@@ -52,11 +52,10 @@ const Cart: React.FC = () => {
     try {
       const token = localStorage.getItem('token');
       await Promise.all(cartItems.map(item => {
-        console.log(" Đẩy variant_id:", item.variant_id, "SL:", item.quantity);
         return axios.post(
           'http://localhost:3000/api/carts',
           {
-            variant_id: item.variant_id, 
+            variant_id: item.variant_id,
             quantity: item.quantity,
           },
           {
@@ -171,15 +170,15 @@ const Cart: React.FC = () => {
                 <span>Tổng cộng</span>
                 <span>{formatCurrency(total)}</span>
               </div>
-                <Button
-                  type="primary"
-                  block
-                  className={`bg-black text-white font-semibold py-3 rounded ${cartItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={addAllToCart}
-                  disabled={cartItems.length === 0}
-                >
-                  TIẾN HÀNH THANH TOÁN
-                </Button>
+              <Button
+                type="primary"
+                block
+                className={`bg-black text-white font-semibold py-3 rounded ${cartItems.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                onClick={addAllToCart}
+                disabled={cartItems.length === 0}
+              >
+                TIẾN HÀNH THANH TOÁN
+              </Button>
 
               <div className="mt-4 text-xs text-gray-500 text-center">
                 Giá đã bao gồm VAT (nếu có). Phí vận chuyển sẽ được tính ở bước thanh toán tiếp theo.

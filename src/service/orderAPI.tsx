@@ -12,7 +12,6 @@ export const getOrders = async (): Promise<IOrder[]> => {
     },
   });
   const orders = res?.data;
-  console.log("Fetched Orders:", orders);
   return orders || [];
 };
 

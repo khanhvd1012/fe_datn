@@ -31,7 +31,9 @@ const Checkout = () => {
     note: '',
     shipping_type: 'standard',
     payment_method: 'cod',
-    voucher_code: 'SALE_HUNG2'
+    voucher_code: '',
+    voucher_type: '',
+    voucher_value: 0
   });
 
   useEffect(() => {
@@ -41,6 +43,7 @@ const Checkout = () => {
         const res = await axios.get('http://localhost:3000/api/carts', {
           headers: { Authorization: `Bearer ${token}` },
         });
+        console.log(" Dữ liệu giỏ hàng:", res.data.data);
         setCartData(res.data.data);
       } catch (error) {
         message.error('Không thể lấy dữ liệu giỏ hàng');
@@ -70,11 +73,50 @@ const Checkout = () => {
     fetchSizes();
   }, []);
 
+  useEffect(() => {
+    const tempCart = localStorage.getItem('cart');
+    if (tempCart) {
+      localStorage.removeItem('cart'); // Xóa giỏ hàng tạm thời để ẩn
+    }
+
+  }, []);
+
+  useEffect(() => {
+    const voucherId = localStorage.getItem("selected_voucher_id");
+    if (voucherId) {
+      axios.get(`http://localhost:3000/api/vouchers/${voucherId}`)
+        .then(res => {
+          const voucher = res.data?.data || res.data;
+
+          if (voucher?.code && voucher?.type && voucher?.value !== undefined) {
+            setFormData(prev => ({
+              ...prev,
+              voucher_code: voucher.code,
+              voucher_type: voucher.type,
+              voucher_value: voucher.value
+            }));
+          } else {
+            console.warn("Thiếu thông tin voucher");
+          }
+        })
+        .catch(err => {
+          console.error("Không tìm thấy mã giảm giá", err);
+        });
+    }
+  }, []);
+
+
+
+
+
   const cartItems = cartData?.cart_items || [];
   const total = cartData?.total || 0;
   const shippingFee = 35000;
-  const finalTotal = total + shippingFee;
-
+  const discountAmount = formData.voucher_type === 'percentage'
+    ? Math.round((total * formData.voucher_value) / 100)
+    : formData.voucher_value || 0;
+  // const finalTotal = total + shippingFee;
+  const finalTotal = total - discountAmount + shippingFee;
   const handleChange = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
   };
@@ -99,6 +141,13 @@ const Checkout = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
       message.success("Đặt hàng thành công!");
+
+      localStorage.removeItem('selected_voucher_id');
+      localStorage.removeItem('cart_backup');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1000);
+
     } catch (err) {
       console.error(err);
       message.error("Đặt hàng thất bại!");
@@ -172,6 +221,21 @@ const Checkout = () => {
                     <Text>Tổng tiền:</Text>
                     <Text>{total.toLocaleString()} ₫</Text>
                   </div>
+
+                  {formData.voucher_code && (
+                    <>
+                      <div className="flex justify-between">
+                        <Text>Mã giảm giá:</Text>
+                        <Text className="text-red-600">
+                          {formData.voucher_type === 'percentage'
+                            ? `- ${formData.voucher_value}%`
+                            : `- ${formData.voucher_value?.toLocaleString()} ₫`}
+                        </Text>
+                      </div>
+                    </>
+                  )}
+
+
                   <div className="flex justify-between">
                     <Text>Phí vận chuyển:</Text>
                     <Text>{shippingFee.toLocaleString()} ₫</Text>

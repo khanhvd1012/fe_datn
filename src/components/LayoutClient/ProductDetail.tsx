@@ -93,6 +93,10 @@ const ProductDetail = () => {
       });
     }
     localStorage.setItem("cart", JSON.stringify(cart));
+
+    if (selectedVoucherId) {
+      localStorage.setItem("selected_voucher_id", selectedVoucherId);
+    }
     message.success("Đã thêm vào giỏ hàng!");
   };
 
@@ -107,10 +111,12 @@ const ProductDetail = () => {
       axios.get("http://localhost:3000/api/vouchers")
         .then(res => {
           const allVouchers = res.data || [];
-          const now = new Date();
           const activeVouchers = allVouchers.filter((voucher: any) => {
+            const now = new Date();
+            const start = new Date(voucher.startDate);
             const end = new Date(voucher.endDate);
-            return now <= end && voucher.quantity > 0;
+
+            return start <= now && now <= end && voucher.quantity > 0;
           });
           setVouchers(activeVouchers);
           setShowVouchers(true);
@@ -255,17 +261,17 @@ const ProductDetail = () => {
                               border: isSelected ? '2px solid #1677ff' : undefined,
                               borderRadius: '10px',
                               boxShadow: isSelected ? '0 0 0 2px #91caff' : undefined,
-                              backgroundColor :'#FF3300',
+                              backgroundColor: '#FF3300',
                             }}
                           >
                             <Row justify="space-between" align="middle" wrap={false}>
                               {/* Thông tin bên trái */}
                               <Col flex="auto" style={{ color: '#FFFFFF' }}>
-                                <strong style={{ fontSize: '16px'}}>{voucher.code}</strong><br />
+                                <strong style={{ fontSize: '16px' }}>{voucher.code}</strong><br />
                                 <small>
                                   Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString()}₫</strong>
                                 </small><br />
-                                <small style={{ color: '#660000'}}>Còn lại: {timeLeft}</small>
+                                <small style={{ color: '#660000' }}>Còn lại: {timeLeft}</small>
                               </Col>
 
                               {/* Giảm giá bên phải */}
