@@ -46,15 +46,16 @@ const Header: React.FC = () => {
 
   const menuItems = token
     ? [
-        { key: '0', label: <span style={{ fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>, disabled: true },
-        { key: '1', label: <NavLink to="/profile">Thông tin tài khoản</NavLink> },
-        ...(userRole === 'admin' ? [{ key: '2', label: <NavLink to="/admin">Trang quản trị</NavLink> }] : []),
-        { key: '3', label: <span onClick={handleLogout}>Đăng xuất</span>, danger: true },
-      ]
+      { key: '0', label: <span style={{ fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>, disabled: true },
+      { key: '1', label: <NavLink to="/profile">Thông tin tài khoản</NavLink> },
+      { key: '2', label: <NavLink to="/order-history">Đơn hàng của bạn</NavLink> },
+      ...(userRole === 'admin' ? [{ key: '3', label: <NavLink to="/admin">Trang quản trị</NavLink> }] : []),
+      { key: '4', label: <span onClick={handleLogout}>Đăng xuất</span>, danger: true },
+    ]
     : [
-        { key: '1', label: <NavLink to="/login">Đăng nhập</NavLink> },
-        { key: '2', label: <NavLink to="/register">Đăng ký</NavLink> },
-      ];
+      { key: '1', label: <NavLink to="/login">Đăng nhập</NavLink> },
+      { key: '2', label: <NavLink to="/register">Đăng ký</NavLink> },
+    ];
 
   const menu = <Menu items={menuItems} />;
 

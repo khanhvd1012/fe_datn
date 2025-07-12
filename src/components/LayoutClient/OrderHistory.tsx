@@ -10,6 +10,7 @@ import {
   Spin,
   Divider
 } from 'antd';
+import Breadcrumb from './Breadcrumb';
 
 const { Title, Text } = Typography;
 
@@ -138,6 +139,8 @@ const fetchSizeName = async (id: string): Promise<string> => {
   if (!orders.length) return <Text>Bạn chưa có đơn hàng nào</Text>;
 
   return (
+    <>
+    <Breadcrumb current="Đơn hàng" />
     <div className="max-w-5xl mx-auto p-6">
       <Title level={2}>Lịch sử đơn hàng</Title>
 
@@ -186,6 +189,7 @@ const fetchSizeName = async (id: string): Promise<string> => {
         </Card>
       ))}
     </div>
+    </>
   );
 };
 
