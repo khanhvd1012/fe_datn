@@ -20,8 +20,8 @@ import Collection from '../../pages/Client/Collection';
 import Checkout from './Checkout';
 import CollectionPage from './CollectionPage';
 import CheckoutSuccess from './CheckoutSuccess';
-
 import OrderHistory from './OrderHistory';
+
 
 const IndexClient = () => {
   const location = useLocation();

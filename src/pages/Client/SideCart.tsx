@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import { useSizes } from '../../hooks/useSizes';
@@ -12,17 +12,16 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
   const [opening, setOpening] = useState(false);
   const { data: sizes = [] } = useSizes();
   const location = useLocation();
+  const cartRef = useRef<HTMLDivElement>(null);
 
   const total = cart.reduce(
     (sum: number, item: any) => sum + item.price * item.quantity,
     0
   );
 
-  // Auto đóng giỏ khi chuyển route
+  // Auto đóng khi chuyển route
   useEffect(() => {
-    if (opening) {
-      handleClose();
-    }
+    if (opening) handleClose();
   }, [location.pathname]);
 
   useEffect(() => {
@@ -59,6 +58,27 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
 
   useEffect(() => {
     setTimeout(() => setOpening(true), 10);
+  }, []);
+
+  // Đóng khi click ra ngoài hoặc scroll
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (cartRef.current && !cartRef.current.contains(event.target as Node)) {
+        handleClose();
+      }
+    };
+
+    const handleScroll = () => {
+      handleClose();
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
   const addAllToCart = async () => {
@@ -132,6 +152,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
   return (
     <>
       <div
+        ref={cartRef}
         className={`sidecart-transition fixed top-0 right-0 w-[400px] h-full bg-white shadow-2xl z-50 px-6 py-5 flex flex-col ${
           closing ? 'sidecart-close' : opening ? 'sidecart-open' : 'sidecart-close'
         }`}
@@ -163,8 +184,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                     {item.name}
                   </h3>
                   <div className="text-xs text-gray-500 mt-1">
-                    {item.color ? `${item.color} / ` : ''}
-                    Size: {getSizeName(item.size)}
+                    {item.color ? `${item.color} / ` : ''}Size: {getSizeName(item.size)}
                   </div>
                   <div className="flex items-center mt-2">
                     <button
@@ -191,7 +211,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                     <span className="text-sm font-semibold ml-2">
                       {item.price?.toLocaleString('vi-VN')}₫
                     </span>
-
                     <button
                       className="ml-auto text-gray-400 hover:text-red-500"
                       onClick={() => removeItem(idx)}
