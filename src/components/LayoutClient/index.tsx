@@ -21,6 +21,8 @@ import Checkout from './Checkout';
 import CollectionPage from './CollectionPage';
 import CheckoutSuccess from './CheckoutSuccess';
 
+import OrderHistory from './OrderHistory';
+
 const IndexClient = () => {
   const location = useLocation();
   const matchProductDetail = useMatch('/products/:slug');
@@ -57,6 +59,7 @@ const IndexClient = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/collection/:slug" element={<CollectionPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/OrderHistory" element={<OrderHistory />} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

@@ -148,7 +148,7 @@ const Checkout = () => {
     localStorage.removeItem('cart_backup');
 
     // 👉 Điều hướng tới trang thành công
-    navigate('/checkout/success');
+    navigate('/OrderHistory');
 
   } catch (err) {
     console.error(err);
