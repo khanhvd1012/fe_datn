@@ -55,6 +55,8 @@ import CreateBlog from '../../pages/Admin/blog/CreateBlog';
 
 import Contacts from '../../pages/Admin/contact/Contacts';
 import ContactDetail from '../../pages/Admin/contact/ContactDetail';
+import EditBlog from '../../pages/Admin/blog/EditBlog';
+import EditBanner from '../../pages/Admin/banners/EditBanner';
 
 // Component chính quản lý layout của trang admin
 const IndexAdmin = () => {
@@ -174,12 +176,6 @@ const IndexAdmin = () => {
                             { key: "3", label: <Link to="/admin/categories">Categories</Link>, icon: <AppstoreOutlined /> },
                             // Quản lý thương hiệu
                             { key: "brands", label: <Link to="/admin/brands">Brands</Link>, icon: <CrownOutlined /> },
-                            // Quản lý banner
-                            { key: "banners", label: <Link to="/admin/banners">Banners</Link>, icon: <PictureOutlined /> },
-                            // Quản lý blog
-                            { key: "blogs", label: <Link to="/admin/blogs">Blogs</Link>, icon: <EditOutlined /> },
-                            // Quản lý contacts
-                            { key: "contacts", label: <Link to="/admin/contacts">Contacts</Link>, icon: <CommentOutlined /> },
                             // Quản lý size
                             { key: "sizes", label: <Link to="/admin/sizes">Sizes</Link>, icon: <SkinOutlined /> },
                             // Quản lý màu sắc
@@ -209,6 +205,13 @@ const IndexAdmin = () => {
                                     { key: '8', label: <Link to="/admin/users/customers">Customer</Link>, icon: <UsergroupAddOutlined /> },
                                 ],
                             },
+                              // Quản lý banner
+                            { key: "banners", label: <Link to="/admin/banners">Banners</Link>, icon: <PictureOutlined /> },
+                            // Quản lý blog
+                            { key: "blogs", label: <Link to="/admin/blogs">Blogs</Link>, icon: <EditOutlined /> },
+                            // Quản lý contacts
+                            { key: "contacts", label: <Link to="/admin/contacts">Contacts</Link>, icon: <CommentOutlined /> },
+
                         ]}
                     />
                 </Sider>
@@ -340,15 +343,16 @@ const IndexAdmin = () => {
                                 <Route path="banners">
                                     <Route path="" element={<Banners />} />
                                     <Route path="create" element={<CreateBanner />} />
-                                    {/* <Route path="edit/:id" element={<EditBanner />} /> */}
+                                    <Route path="edit/:id" element={<EditBanner />} />
+                                    
                                 </Route>
 
                                 {/* Routes quản lý blogs */}
                                 <Route path="blogs">
                                     <Route path="" element={<Blogs />} />
                                     <Route path="create" element={<CreateBlog />} />
-                                    {/* <Route path="edit/:id" element={<EditBlog />} />
-                                     */}
+                                    <Route path="edit/:id" element={<EditBlog />} />
+                                    
                                 </Route>
                                 {/* Routes quản lý contacts */}
                                 <Route path="contacts">
