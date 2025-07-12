@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import axios from 'axios';
 import {
@@ -13,6 +13,7 @@ import {
   Divider,
   Spin,
   message,
+  
 } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,6 +26,7 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [sizeMap, setSizeMap] = useState<Record<string, number>>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+const cartItemIdsRef = useRef<string[]>([]);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -47,6 +49,9 @@ const Checkout = () => {
           headers: { Authorization: `Bearer ${token}` },
         });
         setCartData(res.data.data);
+
+        const cartItems = res.data.data.cart_items || [];
+        cartItemIdsRef.current = cartItems.map((item: any) => item._id);
       } catch (error) {
         message.error('Không thể lấy dữ liệu giỏ hàng');
       } finally {
@@ -76,8 +81,35 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
-    localStorage.removeItem('cart'); // Clear cart preview
+    const cart = localStorage.getItem('cart');
+    if (cart) {
+      localStorage.setItem('cart_backup', cart); // lưu lại bản sao
+      localStorage.removeItem('cart'); // xoá tạm thời
+    }
+
+    return () => {
+      // Khi rời khỏi trang mà chưa đặt hàng, khôi phục lại cart
+      const backup = localStorage.getItem('cart_backup');
+      if (backup) {
+        localStorage.setItem('cart', backup);
+        localStorage.removeItem('cart_backup');
+      }
+      const token = localStorage.getItem('token');
+      if (token) {
+      const ids = cartItemIdsRef.current;
+      
+      ids.forEach((id) => {
+        axios
+          .delete(`http://localhost:3000/api/carts/${id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          .then(() => console.log(`Đã xoá cart item ${id}`))
+          .catch((err) => console.error(`Lỗi xoá cart item ${id}:`, err));
+      });
+    }
+    };
   }, []);
+
 
   useEffect(() => {
     const voucherId = localStorage.getItem('selected_voucher_id');
