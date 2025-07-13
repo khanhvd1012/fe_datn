@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { UserOutlined, SearchOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { Dropdown, Menu } from 'antd';
 import {
@@ -18,12 +18,14 @@ import { getProfile } from '../../service/authAPI';
 import type { IUser } from '../../interface/user';
 import SearchBox from './SearchBox';
 import Collection from '../../pages/Client/Collection';
+import axios from 'axios';
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showCollectionMenu, setShowCollectionMenu] = useState(false);
+  const [products, setProducts] = useState([]);
   const collectionRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
 
@@ -36,6 +38,26 @@ const Header: React.FC = () => {
     enabled: !!token,
     retry: false,
   });
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/api/products')
+      .then(res => {
+        // Lấy mảng sản phẩm từ res.data.data.products
+        const arr = Array.isArray(res.data?.data?.products) ? res.data.data.products : [];
+        // Chuẩn hóa: lấy ảnh đầu tiên từ images, image_url, hoặc từ biến thể
+        const productsWithImage = arr.map(p => ({
+          ...p,
+          image:
+            p.image ||
+            (Array.isArray(p.images) && p.images[0]) ||
+            (Array.isArray(p.image_url) && p.image_url[0]) ||
+            (Array.isArray(p.variants) && p.variants[0]?.image_url?.[0]) ||
+            '', // fallback nếu không có ảnh
+        }));
+        setProducts(productsWithImage);
+      })
+      .catch(() => setProducts([]));
+  }, []);
 
   const toggleMenu = () => setIsOpen(prev => !prev);
 
@@ -73,6 +95,9 @@ const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleOpenSearch = useCallback(() => setShowSearch(true), []);
+  const handleCloseSearch = useCallback(() => setShowSearch(false), []);
+
   return (
     <>
       <HeaderTop>
@@ -103,7 +128,7 @@ const Header: React.FC = () => {
             </div>
           </Dropdown>
 
-          <Icon onClick={() => setShowSearch(true)} style={{ cursor: 'pointer' }}>
+          <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer' }}>
             <SearchOutlined />
           </Icon>
 
@@ -119,7 +144,7 @@ const Header: React.FC = () => {
 
       {/* Popup components */}
       {showCart && <SideCart onClose={() => setShowCart(false)} />}
-      {showSearch && <SearchBox onClose={() => setShowSearch(false)} />}
+      {showSearch && <SearchBox onClose={handleCloseSearch} products={products} />}
       {showCollectionMenu && (
         <div ref={collectionRef}>
           <Collection onClose={() => setShowCollectionMenu(false)} />

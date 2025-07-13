@@ -5,8 +5,10 @@ import { MinusOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-desi
 import axios from 'axios';
 import Breadcrumb from './Breadcrumb';
 import { useSizes } from '../../hooks/useSizes';
+import { useColors } from '../../hooks/useColors';
 import type { IProduct } from '../../interface/product';
 import type { ISize } from '../../interface/size';
+import type { IColor } from '../../interface/color';
 import '../css/Product_detail.css';
 
 
@@ -15,6 +17,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<IProduct | null>(null);
   const [mainImage, setMainImage] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [vouchers, setVouchers] = useState<any[]>([]);
@@ -22,11 +25,17 @@ const ProductDetail = () => {
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
 
   const { data: sizes = [] } = useSizes();
+  const { data: colors = [] } = useColors();
 
   const getSizeName = (id: string) => {
     if (!id || !Array.isArray(sizes) || sizes.length === 0) return id;
     const found = sizes.find((s: ISize) => s._id === id);
     return found ? found.size : id;
+  };
+
+  const getColorInfo = (id: string) => {
+    if (!id || !Array.isArray(colors)) return null;
+    return colors.find((c: IColor) => c._id === id) || null;
   };
 
   useEffect(() => {
@@ -57,6 +66,16 @@ const ProductDetail = () => {
       });
 
   }, [slug]);
+
+  useEffect(() => {
+    if (!selectedColor || !product?.variants) return;
+    const variant = product.variants.find((v: any) => v.color === selectedColor);
+    if (variant) {
+      const firstSize = variant.size?.[0] || (typeof variant.size === 'string' ? variant.size : null);
+      setSelectedSize(firstSize || null);
+      setMainImage(Array.isArray(variant.image_url) ? variant.image_url[0] : '');
+    }
+  }, [selectedColor, product]);
 
   const getSelectedVariant = () => {
     if (!product?.variants || !selectedSize) return null;
@@ -139,6 +158,11 @@ const ProductDetail = () => {
     }
   };
 
+  const availableColors = Array.isArray(product?.variants)
+    ? product.variants
+        .map((variant: any) => variant.color)
+        .filter((value, index, self) => value && self.indexOf(value) === index)
+    : [];
 
   const brandName = typeof product.brand === 'object' ? product.brand.name : '';
 
@@ -177,6 +201,53 @@ const ProductDetail = () => {
                 : 'Đang cập nhật giá'}
             </p>
 
+            {/* Chọn màu */}
+            {availableColors.length > 0 && (
+              <div className="color-section">
+                <span className="label">Chọn màu:</span>
+                <div className="color-options">
+                  {availableColors.map((colorId: string) => {
+                    const color = getColorInfo(colorId);
+                    return (
+                      <button
+                        key={colorId}
+                        className={`color-btn ${selectedColor === colorId ? 'active' : ''}`}
+                        onClick={() => setSelectedColor(colorId)}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          border: selectedColor === colorId ? '2px solid #7fc9c4' : '1px solid #ccc',
+                          background: '#fff',
+                          cursor: 'pointer',
+                          marginRight: 8,
+                          outline: 'none',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: 0,
+                        }}
+                        title={color?.name}
+                      >
+                        {/* Hiển thị hình tròn màu sắc */}
+                        <span
+                          style={{
+                            display: 'inline-block',
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            background: color?.code || '#eee',
+                            border: '1px solid #ccc',
+                          }}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Chọn size */}
             <div className="size-section">
               <span className="label">Chọn size:</span>
               <div className="size-options">
