@@ -1,4 +1,5 @@
-import React from 'react';
+// Collection.tsx
+import React, { useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useBrands } from '../../hooks/useBrands';
 import { useCategories } from '../../hooks/useCategories';
@@ -20,8 +21,20 @@ const Collection: React.FC<Props> = ({ onClose }) => {
   const { data: brands = [], isLoading: loadingBrands } = useBrands();
   const { data: categories = [], isLoading: loadingCategories } = useCategories();
 
+  // Tự động đóng khi cuộn trang
+  useEffect(() => {
+    const handleScroll = () => {
+      onClose();
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [onClose]);
+
   return (
-    <div className="fixed top-[100px] left-0 w-full h-[400px] bg-gradient-to-b from-white via-gray-50 to-white z-50 shadow-xl border-t overflow-y-auto font-[Quicksand]">
+    <div className="fixed top-[100px] left-0 w-full h-[400px] bg-gradient-to-b from-white via-gray-50 to-white z-50 shadow-xl overflow-y-auto font-[Quicksand]">
       <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 gap-10">
         {/* Cột 1 - Thương hiệu */}
         <div>

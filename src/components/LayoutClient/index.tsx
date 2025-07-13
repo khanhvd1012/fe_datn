@@ -20,6 +20,8 @@ import Collection from '../../pages/Client/Collection';
 import Checkout from './Checkout';
 import CollectionPage from './CollectionPage';
 import CheckoutSuccess from './CheckoutSuccess';
+import OrderHistory from './OrderHistory';
+
 
 const IndexClient = () => {
   const location = useLocation();
@@ -28,7 +30,7 @@ const IndexClient = () => {
 
   // Kiểm tra các trang cần ẩn slideshow
   const isNoSlidePage =
-    ['/login', '/register', '/profile', '/cart', '/checkout','/checkout/success'].includes(location.pathname) ||
+    ['/login', '/register', '/profile', '/cart', '/checkout','/checkout/success' ,'/order-history'].includes(location.pathname) ||
     Boolean(matchProductDetail) ||
     Boolean(matchCollectionPage);
 
@@ -57,6 +59,7 @@ const IndexClient = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/collection/:slug" element={<CollectionPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/order-history" element={<OrderHistory />} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

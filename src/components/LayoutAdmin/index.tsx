@@ -1,5 +1,5 @@
 // Import các icon và components cần thiết từ antd và react-router-dom
-import { DashboardOutlined, ShoppingOutlined, AppstoreOutlined, TagsOutlined, UserOutlined, ShoppingCartOutlined, CommentOutlined, HomeOutlined, EditOutlined, PlusOutlined, BgColorsOutlined, GiftOutlined, SkinOutlined, HistoryOutlined, BarChartOutlined, TeamOutlined, CrownOutlined, IdcardOutlined, UsergroupAddOutlined, StockOutlined } from '@ant-design/icons';
+import { DashboardOutlined, ShoppingOutlined, AppstoreOutlined, TagsOutlined, UserOutlined, ShoppingCartOutlined, CommentOutlined, HomeOutlined, EditOutlined, PlusOutlined, BgColorsOutlined, GiftOutlined, SkinOutlined, HistoryOutlined, BarChartOutlined, TeamOutlined, CrownOutlined, IdcardOutlined, UsergroupAddOutlined, StockOutlined, PictureOutlined } from '@ant-design/icons';
 import Sider from 'antd/es/layout/Sider'
 import { Breadcrumb, Layout, Menu, theme } from 'antd'
 import { Content } from 'antd/es/layout/layout'
@@ -45,6 +45,18 @@ import Stock from '../../pages/Admin/stock/Stock';
 import StockHistory from '../../pages/Admin/stockHistory/StockHistory';
 import EditStock from '../../pages/Admin/stock/EditStock';
 
+import Banners from '../../pages/Admin/banners/Banners';
+import CreateBanner from '../../pages/Admin/banners/CreateBanner';
+// import EditBanner from '../../pages/Admin/banners/EditBanner';
+
+import Blogs from '../../pages/Admin/blog/Blogs';
+import CreateBlog from '../../pages/Admin/blog/CreateBlog';
+// import EditBlog from '../../pages/Admin/blog/EditBlog';
+
+import Contacts from '../../pages/Admin/contact/Contacts';
+import ContactDetail from '../../pages/Admin/contact/ContactDetail';
+import EditBlog from '../../pages/Admin/blog/EditBlog';
+import EditBanner from '../../pages/Admin/banners/EditBanner';
 
 // Component chính quản lý layout của trang admin
 const IndexAdmin = () => {
@@ -193,6 +205,13 @@ const IndexAdmin = () => {
                                     { key: '8', label: <Link to="/admin/users/customers">Customer</Link>, icon: <UsergroupAddOutlined /> },
                                 ],
                             },
+                              // Quản lý banner
+                            { key: "banners", label: <Link to="/admin/banners">Banners</Link>, icon: <PictureOutlined /> },
+                            // Quản lý blog
+                            { key: "blogs", label: <Link to="/admin/blogs">Blogs</Link>, icon: <EditOutlined /> },
+                            // Quản lý contacts
+                            { key: "contacts", label: <Link to="/admin/contacts">Contacts</Link>, icon: <CommentOutlined /> },
+
                         ]}
                     />
                 </Sider>
@@ -320,6 +339,27 @@ const IndexAdmin = () => {
                                     </Route>
                                 </Route>
 
+                                {/* Routes quản lý banner */}
+                                <Route path="banners">
+                                    <Route path="" element={<Banners />} />
+                                    <Route path="create" element={<CreateBanner />} />
+                                    <Route path="edit/:id" element={<EditBanner />} />
+                                    
+                                </Route>
+
+                                {/* Routes quản lý blogs */}
+                                <Route path="blogs">
+                                    <Route path="" element={<Blogs />} />
+                                    <Route path="create" element={<CreateBlog />} />
+                                    <Route path="edit/:id" element={<EditBlog />} />
+                                    
+                                </Route>
+                                {/* Routes quản lý contacts */}
+                                <Route path="contacts">
+                                    <Route path="" element={<Contacts />} />
+                                    <Route path=":id" element={<ContactDetail />} />
+                                </Route>
+                                <Route path="contacts/:id" element={<ContactDetail />} />
                             </Routes>
                         </div>
                     </Content>
