@@ -10,6 +10,7 @@ import type { IProduct } from '../../interface/product';
 import type { ISize } from '../../interface/size';
 import type { IColor } from '../../interface/color';
 import '../css/Product_detail.css';
+import RelatedProducts from './RelatedProducts';
 
 
 const ProductDetail = () => {
@@ -160,8 +161,8 @@ const ProductDetail = () => {
 
   const availableColors = Array.isArray(product?.variants)
     ? product.variants
-        .map((variant: any) => variant.color)
-        .filter((value, index, self) => value && self.indexOf(value) === index)
+      .map((variant: any) => variant.color)
+      .filter((value, index, self) => value && self.indexOf(value) === index)
     : [];
 
   const brandName = typeof product.brand === 'object' ? product.brand.name : '';
@@ -200,12 +201,20 @@ const ProductDetail = () => {
                 ? displayPrice.toLocaleString('vi-VN') + '₫'
                 : 'Đang cập nhật giá'}
             </p>
-
             {/* Chọn màu */}
             {availableColors.length > 0 && (
               <div className="color-section">
                 <span className="label">Chọn màu:</span>
-                <div className="color-options">
+                <div
+                  className="color-options"
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'nowrap',
+                    alignItems: 'center',
+                    marginTop: 8,
+                    overflowX: 'auto', // Optional: cuộn ngang nếu quá dài
+                  }}
+                >
                   {availableColors.map((colorId: string) => {
                     const color = getColorInfo(colorId);
                     return (
@@ -216,11 +225,11 @@ const ProductDetail = () => {
                         style={{
                           width: 32,
                           height: 32,
-                          borderRadius: '50%',
+                          borderRadius: 0, // Vuông
                           border: selectedColor === colorId ? '2px solid #7fc9c4' : '1px solid #ccc',
                           background: '#fff',
                           cursor: 'pointer',
-                          marginRight: 8,
+                          marginRight: 5, // Cách nhau 5px
                           outline: 'none',
                           display: 'flex',
                           alignItems: 'center',
@@ -229,7 +238,7 @@ const ProductDetail = () => {
                         }}
                         title={color?.name}
                       >
-                        {/* Hiển thị hình tròn màu sắc */}
+                        {/* Hình tròn đại diện màu */}
                         <span
                           style={{
                             display: 'inline-block',
@@ -373,14 +382,14 @@ const ProductDetail = () => {
                 )}
               </div>
             )}
-
-            <div className="product-description">
-              <h3><u>Mô tả sản phẩm</u></h3>
-              <p>{product.description}</p>
-            </div>
           </div>
         </div>
+        <div className="product-description">
+          <h3><u>Mô tả sản phẩm</u></h3>
+          <p>{product.description}</p>
+        </div>
       </div>
+      <RelatedProducts/>
     </>
   );
 };
