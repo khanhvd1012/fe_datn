@@ -1,70 +1,119 @@
-import React, { useState, useEffect } from 'react'
-import axios from 'axios'
-import { Link } from 'react-router-dom'
-import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
-import SidebarMenu from '../../components/LayoutClient/SideBarMenu'
-import type { IProduct } from '../../interface/product'
-import type { IVariant } from '../../interface/variant'
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
+import SidebarMenu from '../../components/LayoutClient/SideBarMenu';
+import type { IProduct } from '../../interface/product';
+import { useVariants } from '../../hooks/useVariants';
+import { useColors } from '../../hooks/useColors';
+import { useSizes } from '../../hooks/useSizes';
+import axios from 'axios';
 
 const Products = () => {
-  const [products, setProducts] = useState<IProduct[]>([])
-  const [variants, setVariants] = useState<IVariant[]>([])
-  const [sortOption, setSortOption] = useState('desc')
+  const [products, setProducts] = useState<IProduct[]>([]);
+  const [sortOption, setSortOption] = useState('desc');
+  const [priceFilters, setPriceFilters] = useState<string[]>([]);
+  const [colorFilters, setColorFilters] = useState<string[]>([]);
+  const [sizeFilters, setSizeFilters] = useState<string[]>([]);
+
+  const { data: variants = [] } = useVariants();
+  const { data: colors = [] } = useColors();
+  const { data: sizes = [] } = useSizes();
 
   useEffect(() => {
-    Promise.all([
-      axios.get('http://localhost:3000/api/products'),
-      axios.get('http://localhost:3000/api/variants')
-    ])
-      .then(([productsRes, variantsRes]) => {
-        setProducts(productsRes.data.data.products || [])
-        setVariants(variantsRes.data.data || [])
-      })
-      .catch(() => {
-        setProducts([])
-        setVariants([])
-      })
-  }, [])
+    axios
+      .get('http://localhost:3000/api/products')
+      .then(res => setProducts(res.data.data.products || []))
+      .catch(() => setProducts([]));
+  }, []);
 
-  // Lấy giá thấp nhất từ các variant của sản phẩm
   const getMinVariantPrice = (product: IProduct) => {
-    if (!Array.isArray((product as any).variants) || (product as any).variants.length === 0) return null
     const productVariants = variants.filter(v =>
-      ((product as any).variants as string[]).includes(v._id || '')
-    )
-    if (productVariants.length === 0) return null
-    const prices = productVariants.map(v => v.price).filter(p => typeof p === 'number')
-    if (prices.length === 0) return null
-    return Math.min(...prices)
-  }
+      (product as any).variants?.includes(v._id || '')
+    );
+    const prices = productVariants.map(v => v.price).filter(p => typeof p === 'number');
+    return prices.length > 0 ? Math.min(...prices) : null;
+  };
 
-  // Lấy ảnh từ variant đầu tiên có ảnh, nếu không có thì lấy ảnh sản phẩm
   const getDisplayImage = (product: IProduct) => {
-    if (!Array.isArray((product as any).variants) || (product as any).variants.length === 0) return (product as any).images?.[0] || ''
     const productVariants = variants.filter(v =>
-      ((product as any).variants as string[]).includes(v._id || '')
-    )
-    const variantWithImage = productVariants.find(v => Array.isArray((v as any).image_url) && (v as any).image_url.length > 0)
-    if (variantWithImage) return (variantWithImage as any).image_url[0]
-    return (product as any).images?.[0] || ''
-  }
+      (product as any).variants?.includes(v._id || '')
+    );
+    const variantWithImage = productVariants.find(
+      v => Array.isArray(v.image_url) && v.image_url.length > 0
+    );
+    return variantWithImage?.image_url?.[0] || (product as any).images?.[0] || '';
+  };
+
+  const isInPriceRange = (price: number, range: string) => {
+    switch (range) {
+      case '0-500':
+        return price < 500_000;
+      case '500-1000':
+        return price >= 500_000 && price <= 1_000_000;
+      case '1000-1500':
+        return price > 1_000_000 && price <= 1_500_000;
+      case '2000-5000':
+        return price > 2_000_000 && price <= 5_000_000;
+      case '5000+':
+        return price > 5_000_000;
+      default:
+        return true;
+    }
+  };
 
   const sortedProducts = [...products].sort((a, b) => {
-    const aPrice = getMinVariantPrice(a) ?? 0
-    const bPrice = getMinVariantPrice(b) ?? 0
+    const aPrice = getMinVariantPrice(a) ?? 0;
+    const bPrice = getMinVariantPrice(b) ?? 0;
     switch (sortOption) {
       case 'asc':
-        return aPrice - bPrice
+        return aPrice - bPrice;
       case 'desc':
-        return bPrice - aPrice
+        return bPrice - aPrice;
       case 'name-asc':
-        return a.name.localeCompare(b.name)
+        return a.name.localeCompare(b.name);
       case 'name-desc':
-        return b.name.localeCompare(a.name)
+        return b.name.localeCompare(a.name);
       default:
-        return 0
+        return 0;
     }
-  })
+  });
+
+  const filteredProducts = sortedProducts.filter(product => {
+    const productVariants = variants.filter(v =>
+      (product as any).variants?.includes(v._id || '')
+    );
+    const minPrice = getMinVariantPrice(product) ?? 0;
+
+    const priceMatch =
+      priceFilters.length === 0 ||
+      priceFilters.some(range => isInPriceRange(minPrice, range));
+
+    const colorMatch =
+      colorFilters.length === 0 ||
+      productVariants.some(variant => {
+        if (typeof variant.color === 'string') {
+          return colorFilters.includes(variant.color);
+        }
+        if (Array.isArray(variant.color)) {
+          return variant.color.some(c => colorFilters.includes((c as any)._id));
+        }
+        return colorFilters.includes((variant.color as any)?._id);
+      });
+
+    const sizeMatch =
+      sizeFilters.length === 0 ||
+      productVariants.some(variant => {
+        if (!variant.size) return false;
+        const sizeIds = Array.isArray(variant.size)
+          ? variant.size.map(s =>
+              typeof s === 'string' ? s : (s as any)._id
+            )
+          : [];
+        return sizeIds.some(id => sizeFilters.includes(id));
+      });
+
+    return priceMatch && colorMatch && sizeMatch;
+  });
 
   return (
     <>
@@ -75,52 +124,88 @@ const Products = () => {
           <div className="w-1/4">
             <SidebarMenu />
 
-            <h3 className="font-semibold mb-3">THƯƠNG HIỆU</h3>
-            <label><input type="checkbox" className="mr-2" /> Khác</label>
-
-            <h3 className="font-semibold mt-5 mb-3">GIÁ SẢN PHẨM</h3>
+            <h3 className="font-semibold mb-3">GIÁ SẢN PHẨM</h3>
             <div className="space-y-1">
               {[
-                'Dưới 500,000₫',
-                '500,000₫ - 1,000,000₫',
-                '1,000,000₫ - 1,500,000₫',
-                '2,000,000₫ - 5,000,000₫',
-                'Trên 5,000,000₫',
-              ].map((label, i) => (
-                <div key={i}><label><input type="checkbox" className="mr-2" /> {label}</label></div>
+                { label: 'Dưới 500.000₫', value: '0-500' },
+                { label: '500.000₫ - 1.000.000₫', value: '500-1000' },
+                { label: '1.000.000₫ - 1.500.000₫', value: '1000-1500' },
+                { label: '2.000.000₫ - 5.000.000₫', value: '2000-5000' },
+                { label: 'Trên 5.000.000₫', value: '5000+' },
+              ].map(({ label, value }) => (
+                <div key={value}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      checked={priceFilters.includes(value)}
+                      onChange={() =>
+                        setPriceFilters(prev =>
+                          prev.includes(value)
+                            ? prev.filter(v => v !== value)
+                            : [...prev, value]
+                        )
+                      }
+                    />
+                    {label}
+                  </label>
+                </div>
               ))}
             </div>
 
             <h3 className="font-semibold mt-5 mb-3">MÀU SẮC</h3>
             <div className="flex flex-wrap gap-2">
-              {[
-                '#f44336', '#3f51b5', '#000000', '#03a9f4',
-                '#e1e1e1', '#607d8b', '#ff4081', '#9e9e9e',
-              ].map((color, i) => (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded border"
-                  style={{ backgroundColor: color }}
-                />
-              ))}
+              {colors
+                .filter(color => color.status === 'active')
+                .map(color => (
+                  <div
+                    key={color._id}
+                    className={`w-6 h-6 rounded border cursor-pointer ${
+                      colorFilters.includes(color._id!) ? 'ring-2 ring-black' : ''
+                    }`}
+                    style={{ backgroundColor: color.code }}
+                    title={color.name}
+                    onClick={() =>
+                      setColorFilters(prev =>
+                        prev.includes(color._id!)
+                          ? prev.filter(id => id !== color._id)
+                          : [...prev, color._id!]
+                      )
+                    }
+                  />
+                ))}
             </div>
 
             <h3 className="font-semibold mt-5 mb-3">KÍCH THƯỚC</h3>
             <div className="flex flex-wrap gap-2">
-              {[35, 36, 37, 38, 39, 40].map((size) => (
-                <button key={size} className="border px-2 py-1">{size}</button>
+              {sizes.map(size => (
+                <button
+                  key={size._id}
+                  className={`border px-2 py-1 rounded ${
+                    sizeFilters.includes(size._id!) ? 'bg-black text-white' : ''
+                  }`}
+                  onClick={() =>
+                    setSizeFilters(prev =>
+                      prev.includes(size._id!)
+                        ? prev.filter(id => id !== size._id!)
+                        : [...prev, size._id!]
+                    )
+                  }
+                >
+                  {size.size}
+                </button>
               ))}
             </div>
           </div>
 
           {/* Product List */}
           <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 xl:grid-cols-4 gap-6">
-            {sortedProducts.map((product) => {
-              const minPrice = getMinVariantPrice(product)
-              const displayImage = getDisplayImage(product)
+            {filteredProducts.map(product => {
+              const minPrice = getMinVariantPrice(product);
+              const displayImage = getDisplayImage(product);
               return (
                 <Link
-                  to={`/products/${product.slug}`} // Sử dụng slug thay vì _id
+                  to={`/products/${product.slug}`}
                   key={product._id}
                   className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block"
                 >
@@ -136,13 +221,13 @@ const Products = () => {
                       : 'Giá đang cập nhật'}
                   </div>
                 </Link>
-              )
+              );
             })}
           </div>
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Products
+export default Products;
