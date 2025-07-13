@@ -1,15 +1,10 @@
-<<<<<<< HEAD
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { UserOutlined, SearchOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-=======
-import React, { useState, useRef, useEffect } from 'react';
 import {
   UserOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
   BellOutlined,
 } from '@ant-design/icons';
->>>>>>> 16b7baf8855c97809fcc3d9f4c1638a68b1a75d6
 import { Dropdown, Menu } from 'antd';
 import {
   HeaderTop,
@@ -28,24 +23,17 @@ import { getProfile } from '../../service/authAPI';
 import type { IUser } from '../../interface/user';
 import SearchBox from './SearchBox';
 import Collection from '../../pages/Client/Collection';
-<<<<<<< HEAD
 import axios from 'axios';
-=======
 import NotificationPopup from './NotificationPopup.tsx';
-
->>>>>>> 16b7baf8855c97809fcc3d9f4c1638a68b1a75d6
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showCollectionMenu, setShowCollectionMenu] = useState(false);
-<<<<<<< HEAD
   const [products, setProducts] = useState([]);
-=======
   const [showNotification, setShowNotification] = useState(false);
 
->>>>>>> 16b7baf8855c97809fcc3d9f4c1638a68b1a75d6
   const collectionRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -60,13 +48,10 @@ const Header: React.FC = () => {
     retry: false,
   });
 
-<<<<<<< HEAD
   useEffect(() => {
     axios.get('http://localhost:3000/api/products')
       .then(res => {
-        // Lấy mảng sản phẩm từ res.data.data.products
         const arr = Array.isArray(res.data?.data?.products) ? res.data.data.products : [];
-        // Chuẩn hóa: lấy ảnh đầu tiên từ images, image_url, hoặc từ biến thể
         const productsWithImage = arr.map(p => ({
           ...p,
           image:
@@ -74,7 +59,7 @@ const Header: React.FC = () => {
             (Array.isArray(p.images) && p.images[0]) ||
             (Array.isArray(p.image_url) && p.image_url[0]) ||
             (Array.isArray(p.variants) && p.variants[0]?.image_url?.[0]) ||
-            '', // fallback nếu không có ảnh
+            '',
         }));
         setProducts(productsWithImage);
       })
@@ -82,9 +67,6 @@ const Header: React.FC = () => {
   }, []);
 
   const toggleMenu = () => setIsOpen(prev => !prev);
-=======
-  const toggleMenu = () => setIsOpen((prev) => !prev);
->>>>>>> 16b7baf8855c97809fcc3d9f4c1638a68b1a75d6
 
   const handleLogout = () => {
     localStorage.clear();
@@ -112,7 +94,6 @@ const Header: React.FC = () => {
 
   const menu = <Menu items={menuItems} />;
 
-  // Auto đóng Collection khi click ra ngoài
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -126,11 +107,6 @@ const Header: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-<<<<<<< HEAD
-  const handleOpenSearch = useCallback(() => setShowSearch(true), []);
-  const handleCloseSearch = useCallback(() => setShowSearch(false), []);
-=======
-  // Auto đóng Notification khi click ra ngoài hoặc scroll
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -150,7 +126,9 @@ const Header: React.FC = () => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
->>>>>>> 16b7baf8855c97809fcc3d9f4c1638a68b1a75d6
+
+  const handleOpenSearch = useCallback(() => setShowSearch(true), []);
+  const handleCloseSearch = useCallback(() => setShowSearch(false), []);
 
   return (
     <>
@@ -173,7 +151,6 @@ const Header: React.FC = () => {
         </NavMenu>
 
         <IconGroup>
-          {/* User menu */}
           <Dropdown overlay={menu} trigger={['hover']} placement="bottomRight">
             <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
               <Icon><UserOutlined /></Icon>
@@ -181,21 +158,14 @@ const Header: React.FC = () => {
             </div>
           </Dropdown>
 
-<<<<<<< HEAD
-          <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer' }}>
-=======
-          {/* Notification bell */}
           <Icon onClick={() => setShowNotification(true)} style={{ cursor: 'pointer' }}>
             <BellOutlined />
           </Icon>
 
-          {/* Search */}
-          <Icon onClick={() => setShowSearch(true)} style={{ cursor: 'pointer' }}>
->>>>>>> 16b7baf8855c97809fcc3d9f4c1638a68b1a75d6
+          <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer' }}>
             <SearchOutlined />
           </Icon>
 
-          {/* Cart */}
           <Icon onClick={() => setShowCart(true)} style={{ cursor: 'pointer' }}>
             <ShoppingCartOutlined />
           </Icon>
@@ -206,7 +176,6 @@ const Header: React.FC = () => {
         </HamburgerIcon>
       </HeaderMain>
 
-      {/* Popup components */}
       {showCart && <SideCart onClose={() => setShowCart(false)} />}
       {showSearch && <SearchBox onClose={handleCloseSearch} products={products} />}
       {showCollectionMenu && (
