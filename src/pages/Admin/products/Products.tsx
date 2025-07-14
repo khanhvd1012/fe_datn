@@ -19,7 +19,6 @@ const Products = () => {
     name: '',
     brand: '',
     category: '',
-    size: '',
   });
 
   const filteredData = data?.filter((product: IProduct) => {
@@ -34,15 +33,8 @@ const Products = () => {
         ? product.category.includes(filters.category)
         : product.category?.name?.toLowerCase().includes(filters.category.toLowerCase())
       : true;
-    const sizeMatch = filters.size
-      ? product.size?.some(s =>
-        typeof s === 'string'
-          ? s.includes(filters.size)
-          : s.name?.toLowerCase().includes(filters.size.toLowerCase())
-      )
-      : true;
 
-    return nameMatch && brandMatch && categoryMatch && sizeMatch;
+    return nameMatch && brandMatch && categoryMatch;
   });
 
   const handleFilterChange = (value: string | number, type: string) => {
@@ -141,27 +133,6 @@ const Products = () => {
       ),
       filterIcon: () => <FilterOutlined style={{ color: filters.category ? '#1890ff' : undefined }} />,
       render: (category: any) => typeof category === 'string' ? category : category?.name,
-    },
-    {
-      title: "Kích cỡ",
-      dataIndex: "size",
-      key: "size",
-      filterDropdown: () => (
-        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
-          <Input
-            placeholder="Tìm theo kích cỡ"
-            value={filters.size}
-            onChange={(e) => handleFilterChange(e.target.value, 'size')}
-            prefix={<SearchOutlined />}
-            allowClear
-          />
-        </div>
-      ),
-      filterIcon: () => <FilterOutlined style={{ color: filters.size ? '#1890ff' : undefined }} />,
-      render: (sizes: any[]) =>
-        Array.isArray(sizes)
-          ? sizes.map(s => typeof s === 'string' ? s : s?.size).join(', ')
-          : '',
     },
 
     {

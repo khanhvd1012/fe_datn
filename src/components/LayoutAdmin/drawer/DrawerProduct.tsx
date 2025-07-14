@@ -39,11 +39,6 @@ const DrawerProduct = ({ visible, product, onClose, loading }: DrawerProductProp
               <Descriptions.Item label="Biến thể" className="bg-gray-50">
                 {product?.variants?.length || 0}
               </Descriptions.Item>
-              <Descriptions.Item label="Kích cỡ">
-                {Array.isArray(product?.size)
-                  ? product.size.map((s: any) => (typeof s === 'string' ? s : s.size)).join(', ')
-                  : '---'}
-              </Descriptions.Item>
             </Descriptions>
           </div>
 

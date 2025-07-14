@@ -20,5 +20,4 @@ export interface IProduct {
   brand: string | { _id: string; name: string };
   category: string | { _id: string; name: string };
   variants: IVariant[];
-  size: string[] | { _id: string; name: string }[];
 }

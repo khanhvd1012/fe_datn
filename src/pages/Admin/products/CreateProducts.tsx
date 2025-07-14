@@ -13,7 +13,6 @@ const CreateProduct = () => {
   const { mutate, isPending } = useAddProduct();
   const { data: brands, isLoading: loadingBrands } = useBrands();
   const { data: categories, isLoading: loadingCategories } = useCategories();
-  const { data: sizes, isLoading: loadingSizes } = useSizes();
 
   const [form] = Form.useForm();
 
@@ -36,7 +35,7 @@ const CreateProduct = () => {
     });
   };
 
-  if (loadingBrands || loadingCategories || loadingSizes) return <Skeleton active />;
+  if (loadingBrands || loadingCategories) return <Skeleton active />;
 
   return (
     <div className="max-w-4xl mx-auto p-4">
@@ -51,7 +50,6 @@ const CreateProduct = () => {
           description: '',
           brand: undefined,
           category: undefined,
-          size: undefined,
         }}
       >
         <Form.Item
@@ -100,27 +98,6 @@ const CreateProduct = () => {
             {categories?.map((c: any) => (
               <Select.Option key={typeof c === 'string' ? c : c._id} value={typeof c === 'string' ? c : c._id}>
                 {typeof c === 'string' ? c : c.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          label="Kích thước sản phẩm"
-          name="size"
-          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Chọn kích thước"
-            allowClear
-          >
-            {sizes?.map((size: any) => (
-              <Select.Option
-                key={typeof size === 'string' ? size : size._id}
-                value={typeof size === 'string' ? size : size._id}
-              >
-                {typeof size === 'string' ? size : size.size}
               </Select.Option>
             ))}
           </Select>

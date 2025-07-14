@@ -15,16 +15,12 @@ const EditProducts = () => {
   const { mutate, isPending: isUpdating } = useUpdateProduct();
   const { data: brands } = useBrands();
   const { data: categories } = useCategories();
-  const { data: sizes } = useSizes();
 
   // Chuẩn hóa dữ liệu initialValues
   const initialValues = product && product.data ? {
     ...product.data,
     brand: typeof product.data.brand === 'object' ? product.data.brand._id : product.data.brand,
     category: typeof product.data.category === 'object' ? product.data.category._id : product.data.category,
-    size: Array.isArray(product.data.size)
-      ? product.data.size.map((s: any) => (typeof s === 'object' ? s._id : s))
-      : [],
   } : {};
 
   const handleSubmit = (values: any) => {
@@ -107,27 +103,6 @@ const EditProducts = () => {
             {categories?.map((c: any) => (
               <Select.Option key={typeof c === 'string' ? c : c._id} value={typeof c === 'string' ? c : c._id}>
                 {typeof c === 'string' ? c : c.name}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          label="Kích thước sản phẩm"
-          name="size"
-          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Chọn kích thước"
-            allowClear
-          >
-            {sizes?.map((size: any) => (
-              <Select.Option
-                key={typeof size === 'string' ? size : size._id}
-                value={typeof size === 'string' ? size : size._id}
-              >
-                {typeof size === 'string' ? size : size.name}
               </Select.Option>
             ))}
           </Select>
