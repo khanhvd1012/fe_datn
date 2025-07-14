@@ -1,10 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, InputNumber, message, Select, Skeleton } from 'antd';
+import { Button, Form, Input, message, Select, Skeleton } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useAddProduct } from '../../../hooks/useProducts';
 import { useBrands } from '../../../hooks/useBrands';
 import { useCategories } from '../../../hooks/useCategories';
-import { useSizes } from '../../../hooks/useSizes';
 
 const CreateProduct = () => {
   const queryClient = useQueryClient();

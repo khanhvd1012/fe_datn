@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useProduct, useUpdateProduct } from '../../../hooks/useProducts';
 import { useBrands } from '../../../hooks/useBrands';
 import { useCategories } from '../../../hooks/useCategories';
-import { useSizes } from '../../../hooks/useSizes';
 
 const EditProducts = () => {
   const { id } = useParams();
