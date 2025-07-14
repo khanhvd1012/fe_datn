@@ -30,7 +30,7 @@ export const useLogin = () => {
   return useMutation({
     mutationFn: login,
     onSuccess: (data) => {
-      console.log("✅ Login response:", data);
+      console.log(" Login response:", data);
 
       if (data.token && data.user) {
         // Lưu thông tin vào localStorage

@@ -5,9 +5,12 @@ import { MinusOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-desi
 import axios from 'axios';
 import Breadcrumb from './Breadcrumb';
 import { useSizes } from '../../hooks/useSizes';
+import { useColors } from '../../hooks/useColors';
 import type { IProduct } from '../../interface/product';
 import type { ISize } from '../../interface/size';
+import type { IColor } from '../../interface/color';
 import '../css/Product_detail.css';
+import RelatedProducts from './RelatedProducts';
 
 
 const ProductDetail = () => {
@@ -15,6 +18,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState<IProduct | null>(null);
   const [mainImage, setMainImage] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [vouchers, setVouchers] = useState<any[]>([]);
@@ -22,11 +26,15 @@ const ProductDetail = () => {
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
 
   const { data: sizes = [] } = useSizes();
+  const { data: colors = [] } = useColors();
 
   const getSizeName = (id: string) => {
-    if (!id || !Array.isArray(sizes) || sizes.length === 0) return id;
     const found = sizes.find((s: ISize) => s._id === id);
     return found ? found.size : id;
+  };
+
+  const getColorInfo = (id: string) => {
+    return colors.find((c: IColor) => c._id === id) || null;
   };
 
   useEffect(() => {
@@ -47,7 +55,6 @@ const ProductDetail = () => {
 
         const firstSize = firstVariant?.size?.[0] || (typeof firstVariant?.size === 'string' ? firstVariant.size : null);
         setSelectedSize(firstSize || null);
-
         setMainImage(Array.isArray(firstVariant?.image_url) ? firstVariant.image_url[0] : '');
         setLoading(false);
       })
@@ -55,8 +62,17 @@ const ProductDetail = () => {
         message.error('Không thể tải chi tiết sản phẩm');
         setLoading(false);
       });
-
   }, [slug]);
+
+  useEffect(() => {
+    if (!selectedColor || !product?.variants) return;
+    const variant = product.variants.find((v: any) => v.color === selectedColor);
+    if (variant) {
+      const firstSize = variant.size?.[0] || (typeof variant.size === 'string' ? variant.size : null);
+      setSelectedSize(firstSize || null);
+      setMainImage(Array.isArray(variant.image_url) ? variant.image_url[0] : '');
+    }
+  }, [selectedColor, product]);
 
   const getSelectedVariant = () => {
     if (!product?.variants || !selectedSize) return null;
@@ -69,6 +85,7 @@ const ProductDetail = () => {
 
   const selectedVariant = getSelectedVariant();
   const displayPrice = selectedVariant?.price;
+  const brandName = typeof product?.brand === 'object' ? product.brand.name : '';
 
   const addToCart = () => {
     if (!product || !selectedSize) {
@@ -76,9 +93,7 @@ const ProductDetail = () => {
       return;
     }
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existing = cart.find(
-      (item: any) => item._id === product._id && item.size === selectedSize
-    );
+    const existing = cart.find((item: any) => item._id === product._id && item.size === selectedSize);
     if (existing) {
       existing.quantity += quantity;
       existing.voucher = selectedVoucherId || null;
@@ -93,24 +108,20 @@ const ProductDetail = () => {
       });
     }
     localStorage.setItem("cart", JSON.stringify(cart));
+    if (selectedVoucherId) {
+      localStorage.setItem("selected_voucher_id", selectedVoucherId);
+    }
     message.success("Đã thêm vào giỏ hàng!");
   };
-
-  if (loading) {
-    return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
-  }
-
-  if (!product) return <div>Không tìm thấy sản phẩm</div>;
 
   const handleToggleVouchers = () => {
     if (!showVouchers && vouchers.length === 0) {
       axios.get("http://localhost:3000/api/vouchers")
         .then(res => {
           const allVouchers = res.data || [];
-          const now = new Date();
           const activeVouchers = allVouchers.filter((voucher: any) => {
-            const end = new Date(voucher.endDate);
-            return now <= end && voucher.quantity > 0;
+            const now = new Date();
+            return new Date(voucher.startDate) <= now && now <= new Date(voucher.endDate) && voucher.quantity > 0;
           });
           setVouchers(activeVouchers);
           setShowVouchers(true);
@@ -133,14 +144,19 @@ const ProductDetail = () => {
     }
   };
 
+  const availableColors = Array.isArray(product?.variants)
+    ? product.variants.map((v: any) => v.color).filter((val, i, arr) => val && arr.indexOf(val) === i)
+    : [];
 
-  const brandName = typeof product.brand === 'object' ? product.brand.name : '';
+  if (loading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
+  if (!product) return <div>Không tìm thấy sản phẩm</div>;
 
   return (
     <>
       <Breadcrumb current={product.name ? `Sản phẩm / ${product.name}` : 'Sản phẩm'} />
       <div className="product-detail-container">
         <div className="product-detail-content">
+          {/* Ảnh sản phẩm */}
           <div className="product-images-vertical">
             <div className="thumbnail-list-vertical">
               {(selectedVariant?.image_url || []).map((img: string, idx: number) => (
@@ -154,23 +170,83 @@ const ProductDetail = () => {
               ))}
             </div>
             <div className="main-image-vertical">
-              <img
-                src={mainImage}
-                alt={product.name}
-              />
+              <img src={mainImage} alt={product.name} />
             </div>
           </div>
 
+          {/* Thông tin sản phẩm */}
           <div className="product-info">
             <h2 className="product-name">{product.name}</h2>
             {brandName && <div className="brand-name">Thương hiệu: {brandName}</div>}
 
+            {selectedVariant && (
+              <>
+                {selectedVariant.status && (
+                  <div style={{ marginBottom: 2 }}>
+                    Tình trạng: <strong style={{ color: selectedVariant.status === 'inStock' ? 'green' : 'red' }}>
+                      {selectedVariant.status === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
+                    </strong>
+                  </div>
+                )}
+                {selectedVariant.gender && (
+                  <div style={{ marginBottom: 2 }}>
+                    Giới tính: <strong>
+                      {selectedVariant.gender === 'unisex' ? 'Unisex' : selectedVariant.gender === 'male' ? 'Nam' : 'Nữ'}
+                    </strong>
+                  </div>
+                )}
+              </>
+            )}
+            
             <p className="price">
               {typeof displayPrice === 'number'
                 ? displayPrice.toLocaleString('vi-VN') + '₫'
                 : 'Đang cập nhật giá'}
             </p>
+            
 
+            {/* Chọn màu */}
+            {availableColors.length > 0 && (
+              <div className="color-section">
+                <span className="label">Chọn màu:</span>
+                <div
+                  className="color-options"
+                  style={{
+                    display: 'flex',
+                    flexWrap: 'nowrap',
+                    alignItems: 'center',
+                    marginTop: 8,
+                    overflowX: 'auto',
+                  }}
+                >
+                  {availableColors.map((colorId: string) => {
+                    const color = getColorInfo(colorId);
+                    return (
+                      <button
+                        key={colorId}
+                        className={`color-btn ${selectedColor === colorId ? 'active' : ''}`}
+                        onClick={() => setSelectedColor(colorId)}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: 0, // Vuông
+                          border: selectedColor === colorId ? '2px solid #7fc9c4' : '1px solid #ccc',
+                          background: color?.code || '#eee', // Tô màu trực tiếp
+                          cursor: 'pointer',
+                          marginRight: 5,
+                          outline: 'none',
+                          padding: 0,
+                        }}
+                        title={color?.name}
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+
+            {/* Chọn size */}
             <div className="size-section">
               <span className="label">Chọn size:</span>
               <div className="size-options">
@@ -255,17 +331,17 @@ const ProductDetail = () => {
                               border: isSelected ? '2px solid #1677ff' : undefined,
                               borderRadius: '10px',
                               boxShadow: isSelected ? '0 0 0 2px #91caff' : undefined,
-                              backgroundColor :'#FF3300',
+                              backgroundColor: '#FF3300',
                             }}
                           >
                             <Row justify="space-between" align="middle" wrap={false}>
                               {/* Thông tin bên trái */}
                               <Col flex="auto" style={{ color: '#FFFFFF' }}>
-                                <strong style={{ fontSize: '16px'}}>{voucher.code}</strong><br />
+                                <strong style={{ fontSize: '16px' }}>{voucher.code}</strong><br />
                                 <small>
                                   Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString()}₫</strong>
                                 </small><br />
-                                <small style={{ color: '#660000'}}>Còn lại: {timeLeft}</small>
+                                <small style={{ color: '#660000' }}>Còn lại: {timeLeft}</small>
                               </Col>
 
                               {/* Giảm giá bên phải */}
@@ -296,14 +372,14 @@ const ProductDetail = () => {
                 )}
               </div>
             )}
-
-            <div className="product-description">
-              <h3><u>Mô tả sản phẩm</u></h3>
-              <p>{product.description}</p>
-            </div>
           </div>
         </div>
+        <div className="product-description">
+          <h3><u>Mô tả sản phẩm</u></h3>
+          <p>{product.description}</p>
+        </div>
       </div>
+      <RelatedProducts />
     </>
   );
 };

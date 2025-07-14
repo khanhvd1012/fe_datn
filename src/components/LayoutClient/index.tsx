@@ -19,14 +19,18 @@ import Profile from '../../pages/Client/Profile';
 import Collection from '../../pages/Client/Collection';
 import Checkout from './Checkout';
 import CollectionPage from './CollectionPage';
+import CheckoutSuccess from './CheckoutSuccess';
+import OrderHistory from './OrderHistory';
+
 
 const IndexClient = () => {
   const location = useLocation();
   const matchProductDetail = useMatch('/products/:slug');
   const matchCollectionPage = useMatch('/collection/:slug');
+
   // Kiểm tra các trang cần ẩn slideshow
   const isNoSlidePage =
-    ['/login', '/register', '/profile', '/cart' ,'/checkout'].includes(location.pathname) ||
+    ['/login', '/register', '/profile', '/cart', '/checkout','/checkout/success' ,'/order-history'].includes(location.pathname) ||
     Boolean(matchProductDetail) ||
     Boolean(matchCollectionPage);
 
@@ -45,16 +49,17 @@ const IndexClient = () => {
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />
-         
+
           {/* Auth pages - không slideshow */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
-           <Route path="/checkout" element={<Checkout />} />
-           <Route path="/collection/:slug" element={<CollectionPage />} />
-
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/collection/:slug" element={<CollectionPage />} />
+          <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/order-history" element={<OrderHistory />} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>

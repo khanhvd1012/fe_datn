@@ -70,12 +70,12 @@
 .product-name {
   font-size: 2.4rem;
   font-weight: 700;
-  margin-bottom: 0;
+  margin-bottom: -1;
   letter-spacing: 0.3px;
 }
 
 .brand-name {
-  color: #888;
+  color: #000000;
   font-size: 1rem;
   margin-bottom: 0;
   font-weight: 500;
@@ -210,7 +210,7 @@
 }
 
 .product-description {
-  background: #fafafa;
+  background: #ffffff;
   padding: 18px 18px 12px 18px;
   border-radius: 0;
   margin-top: 18px;
