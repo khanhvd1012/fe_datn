@@ -1,4 +1,3 @@
-import React from 'react';
 import styled from 'styled-components';
 import { useBrands } from '../../hooks/useBrands';
 import { NavLink } from 'react-router-dom';

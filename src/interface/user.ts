@@ -15,4 +15,6 @@ export interface IUser {
   image?: string; 
   shipping_addresses: IShippingAddress[];
   role: "user" | "employee" | "admin";
+  createdAt?: string;
+  updatedAt?: string;
 }

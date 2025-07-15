@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Register: React.FC = () => {
   const [form] = Form.useForm();
-  const navigate=useNavigate()
+  const navigate = useNavigate()
 
   const onFinish = async (values: any) => {
     try {
@@ -17,7 +17,7 @@ const Register: React.FC = () => {
       if (res.data.success) {
         message.success('Đăng ký thành công!');
         form.resetFields();
-         navigate('/login');
+        navigate('/login');
       } else {
         message.error(res.data.message || 'Đăng ký thất bại!');
       }
@@ -49,19 +49,6 @@ const Register: React.FC = () => {
           onFinishFailed={onFinishFailed}
           style={styles.form}
         >
-          <Form.Item
-            name="name"
-            rules={[{ required: true, message: 'Vui lòng nhập họ tên!' }]}
-          >
-            <Input placeholder="Họ và tên" size="large" style={styles.input} />
-          </Form.Item>
-
-          <Form.Item
-            name="sdt"
-            rules={[{ required: true, message: 'Vui lòng nhập SĐT!' }]}
-          >
-            <Input placeholder="Số điện thoại" size="large" style={styles.input} />
-          </Form.Item>
 
           <Form.Item
             name="email"
@@ -81,10 +68,22 @@ const Register: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="address"
-            rules={[{ required: true, message: 'Vui lòng nhập địa chỉ!' }]}
+            name="confirmPassword"
+            dependencies={['password']}
+            hasFeedback
+            rules={[
+              { required: true, message: 'Vui lòng nhập lại mật khẩu!' },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || getFieldValue('password') === value) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                },
+              }),
+            ]}
           >
-            <Input placeholder="Địa chỉ" size="large" style={styles.input} />
+            <Input.Password placeholder="Xác nhận mật khẩu" size="large" style={styles.input} />
           </Form.Item>
 
           <p style={styles.recaptchaNote}>

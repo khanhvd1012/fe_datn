@@ -6,7 +6,7 @@ import axios from 'axios';
 import Breadcrumb from './Breadcrumb';
 import { useSizes } from '../../hooks/useSizes';
 import { useColors } from '../../hooks/useColors';
-import type { IProduct } from '../../interface/product';
+import type { IProduct, IVariant } from '../../interface/product';
 import type { ISize } from '../../interface/size';
 import type { IColor } from '../../interface/color';
 import '../css/Product_detail.css';
@@ -39,23 +39,28 @@ const ProductDetail = () => {
 
   useEffect(() => {
     if (!slug) return;
+
     axios.get(`http://localhost:3000/api/products/slug/${slug}`)
       .then(res => {
         const data = res.data.data;
         const fixedData: IProduct = {
           ...data,
-          images: Array.isArray(data.images) ? data.images : [],
-          size: Array.isArray(data.size) ? data.size : [],
+          variants: Array.isArray(data.variants) ? data.variants : [],
         };
         setProduct(fixedData);
 
-        const firstVariant = Array.isArray(fixedData.variants) && typeof fixedData.variants[0] === 'object'
-          ? fixedData.variants[0]
-          : undefined;
+        const firstVariant = fixedData.variants[0];
+        if (firstVariant) {
+          const firstColor = firstVariant.color;
+          const firstSize = Array.isArray(firstVariant.size)
+            ? firstVariant.size[0]
+            : firstVariant.size;
 
-        const firstSize = firstVariant?.size?.[0] || (typeof firstVariant?.size === 'string' ? firstVariant.size : null);
-        setSelectedSize(firstSize || null);
-        setMainImage(Array.isArray(firstVariant?.image_url) ? firstVariant.image_url[0] : '');
+          setSelectedColor(firstColor || null);
+          setSelectedSize(firstSize || null);
+          setMainImage(Array.isArray(firstVariant.image_url) ? firstVariant.image_url[0] : '');
+        }
+
         setLoading(false);
       })
       .catch(() => {
@@ -143,6 +148,16 @@ const ProductDetail = () => {
       message.success(`Đã chọn mã: ${voucher.code}`);
     }
   };
+
+  const sizeIdsFromVariant =
+    Array.isArray(product?.variants) && selectedColor
+      ? product.variants
+        .filter((v: IVariant) => v.color === selectedColor)
+        .flatMap((v: IVariant) =>
+          Array.isArray(v.size) ? v.size : [v.size]
+        )
+        .filter((val, idx, arr) => val && arr.indexOf(val) === idx)
+      : [];
 
   const availableColors = Array.isArray(product?.variants)
     ? product.variants.map((v: any) => v.color).filter((val, i, arr) => val && arr.indexOf(val) === i)
@@ -250,38 +265,23 @@ const ProductDetail = () => {
             <div className="size-section">
               <span className="label">Chọn size:</span>
               <div className="size-options">
-                {Array.isArray(product.size) && product.size.length > 0 ? (
-                  product.size.map((sizeObj: any) => {
-                    const sizeId = typeof sizeObj === 'object' ? sizeObj._id : sizeObj;
-
-                    const isAvailableSize = product.variants.some((variant: any) =>
-                      variant.color === selectedColor &&
-                      (Array.isArray(variant.size)
-                        ? variant.size.includes(sizeId)
-                        : variant.size === sizeId)
-                    );
-
+                {sizeIdsFromVariant.length > 0 ? (
+                  sizeIdsFromVariant.map((sizeId) => {
                     return (
                       <button
                         key={sizeId}
                         className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
-                        onClick={() => isAvailableSize && setSelectedSize(sizeId)}
-                        disabled={!isAvailableSize}
-                        style={{
-                          opacity: isAvailableSize ? 1 : 0.5,
-                          cursor: isAvailableSize ? 'pointer' : 'not-allowed',
-                        }}
+                        onClick={() => setSelectedSize(sizeId)}
                       >
                         {getSizeName(sizeId)}
                       </button>
                     );
                   })
                 ) : (
-                  <p>Không có size</p>
+                  <p>Không có size phù hợp</p>
                 )}
               </div>
             </div>
-
 
             <div className="quantity-control">
               <span className="label">Số lượng:</span>
@@ -292,7 +292,9 @@ const ProductDetail = () => {
 
             <div className="action-buttons">
               <Button type="default" size="large" className="add-cart" onClick={addToCart}>
-                THÊM VÀO GIỎ
+                <Link to={`/cart`}>
+                  THÊM VÀO GIỎ
+                </Link>
               </Button>
 
               <Link to="/checkout-access">

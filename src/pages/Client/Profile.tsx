@@ -1,26 +1,35 @@
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { Descriptions, Spin, message, Input, Button } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getProfile } from "../../service/authAPI";
 import axios from "axios";
-import type { User } from "../../interface/user";
+import type { IUser } from "../../interface/user";
+import UpdateProfileDrawer from "../../components/LayoutClient/UpdateProfileDrawer";
 
-const Profile: React.FC = () => {
+const Profile = () => {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [address, setAddress] = useState("");
 
+  const [openDrawer, setOpenDrawer] = useState(false);
+
   const {
     data: user,
     isLoading,
-  } = useQuery<User>({
+    error,
+  } = useQuery<IUser, Error>({
     queryKey: ["profile"],
     queryFn: getProfile,
     retry: false,
-    onError: () => message.error("Không thể lấy thông tin tài khoản!"),
   });
 
-  const mutation = useMutation<User, Error, string>({
+  useEffect(() => {
+    if (error) {
+      message.error("Không thể lấy thông tin tài khoản!");
+    }
+  }, [error]);
+
+  const mutation = useMutation<IUser, Error, string>({
     mutationFn: async (newAddress: string) => {
       const token = localStorage.getItem("token");
       if (!user?._id) throw new Error("Không tìm thấy user");
@@ -42,7 +51,9 @@ const Profile: React.FC = () => {
       setEditing(false);
       queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
-    onError: () => message.error("Cập nhật địa chỉ thất bại!"),
+    onError: () => {
+      message.error("Cập nhật địa chỉ thất bại!");
+    },
   });
 
   if (isLoading) return <Spin style={{ marginTop: 40 }} />;
@@ -55,7 +66,17 @@ const Profile: React.FC = () => {
     <div className="flex gap-8 max-w-6xl mx-auto mt-10 px-4">
       {/* Sidebar trái */}
       <div className="w-1/4 bg-gray-50 rounded-md p-6 shadow">
-        <div className="w-24 h-24 rounded-full bg-orange-300 mx-auto mb-4" />
+        {user.image ? (
+          <img
+            src={user.image}
+            alt="avatar"
+            className="w-24 h-24 rounded-full object-cover mx-auto mb-4 border"
+          />
+        ) : (
+          <div className="w-24 h-24 rounded-full bg-orange-300 mx-auto mb-4 flex items-center justify-center text-white text-xl font-semibold">
+            {user.username?.charAt(0)?.toUpperCase() || "?"}
+          </div>
+        )}        
         <div className="text-center mb-6">
           <p className="text-lg font-medium">Xin chào</p>
         </div>
@@ -79,61 +100,36 @@ const Profile: React.FC = () => {
       <div className="w-3/4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">THÔNG TIN TÀI KHOẢN</h2>
-          <Button type="primary" disabled>
+          <Button
+            type="primary"
+            onClick={() => setOpenDrawer(true)}
+          >
             CẬP NHẬT THÔNG TIN TÀI KHOẢN
           </Button>
+
         </div>
 
         <Descriptions column={1} bordered size="middle">
-          <Descriptions.Item label="Họ và tên">{user.username || "Chưa cập nhật"}</Descriptions.Item>
-          <Descriptions.Item label="Email">{user.email || "Chưa cập nhật"}</Descriptions.Item>
-          <Descriptions.Item label="Vai trò">{user.role || "Chưa cập nhật"}</Descriptions.Item>
+          <Descriptions.Item label="Tên">
+            {user.username || "Chưa cập nhật"}
+          </Descriptions.Item>
+
+          <Descriptions.Item label="Họ và tên">
+            {firstAddressObj?.full_name || "Chưa cập nhật"}
+          </Descriptions.Item>
+
+          <Descriptions.Item label="Email">
+            {user.email || "Chưa cập nhật"}
+          </Descriptions.Item>
+
           <Descriptions.Item label="Địa chỉ">
-            {editing ? (
-              <>
-                <Input
-                  value={address}
-                  onChange={e => setAddress(e.target.value)}
-                  style={{ width: 250, marginRight: 8 }}
-                />
-                <Button
-                  type="primary"
-                  size="small"
-                  loading={mutation.isLoading}
-                  onClick={() => mutation.mutate(address)}
-                >
-                  Lưu
-                </Button>
-                <Button
-                  size="small"
-                  style={{ marginLeft: 8 }}
-                  onClick={() => setEditing(false)}
-                >
-                  Hủy
-                </Button>
-              </>
-            ) : (
-              <>
-                {displayAddress || "Chưa có"}
-                <Button
-                  size="small"
-                  style={{ marginLeft: 12 }}
-                  onClick={() => {
-                    setEditing(true);
-                    setAddress(displayAddress);
-                  }}
-                >
-                  Chỉnh sửa
-                </Button>
-              </>
-            )}
+            {firstAddressObj?.address || "Chưa cập nhật"}
           </Descriptions.Item>
-          <Descriptions.Item label="Ngày sinh">
-            {user?.dob ? user.dob : "Chưa cập nhật"}
-          </Descriptions.Item>
+
           <Descriptions.Item label="Điện thoại">
-            {user?.phone ? user.phone : "Chưa cập nhật"}
+            {firstAddressObj?.phone || "Chưa cập nhật"}
           </Descriptions.Item>
+
           <Descriptions.Item label="Ngày tạo">
             {user.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}
           </Descriptions.Item>
@@ -155,6 +151,7 @@ const Profile: React.FC = () => {
           Đang cập nhật danh sách..
         </div>
       </div>
+      <UpdateProfileDrawer open={openDrawer} onClose={() => setOpenDrawer(false)} user={user} />
     </div>
   );
 };
