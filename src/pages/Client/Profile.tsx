@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
-import { Descriptions, Spin, message, Input, Button } from "antd";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Descriptions, Spin, message, Button } from "antd";
+import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "../../service/authAPI";
-import axios from "axios";
 import type { IUser } from "../../interface/user";
 import UpdateProfileDrawer from "../../components/LayoutClient/UpdateProfileDrawer";
-import { Link } from "react-router-dom";
 
 const Profile = () => {
-  const queryClient = useQueryClient();
-  const [editing, setEditing] = useState(false);
-  const [address, setAddress] = useState("");
-
   const [openDrawer, setOpenDrawer] = useState(false);
 
   const {
@@ -30,38 +24,12 @@ const Profile = () => {
     }
   }, [error]);
 
-  const mutation = useMutation<IUser, Error, string>({
-    mutationFn: async (newAddress: string) => {
-      const token = localStorage.getItem("token");
-      if (!user?._id) throw new Error("Không tìm thấy user");
-      const shippingAddressObject = {
-        address: newAddress,
-        is_default: true,
-      };
-
-      const { data } = await axios.put(
-        `http://localhost:3000/api/auth/profile/${user._id}`,
-        { shipping_addresses: [shippingAddressObject] },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      return data.user;
-    },
-    onSuccess: () => {
-      message.success("Cập nhật địa chỉ thành công!");
-      setEditing(false);
-      queryClient.invalidateQueries({ queryKey: ["profile"] });
-    },
-    onError: () => {
-      message.error("Cập nhật địa chỉ thất bại!");
-    },
-  });
+  
 
   if (isLoading) return <Spin style={{ marginTop: 40 }} />;
   if (!user) return <div className="text-center mt-10 text-red-500">Bạn chưa đăng nhập.</div>;
 
   const firstAddressObj = user.shipping_addresses?.[0];
-  const displayAddress = firstAddressObj?.address || "";
 
   return (
     <div className="flex gap-8 max-w-6xl mx-auto mt-10 px-4">
@@ -82,11 +50,6 @@ const Profile = () => {
           <p className="text-lg font-medium">Xin chào - {user.username}</p>
         </div>
         <div className="space-y-3 text-sm">
-          <div className="flex items-center gap-2 cursor-pointer hover:text-blue-500">
-            <Link to={`order-history`}>
-              Quản lý đơn hàng
-            </Link>
-          </div>
         </div>
       </div>
 

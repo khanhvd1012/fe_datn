@@ -95,6 +95,10 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                     },
                 }
             );
+            if (!res.data.success) {
+                message.error(res.data.message || "Cập nhật thất bại!");
+                return;
+            }
 
             message.success("Cập nhật thông tin thành công!");
             queryClient.invalidateQueries({ queryKey: ["profile"] });

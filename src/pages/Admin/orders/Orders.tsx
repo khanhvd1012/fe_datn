@@ -11,7 +11,7 @@ const Orders = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { data: order, isLoading } = useAllOrders();
   console.log("Orders data:", order);
-  
+
   const { mutate: cancelOrder } = useCancelOrder();
   const { data: users } = useUsers();
   const { mutate: updateStatus } = useUpdateOrderStatus();
@@ -107,7 +107,9 @@ const Orders = () => {
   if (!order) return <Empty description="Không có đơn hàng nào" />;
 
   // Map user_id (string) -> username
-  const userMap = new Map((users as IUser[])?.map((u) => [u._id, u.username]));
+  const userMap = new Map<string, string>(
+    Array.isArray(users) ? users.map((u) => [u._id, u.username]) : []
+  );
 
   const columns = [
     {

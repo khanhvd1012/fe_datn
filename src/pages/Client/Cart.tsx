@@ -1,12 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import { useSizes } from '../../hooks/useSizes';
 import axios from 'axios';
 import type { ISize } from '../../interface/size';
-import { Link } from 'react-router-dom';
 import { message, Button } from 'antd';
-const Cart: React.FC = () => {
+const Cart = () => {
   const [cartItems, setCartItems] = useState<any[]>([]);
   const { data: sizes = [] } = useSizes();
 
@@ -40,9 +39,9 @@ const Cart: React.FC = () => {
             }
             if ((sizeName === item.size || !sizeName) && sizes.length > 0) {
               const foundSize = sizes.find((s: ISize) => s._id === item.size);
-              if (foundSize) sizeName = foundSize.size || foundSize.name || item.size;
+              if (foundSize) sizeName = foundSize.size || item.size;
             }
-            return { ...item, image, sizeName, variant_id: variant?._id, color: variant?.color || item.color, };
+            return { ...item, image, sizeName, variant_id: variant?._id, color: variant?.color || item.color, stock: variant?.stock?.quantity || 0 };
           })
         ).then(setCartItems);
       });
@@ -79,6 +78,14 @@ const Cart: React.FC = () => {
 
   const updateQuantity = (idx: number, newQty: number) => {
     if (newQty < 1) return;
+
+    const item = cartItems[idx];
+
+    if (newQty > item.stock) {
+      message.warning(`Số lượng tồn kho chỉ còn ${item.stock} sản phẩm`);
+      return;
+    }
+
     const newCart = [...cartItems];
     newCart[idx].quantity = newQty;
     setCartItems(newCart);
@@ -147,6 +154,7 @@ const Cart: React.FC = () => {
                           type="number"
                           value={item.quantity}
                           min={1}
+                          max={item.stock}
                           className="w-12 text-center border rounded text-base"
                           onChange={e => updateQuantity(idx, Number(e.target.value))}
                         />

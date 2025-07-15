@@ -77,15 +77,22 @@ const ProductDetail = () => {
       setSelectedSize(firstSize || null);
       setMainImage(Array.isArray(variant.image_url) ? variant.image_url[0] : '');
     }
+    setQuantity(1);
   }, [selectedColor, product]);
 
   const getSelectedVariant = () => {
-    if (!product?.variants || !selectedSize) return null;
-    return product.variants.find((variant: any) =>
-      Array.isArray(variant.size)
+    if (!product?.variants || !selectedSize || !selectedColor) return null;
+
+    return product.variants.find((variant: any) => {
+      const colorId = typeof variant.color === 'string' ? variant.color : variant.color._id;
+      const matchColor = colorId === selectedColor;
+
+      const matchSize = Array.isArray(variant.size)
         ? variant.size.includes(selectedSize)
-        : variant.size === selectedSize
-    );
+        : variant.size === selectedSize;
+
+      return matchColor && matchSize;
+    });
   };
 
   const selectedVariant = getSelectedVariant();
@@ -165,6 +172,9 @@ const ProductDetail = () => {
 
   if (loading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
   if (!product) return <div>Không tìm thấy sản phẩm</div>;
+  console.log("Selected variant:", selectedVariant);
+  console.log("Stock quantity:", selectedVariant?.stock?.quantity);
+  console.log("Current quantity:", quantity);
 
   return (
     <>
@@ -285,9 +295,26 @@ const ProductDetail = () => {
 
             <div className="quantity-control">
               <span className="label">Số lượng:</span>
-              <Button icon={<MinusOutlined />} onClick={() => setQuantity(Math.max(1, quantity - 1))} />
+
+              <Button
+                icon={<MinusOutlined />}
+                onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                disabled={quantity <= 1}
+              />
+
               <span>{quantity}</span>
-              <Button icon={<PlusOutlined />} onClick={() => setQuantity(quantity + 1)} />
+
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  if (selectedVariant && quantity < selectedVariant.stock.quantity) {
+                    setQuantity(prev => prev + 1);
+                  } else {
+                    message.warning(`Chỉ còn ${selectedVariant?.stock?.quantity || 0} sản phẩm trong kho`);
+                  }
+                }}
+                disabled={quantity >= selectedVariant?.stock?.quantity}
+              />
             </div>
 
             <div className="action-buttons">
