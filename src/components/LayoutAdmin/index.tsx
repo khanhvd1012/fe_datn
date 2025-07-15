@@ -22,10 +22,7 @@ import Products from '../../pages/Admin/products/Products';
 import EditReviews from '../../pages/Admin/reviews/EditReviews';
 import Reviews from '../../pages/Admin/reviews/Reviews';
 import Admin from '../../pages/Admin/users/admin/Admin';
-import EditAdmin from '../../pages/Admin/users/admin/EditAdmin';
 import Customers from '../../pages/Admin/users/customer/Customers';
-import EditCustomers from '../../pages/Admin/users/customer/EditCustomers';
-import EditEmployee from '../../pages/Admin/users/employee/EditEmployee';
 import Employee from '../../pages/Admin/users/employee/Employee';
 import Footers from './Footer';
 import Sizes from '../../pages/Admin/sizes/Sizes';
@@ -293,17 +290,14 @@ const IndexAdmin = () => {
                                     {/* Quản lý admin */}
                                     <Route path="admin_users">
                                         <Route path="" element={<Admin />} />
-                                        <Route path="edit/:id" element={<EditAdmin />} />
                                     </Route>
                                     {/* Quản lý nhân viên */}
                                     <Route path="employees">
                                         <Route path="" element={<Employee />} />
-                                        <Route path="edit/:id" element={<EditEmployee />} />
                                     </Route>
                                     {/* Quản lý khách hàng */}
                                     <Route path="customers">
                                         <Route path="" element={<Customers />} />
-                                        <Route path="edit/:id" element={<EditCustomers />} />
                                     </Route>
                                 </Route>
 

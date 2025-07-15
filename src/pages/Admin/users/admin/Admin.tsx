@@ -1,7 +1,6 @@
-import { Button, Empty, message, Skeleton, Table, Tag } from "antd";
+import { Button, Empty, Input, message, Skeleton, Table, Tag } from "antd";
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { EditOutlined, EyeOutlined } from "@ant-design/icons";
+import { EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import type { IUser } from '../../../../interface/user';
 import { useUsers } from '../../../../hooks/useUser';
 import DrawerUserAdmin from '../../../../components/LayoutAdmin/drawer/DrawerUser';
@@ -11,8 +10,30 @@ const Admin = () => {
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
-  const { data, isLoading } = useUsers();
-  console.log("User data:", data);
+  const { data: user, isLoading } = useUsers();
+  const [filters, setFilters] = useState({
+    username: '',
+    email: ''
+  });
+
+  const admins = user?.filter((u) => u.role === "admin") || [];
+
+  const filteredData = admins.filter((u) => {
+    if (filters.username && !u.username.toLowerCase().includes(filters.username.toLowerCase())) {
+      return false;
+    }
+    if (filters.email && !u.email.toLowerCase().includes(filters.email.toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
+
+  const handleFilterChange = (value: string | number, type: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [type]: value
+    }));
+  };
 
   const showUserDetails = (user: IUser) => {
     setDrawerLoading(true);
@@ -24,7 +45,7 @@ const Admin = () => {
   };
 
   if (isLoading) return <Skeleton active />;
-  if (!data) return <Empty />;
+  if (!user) return <Empty />;
 
   const columns = [
     {
@@ -36,11 +57,35 @@ const Admin = () => {
       title: "Tên người dùng",
       dataIndex: "username",
       key: "username",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên người dùng"
+            value={filters.username}
+            onChange={(e) => handleFilterChange(e.target.value, 'username')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.username ? '#1890ff' : undefined }} />,
     },
     {
       title: "Email",
       dataIndex: "email",
       key: "email",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm email"
+            value={filters.email}
+            onChange={(e) => handleFilterChange(e.target.value, 'email')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.email ? '#1890ff' : undefined }} />,
     },
     {
       title: "Role",
@@ -81,9 +126,6 @@ const Admin = () => {
             icon={<EyeOutlined />}
             onClick={() => showUserDetails(user)}
           />
-          <Link to={`/admin/users/admin_users/edit/${user._id}`}>
-            <Button type="default" icon={<EditOutlined />} />
-          </Link>
         </div>
       ),
     },
@@ -95,10 +137,10 @@ const Admin = () => {
 
       <Table
         columns={columns}
-        dataSource={Array.isArray(data) ? data.filter(user => user.role === "admin") : []}
+        dataSource={filteredData}
         rowKey="_id"
         pagination={{
-          total: Array.isArray(data) ? data.filter(user => user.role === "admin").length : 0,
+          total: filteredData.length,
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
