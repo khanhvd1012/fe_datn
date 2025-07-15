@@ -2,14 +2,16 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Button, Empty, message, Popconfirm, Skeleton, Table, Tag, Select, Input, InputNumber } from "antd";
 import type { IOrder } from "../../../interface/order";
 import { FilterOutlined, SearchOutlined } from "@ant-design/icons";
-import { useCancelOrder, useOrders, useUsers, useUpdateOrderStatus } from "../../../hooks/useOrder";
+import { useCancelOrder, useUsers, useUpdateOrderStatus, useAllOrders } from "../../../hooks/useOrder";
 import type { IUser } from "../../../interface/user";
 import { useState } from "react";
 
 const Orders = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
-  const { data: order, isLoading } = useOrders();
+  const { data: order, isLoading } = useAllOrders();
+  console.log("Orders data:", order);
+  
   const { mutate: cancelOrder } = useCancelOrder();
   const { data: users } = useUsers();
   const { mutate: updateStatus } = useUpdateOrderStatus();

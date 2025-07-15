@@ -23,7 +23,15 @@ export const getUserById = async (): Promise<IUser> => {
   return res.data.data;
 };
 
-
+export const getAllOrders = async (): Promise<IOrder[]> => {
+  try {
+    const res = await axios.get(`${API_URL}/orders/list`)
+    return res.data
+  } catch (error) {
+    console.error("Error fetching all orders:", error);
+    throw error;
+  };
+}
 
 // Lấy đơn hàng theo ID
 export const getOrderById = async (id: string): Promise<IOrder> => {
@@ -54,8 +62,8 @@ export const updateOrderStatus = async (
 ): Promise<IOrder> => {
   try {
     const token = localStorage.getItem("token");
-    const res = await axios.put(`${API_URL}/orders/${id}`,{ status },{
-    headers: { Authorization: `Bearer ${token}` },
+    const res = await axios.put(`${API_URL}/orders/${id}`, { status }, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     return res.data.data;
   } catch (err) {
@@ -68,8 +76,8 @@ export const updateOrderStatus = async (
 export const cancelOrder = async (id: string, cancel_reason: string): Promise<IOrder> => {
   try {
     const token = localStorage.getItem("token");
-    const res = await axios.put(`${API_URL}/orders/${id}/cancel`, { cancel_reason },{
-    headers: { Authorization: `Bearer ${token}` },
+    const res = await axios.put(`${API_URL}/orders/${id}/cancel`, { cancel_reason }, {
+      headers: { Authorization: `Bearer ${token}` },
     });
     return res.data.data;
   } catch (err) {

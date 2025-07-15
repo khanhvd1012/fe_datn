@@ -5,6 +5,7 @@ import { getProfile } from "../../service/authAPI";
 import axios from "axios";
 import type { IUser } from "../../interface/user";
 import UpdateProfileDrawer from "../../components/LayoutClient/UpdateProfileDrawer";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   const queryClient = useQueryClient();
@@ -76,22 +77,15 @@ const Profile = () => {
           <div className="w-24 h-24 rounded-full bg-orange-300 mx-auto mb-4 flex items-center justify-center text-white text-xl font-semibold">
             {user.username?.charAt(0)?.toUpperCase() || "?"}
           </div>
-        )}        
+        )}
         <div className="text-center mb-6">
-          <p className="text-lg font-medium">Xin chào</p>
+          <p className="text-lg font-medium">Xin chào - {user.username}</p>
         </div>
         <div className="space-y-3 text-sm">
           <div className="flex items-center gap-2 cursor-pointer hover:text-blue-500">
-            <span>👤</span> Thông tin tài khoản
-          </div>
-          <div className="flex items-center gap-2 cursor-pointer hover:text-blue-500">
-            <span>📄</span> Quản lý đơn hàng
-          </div>
-          <div className="flex items-center gap-2 cursor-pointer hover:text-blue-500">
-            <span>📍</span> Danh sách địa chỉ
-          </div>
-          <div className="flex items-center gap-2 cursor-pointer hover:text-blue-500">
-            <span>↩</span> Đăng xuất
+            <Link to={`order-history`}>
+              Quản lý đơn hàng
+            </Link>
           </div>
         </div>
       </div>

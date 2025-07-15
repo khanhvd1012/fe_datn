@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { IOrder } from '../interface/order';
-import { getOrders, getOrderById, createOrder, updateOrderStatus, cancelOrder , getUserById } from '../service/orderAPI';
+import { getOrders, getOrderById, createOrder, updateOrderStatus, cancelOrder , getUserById, getAllOrders } from '../service/orderAPI';
 
 
 type OrderStatus = NonNullable<IOrder['status']>;
@@ -12,6 +12,14 @@ export const useOrders = () => {
     queryFn: getOrders,
   });
 };
+
+export const useAllOrders = () => {
+  return useQuery({
+    queryKey: ['orders'],
+    queryFn: getAllOrders,
+  });
+}
+
 export const useUsers = () => {
     return useQuery({
         queryKey: ['users'],
