@@ -27,30 +27,22 @@ const OrderHistory = () => {
   const [loading, setLoading] = useState(true);
   const [sizeCache, setSizeCache] = useState<Record<string, string>>({});
 
-const fetchSizeName = async (id: string): Promise<string> => {
-  console.log("Đang fetch size với ID:", id);
+  const fetchSizeName = async (id: string): Promise<string> => {
+    if (sizeCache[id]) return sizeCache[id];
+    try {
+      const token = localStorage.getItem("token");
+      const res = await axios.get(`http://localhost:3000/api/sizes/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const sizeValue = res.data?.size?.size?.toString() || 'Không rõ';
 
-  if (sizeCache[id]) return sizeCache[id];
-
-  try {
-    const token = localStorage.getItem("token");
-    const res = await axios.get(`http://localhost:3000/api/sizes/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    console.log("Kết quả trả về từ API size:", res.data);
-
-    const sizeValue = res.data?.size?.size?.toString() || 'Không rõ';
-    console.log("sizeValue", sizeValue);
-    setSizeCache((prev) => ({ ...prev, [id]: sizeValue }));
-
-    return sizeValue;
-  } catch (err) {
-    console.error('Lỗi khi lấy size:', err);
-    return 'Không rõ';
-  }
-};
-
+      setSizeCache((prev) => ({ ...prev, [id]: sizeValue }));
+      return sizeValue;
+    } catch (err) {
+      console.error('Lỗi khi lấy size:', err);
+      return 'Không rõ';
+    }
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -73,26 +65,26 @@ const fetchSizeName = async (id: string): Promise<string> => {
               headers: { Authorization: `Bearer ${token}` },
             });
 
-            const itemsWithSizeName = await Promise.all(
+            const itemsWithDetails = await Promise.all(
               (detailRes.data.items || []).map(async (item: any) => {
                 const sizeId = item.variant_id?.size;
                 const sizeName = sizeId ? await fetchSizeName(sizeId) : 'Không rõ';
-                // console.log("Đơn hàng:", order._id);
-                // console.log("Sản phẩm:", item.product_id?.name || "Không rõ");
-                console.log("Size:",  sizeName);
-                // console.log("Số lượng:", item.quantity);
-                // console.log("Giá:", item.price);
-                // console.log("-------------------------");
+
+                const variantId = item.variant_id._id || item.variant_id;
+                const variantRes = await axios.get(`http://localhost:3000/api/variants/${variantId}`);
+                const imageUrl = variantRes.data.data.image_url?.[0] || 'Không có ảnh';
+
                 return {
                   ...item,
-                  sizeName
+                  sizeName,
+                  imageUrl
                 };
               })
             );
 
             return {
               ...order,
-              items: itemsWithSizeName,
+              items: itemsWithDetails,
             };
           })
         );
@@ -109,86 +101,83 @@ const fetchSizeName = async (id: string): Promise<string> => {
     fetchOrders();
   }, []);
 
-  const columns = [
-    {
-      title: 'Sản phẩm',
-      render: (_: any, record: any) => (
-        <>{record.product_id?.name || 'Không rõ'}</>
-      )
-    },
-    {
-    title: 'Size',
-    render: (_: any, record: any) => (
-        <>{record.sizeName || 'Không có'}</>
-    )
-    },
-    {
-      title: 'Số lượng',
-      dataIndex: 'quantity',
-      render: (quantity: number) => <>{quantity}</>
-    },
-    {
-      title: 'Giá',
-      render: (_: any, record: any) => (
-        <>{(record.price || 0).toLocaleString()}₫</>
-      )
-    },
-  ];
-
   if (loading) return <Spin style={{ display: 'block', marginTop: 60 }} size="large" />;
   if (!orders.length) return <Text>Bạn chưa có đơn hàng nào</Text>;
 
   return (
     <>
-    <Breadcrumb current="Đơn hàng" />
-    <div className="max-w-5xl mx-auto p-6">
-      <Title level={2}>Lịch sử đơn hàng</Title>
+      <Breadcrumb current="Đơn hàng" />
+      <div className="max-w-5xl mx-auto p-6">
+        <Title level={2}>Lịch sử đơn hàng</Title>
 
-      {orders.map((order) => (
-        <Card
-          key={order._id}
-          className="mb-6"
-          title={<Tag color="blue">#{order._id?.slice(-6).toUpperCase()}</Tag>}
-        >
-          <Descriptions column={1} bordered size="middle">
-            <Descriptions.Item label="Ngày đặt">
-              {new Date(order.createdAt).toLocaleString('vi-VN')}
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              <Tag color={statusColor[order.status] || 'default'}>
-                {order.status === 'pending' && 'Chờ xác nhận'}
-                {order.status === 'confirmed' && 'Đã xác nhận'}
-                {order.status === 'delivering' && 'Đang giao'}
-                {order.status === 'delivered' && 'Đã giao'}
-                {order.status === 'canceled' && 'Đã hủy'}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Người nhận">
-              {order.full_name} - {order.phone}
-            </Descriptions.Item>
-            <Descriptions.Item label="Địa chỉ giao hàng">
-              {order.shipping_address}
-            </Descriptions.Item>
-          </Descriptions>
+        {orders.map((order) => (
+          <Card
+            key={order._id}
+            className="mb-6"
+            title={
+              <div className="flex justify-between items-center">
+                <div>
+                  <Tag color="blue">#{order._id?.slice(-6).toUpperCase()}</Tag>
+                  <span className="ml-2 text-gray-600">
+                    {new Date(order.createdAt).toLocaleString('vi-VN')}
+                  </span>
+                </div>
+                <Tag color={statusColor[order.status] || 'default'}>
+                  {order.status === 'pending' && 'Chờ xác nhận'}
+                  {order.status === 'confirmed' && 'Đã xác nhận'}
+                  {order.status === 'delivering' && 'Đang giao'}
+                  {order.status === 'delivered' && 'Đã giao'}
+                  {order.status === 'canceled' && 'Đã hủy'}
+                </Tag>
+              </div>
+            }
+          >
+            <Table
+              columns={[
 
-          <Divider />
+                {
+                  title: 'Sản phẩm',
+                  render: (_: any, record: any) => (
+                    <>{record.product_id?.name || 'Không rõ'}</>
+                  ),
+                },
+                {
+                  title: 'Hình ảnh',
+                  render: (_: any, record: any) => (
+                    <img
+                      src={record.imageUrl}
+                      alt="product"
+                      style={{ width: 60, height: 60, objectFit: 'cover' }}
+                    />
+                  ),
+                },
+                {
+                  title: 'Số lượng',
+                  dataIndex: 'quantity',
+                  render: (quantity: number) => <>{quantity}</>
+                },
 
-          <Table
-            columns={columns}
-            dataSource={order.items}
-            rowKey={(record) => record._id}
-            pagination={false}
-          />
+              ]}
+              dataSource={order.items}
+              rowKey={(record) => record._id}
+              pagination={false}
+            />
 
-          <div className="flex justify-between mt-4">
-            <Text strong className="text-lg">Tổng thanh toán:</Text>
-            <Text strong className="text-lg">
-              {(order.total_price || 0).toLocaleString()}₫
-            </Text>
-          </div>
-        </Card>
-      ))}
-    </div>
+            <div className="flex justify-between items-center mt-4">
+              <Text strong>Tổng thanh toán:</Text>
+              <Text strong className="text-lg text-green-600">
+                {(order.total_price || 0).toLocaleString()}₫
+              </Text>
+            </div>
+
+            <div className="text-right mt-2">
+              <a href={`/OrderDetail/${order._id}`} className="text-blue-500 hover:underline">
+                Xem chi tiết
+              </a>
+            </div>
+          </Card>
+        ))}
+      </div>
     </>
   );
 };
