@@ -42,7 +42,7 @@ const Cart: React.FC = () => {
               const foundSize = sizes.find((s: ISize) => s._id === item.size);
               if (foundSize) sizeName = foundSize.size || foundSize.name || item.size;
             }
-            return { ...item, image, sizeName, variant_id: variant?._id, };
+            return { ...item, image, sizeName, variant_id: variant?._id, color: variant?.color || item.color, };
           })
         ).then(setCartItems);
       });
@@ -124,7 +124,15 @@ const Cart: React.FC = () => {
                         <h3 className="text-base font-semibold">{item.name}</h3>
                         <div className="text-sm text-gray-500 mt-1">
                           Size: {item.sizeName || item.size}
-                          {item.color && <> / {item.color}</>}
+                          {item.color && typeof item.color === 'object' && (
+                            <div className="flex items-center gap-1">
+                              <span
+                                className="w-3 h-3 border"
+                                style={{ backgroundColor: item.color.code }}
+                              />
+                              <span>{item.color.name}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="text-sm text-gray-500 mt-1">
                           Giá: <span className="font-semibold text-black">{formatCurrency(item.price)}</span>

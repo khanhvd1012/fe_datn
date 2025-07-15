@@ -47,6 +47,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
           ...item,
           image,
           variant_id: variant?._id || null,
+          color: variant?.color || item.color,
         };
       });
 
@@ -153,9 +154,8 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
     <>
       <div
         ref={cartRef}
-        className={`sidecart-transition fixed top-0 right-0 w-[400px] h-full bg-white shadow-2xl z-50 px-6 py-5 flex flex-col ${
-          closing ? 'sidecart-close' : opening ? 'sidecart-open' : 'sidecart-close'
-        }`}
+        className={`sidecart-transition fixed top-0 right-0 w-[400px] h-full bg-white shadow-2xl z-50 px-6 py-5 flex flex-col ${closing ? 'sidecart-close' : opening ? 'sidecart-open' : 'sidecart-close'
+          }`}
         style={{ fontFamily: 'Quicksand, sans-serif' }}
       >
         <div className="flex justify-between items-center mb-6">
@@ -184,7 +184,16 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                     {item.name}
                   </h3>
                   <div className="text-xs text-gray-500 mt-1">
-                    {item.color ? `${item.color} / ` : ''}Size: {getSizeName(item.size)}
+                    {item.color && typeof item.color === 'object' && (
+                      <div className="flex items-center gap-1">
+                        <span
+                          className="w-3 h-3 border"
+                          style={{ backgroundColor: item.color.code }}
+                        />
+                        <span>{item.color.name}</span>
+                      </div>
+                    )}
+                    <span>Size: {getSizeName(item.size)}</span>
                   </div>
                   <div className="flex items-center mt-2">
                     <button
