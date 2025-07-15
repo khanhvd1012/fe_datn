@@ -53,7 +53,7 @@ const OrderHistory = () => {
           return;
         }
 
-        const res = await axios.get("http://localhost:3000/api/orders", {
+        const res = await axios.get("http://localhost:3000/api/orders/user", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
