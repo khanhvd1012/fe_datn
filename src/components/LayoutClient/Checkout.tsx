@@ -40,6 +40,40 @@ const Checkout = () => {
     voucher_type: '',
     voucher_value: 0,
   });
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      try {
+        const res = await axios.get('http://localhost:3000/api/auth/profile', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        const user = res.data.user;
+
+        // Tìm địa chỉ có updatedAt gần nhất
+        const latestAddress = (user?.shipping_addresses || [])
+          .slice() // clone mảng tránh thay đổi gốc
+          .sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+
+        // Cập nhật form nếu có địa chỉ
+        setFormData((prev) => ({
+          ...prev,
+          full_name: latestAddress?.full_name || '',
+          phone: latestAddress?.phone || '',
+          shipping_address: latestAddress?.address || '',
+          email: user?.email || '',
+        }));
+
+      } catch (error) {
+        console.error('Không lấy được thông tin người dùng:', error);
+      }
+    };
+
+    fetchUserProfile();
+  }, []);
+
 
   useEffect(() => {
     const fetchCart = async () => {
@@ -61,31 +95,31 @@ const Checkout = () => {
 
     fetchCart();
   }, []);
-useEffect(() => {
-  if (!cartData?.cart_items) return;
+  useEffect(() => {
+    if (!cartData?.cart_items) return;
 
-  const fetchAllColors = async () => {
-    const newColorMap: Record<string, { name: string; code: string }> = {};
+    const fetchAllColors = async () => {
+      const newColorMap: Record<string, { name: string; code: string }> = {};
 
-    for (const item of cartData.cart_items) {
-      const colorId = item.variant_id.color;
+      for (const item of cartData.cart_items) {
+        const colorId = item.variant_id.color;
 
-      if (!newColorMap[colorId]) {
-        try {
-          const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
-          const color = res.data.color;
-          newColorMap[colorId] = { name: color.name, code: color.code };
-        } catch (error) {
-          console.error(`Không lấy được màu với id ${colorId}`, error);
+        if (!newColorMap[colorId]) {
+          try {
+            const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
+            const color = res.data.color;
+            newColorMap[colorId] = { name: color.name, code: color.code };
+          } catch (error) {
+            console.error(`Không lấy được màu với id ${colorId}`, error);
+          }
         }
       }
-    }
 
-    setItemColors(newColorMap);
-  };
+      setItemColors(newColorMap);
+    };
 
-  fetchAllColors();
-}, [cartData]);
+    fetchAllColors();
+  }, [cartData]);
 
 
   useEffect(() => {
