@@ -197,13 +197,13 @@ const ProductDetail = () => {
                 )}
               </>
             )}
-            
+
             <p className="price">
               {typeof displayPrice === 'number'
                 ? displayPrice.toLocaleString('vi-VN') + '₫'
                 : 'Đang cập nhật giá'}
             </p>
-            
+
 
             {/* Chọn màu */}
             {availableColors.length > 0 && (
@@ -253,11 +253,24 @@ const ProductDetail = () => {
                 {Array.isArray(product.size) && product.size.length > 0 ? (
                   product.size.map((sizeObj: any) => {
                     const sizeId = typeof sizeObj === 'object' ? sizeObj._id : sizeObj;
+
+                    const isAvailableSize = product.variants.some((variant: any) =>
+                      variant.color === selectedColor &&
+                      (Array.isArray(variant.size)
+                        ? variant.size.includes(sizeId)
+                        : variant.size === sizeId)
+                    );
+
                     return (
                       <button
                         key={sizeId}
                         className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
-                        onClick={() => setSelectedSize(sizeId)}
+                        onClick={() => isAvailableSize && setSelectedSize(sizeId)}
+                        disabled={!isAvailableSize}
+                        style={{
+                          opacity: isAvailableSize ? 1 : 0.5,
+                          cursor: isAvailableSize ? 'pointer' : 'not-allowed',
+                        }}
                       >
                         {getSizeName(sizeId)}
                       </button>
@@ -268,6 +281,7 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
+
 
             <div className="quantity-control">
               <span className="label">Số lượng:</span>

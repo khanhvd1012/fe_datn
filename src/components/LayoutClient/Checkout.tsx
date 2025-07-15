@@ -13,7 +13,7 @@ import {
   Divider,
   Spin,
   message,
-  
+
 } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,8 +26,8 @@ const Checkout = () => {
   const [loading, setLoading] = useState(true);
   const [sizeMap, setSizeMap] = useState<Record<string, number>>({});
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-const cartItemIdsRef = useRef<string[]>([]);
-
+  const cartItemIdsRef = useRef<string[]>([]);
+  const [itemColors, setItemColors] = useState<Record<string, { name: string; code: string }>>({});
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -61,6 +61,32 @@ const cartItemIdsRef = useRef<string[]>([]);
 
     fetchCart();
   }, []);
+useEffect(() => {
+  if (!cartData?.cart_items) return;
+
+  const fetchAllColors = async () => {
+    const newColorMap: Record<string, { name: string; code: string }> = {};
+
+    for (const item of cartData.cart_items) {
+      const colorId = item.variant_id.color;
+
+      if (!newColorMap[colorId]) {
+        try {
+          const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
+          const color = res.data.color;
+          newColorMap[colorId] = { name: color.name, code: color.code };
+        } catch (error) {
+          console.error(`Không lấy được màu với id ${colorId}`, error);
+        }
+      }
+    }
+
+    setItemColors(newColorMap);
+  };
+
+  fetchAllColors();
+}, [cartData]);
+
 
   useEffect(() => {
     const fetchSizes = async () => {
@@ -71,6 +97,7 @@ const cartItemIdsRef = useRef<string[]>([]);
         sizes.forEach((s: any) => {
           map[s._id] = s.size;
         });
+        // console.log(" Color map:", map);
         setSizeMap(map);
       } catch (err) {
         console.error('Không lấy được size', err);
@@ -96,17 +123,17 @@ const cartItemIdsRef = useRef<string[]>([]);
       }
       const token = localStorage.getItem('token');
       if (token) {
-      const ids = cartItemIdsRef.current;
-      
-      ids.forEach((id) => {
-        axios
-          .delete(`http://localhost:3000/api/carts/${id}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          .then(() => console.log(`Đã xoá cart item ${id}`))
-          .catch((err) => console.error(`Lỗi xoá cart item ${id}:`, err));
-      });
-    }
+        const ids = cartItemIdsRef.current;
+
+        ids.forEach((id) => {
+          axios
+            .delete(`http://localhost:3000/api/carts/${id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
+            .then(() => console.log(`Đã xoá cart item ${id}`))
+            .catch((err) => console.error(`Lỗi xoá cart item ${id}:`, err));
+        });
+      }
     };
   }, []);
 
@@ -264,11 +291,10 @@ const cartItemIdsRef = useRef<string[]>([]);
                     <div
                       key={method.value}
                       onClick={() => handleChange('payment_method', method.value)}
-                      className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${
-                        formData.payment_method === method.value
-                          ? 'border-green-600 bg-green-50'
-                          : 'border-gray-300 hover:border-green-400'
-                      }`}
+                      className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
+                        ? 'border-green-600 bg-green-50'
+                        : 'border-gray-300 hover:border-green-400'
+                        }`}
                     >
                       <div className="text-2xl mb-1">{method.icon}</div>
                       <Text>{method.label}</Text>
@@ -305,6 +331,29 @@ const cartItemIdsRef = useRef<string[]>([]);
                       <div>
                         <Text strong>{item.variant_id.product_id.name}</Text>
                         <div>Size: {sizeMap[item.variant_id.size[0]] || 'Không rõ'}</div>
+                        {(() => {
+                          const color = itemColors[item.variant_id.color];
+                          return color ? (
+                            <div className="flex items-center mt-1 gap-2 text-sm">
+                              <span>Màu:</span>
+                              <span
+                                style={{
+                                  width: 16,
+                                  height: 16,
+                                  display: 'inline-block',
+                                  backgroundColor: color.code,
+                                  border: '1px solid #ccc',
+                                }}
+                              />
+                              <span>{color.name}</span>
+                            </div>
+                          ) : (
+                            <div className="text-sm text-gray-400">Đang tải màu...</div>
+                          );
+                        })()}
+
+
+
                         <div>Số lượng: {item.quantity}</div>
                       </div>
                       <div className="ml-auto">
