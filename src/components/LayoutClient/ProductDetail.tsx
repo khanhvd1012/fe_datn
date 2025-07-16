@@ -4,70 +4,49 @@ import { Button, Spin, message, Card, Row, Col } from 'antd';
 import { MinusOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Breadcrumb from './Breadcrumb';
-import { useSizes } from '../../hooks/useSizes';
-import { useColors } from '../../hooks/useColors';
-import type { IProduct, IVariant } from '../../interface/product';
-import type { ISize } from '../../interface/size';
-import type { IColor } from '../../interface/color';
+import { useProductBySlug } from '../../hooks/useProducts';
 import '../css/Product_detail.css';
 import RelatedProducts from './RelatedProducts';
-
+import type { IColor } from '../../interface/color';
+import { useSizes } from '../../hooks/useSizes';
+import { useColors } from '../../hooks/useColors';
+import type { ISize } from '../../interface/size';
 
 const ProductDetail = () => {
   const { slug } = useParams();
-  const [product, setProduct] = useState<IProduct | null>(null);
   const [mainImage, setMainImage] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [showVouchers, setShowVouchers] = useState(false);
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
-
   const { data: sizes = [] } = useSizes();
   const { data: colors = [] } = useColors();
+  const { data: product, isLoading } = useProductBySlug(slug || '');
+
+  const getColorInfo = (id: string) => {
+    return colors.find((c: IColor) => c._id === id) || null;
+  };
 
   const getSizeName = (id: string) => {
     const found = sizes.find((s: ISize) => s._id === id);
     return found ? found.size : id;
   };
 
-  const getColorInfo = (id: string) => {
-    return colors.find((c: IColor) => c._id === id) || null;
-  };
-
   useEffect(() => {
-    if (!slug) return;
-
-    axios.get(`http://localhost:3000/api/products/slug/${slug}`)
-      .then(res => {
-        const data = res.data.data;
-        const fixedData: IProduct = {
-          ...data,
-          variants: Array.isArray(data.variants) ? data.variants : [],
-        };
-        setProduct(fixedData);
-
-        const firstVariant = fixedData.variants[0];
-        if (firstVariant) {
-          const firstColor = firstVariant.color;
-          const firstSize = Array.isArray(firstVariant.size)
-            ? firstVariant.size[0]
-            : firstVariant.size;
-
-          setSelectedColor(firstColor || null);
-          setSelectedSize(firstSize || null);
-          setMainImage(Array.isArray(firstVariant.image_url) ? firstVariant.image_url[0] : '');
-        }
-
-        setLoading(false);
-      })
-      .catch(() => {
-        message.error('Không thể tải chi tiết sản phẩm');
-        setLoading(false);
-      });
-  }, [slug]);
+    if (!product) return;
+    const firstVariant = product.variants[0];
+    if (firstVariant) {
+      const firstColor = firstVariant.color;
+      const firstSize = Array.isArray(firstVariant.size)
+        ? firstVariant.size[0]
+        : firstVariant.size;
+      setSelectedColor(firstColor || null);
+      setSelectedSize(firstSize || null);
+      setMainImage(Array.isArray(firstVariant.image_url) ? firstVariant.image_url[0] : '');
+    }
+  }, [product]);
 
   useEffect(() => {
     if (!selectedColor || !product?.variants) return;
@@ -82,15 +61,12 @@ const ProductDetail = () => {
 
   const getSelectedVariant = () => {
     if (!product?.variants || !selectedSize || !selectedColor) return null;
-
     return product.variants.find((variant: any) => {
       const colorId = typeof variant.color === 'string' ? variant.color : variant.color._id;
       const matchColor = colorId === selectedColor;
-
       const matchSize = Array.isArray(variant.size)
         ? variant.size.includes(selectedSize)
         : variant.size === selectedSize;
-
       return matchColor && matchSize;
     });
   };
@@ -99,6 +75,21 @@ const ProductDetail = () => {
   const displayPrice = selectedVariant?.price;
   const brandName = typeof product?.brand === 'object' ? product.brand.name : '';
 
+  // Validate tăng/giảm số lượng
+  const handleIncrease = () => {
+    const stockQty = selectedVariant?.stock?.quantity ?? 0;
+
+    if (quantity < stockQty) {
+      setQuantity(q => q + 1);
+    } else {
+      message.warning(`Chỉ còn ${stockQty} sản phẩm trong kho`);
+    }
+  };
+
+  const handleDecrease = () => {
+    if (quantity > 1) setQuantity(q => q - 1);
+  };
+
   const addToCart = () => {
     if (!product || !selectedSize) {
       message.warning("Vui lòng chọn size!");
@@ -106,6 +97,10 @@ const ProductDetail = () => {
     }
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
     const existing = cart.find((item: any) => item._id === product._id && item.size === selectedSize);
+    if (selectedVariant && quantity > (selectedVariant.stock?.quantity ?? 0)) {
+      message.warning(`Chỉ còn ${selectedVariant.stock?.quantity ?? 0} sản phẩm trong kho`);
+      return;
+    }
     if (existing) {
       existing.quantity += quantity;
       existing.voucher = selectedVoucherId || null;
@@ -159,8 +154,8 @@ const ProductDetail = () => {
   const sizeIdsFromVariant =
     Array.isArray(product?.variants) && selectedColor
       ? product.variants
-        .filter((v: IVariant) => v.color === selectedColor)
-        .flatMap((v: IVariant) =>
+        .filter((v: any) => v.color === selectedColor)
+        .flatMap((v: any) =>
           Array.isArray(v.size) ? v.size : [v.size]
         )
         .filter((val, idx, arr) => val && arr.indexOf(val) === idx)
@@ -170,11 +165,8 @@ const ProductDetail = () => {
     ? product.variants.map((v: any) => v.color).filter((val, i, arr) => val && arr.indexOf(val) === i)
     : [];
 
-  if (loading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
+  if (isLoading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
   if (!product) return <div>Không tìm thấy sản phẩm</div>;
-  console.log("Selected variant:", selectedVariant);
-  console.log("Stock quantity:", selectedVariant?.stock?.quantity);
-  console.log("Current quantity:", quantity);
 
   return (
     <>
@@ -225,10 +217,9 @@ const ProductDetail = () => {
 
             <p className="price">
               {typeof displayPrice === 'number'
-                ? displayPrice.toLocaleString('vi-VN') + '₫'
+                ? displayPrice.toLocaleString('en-US') + '$'
                 : 'Đang cập nhật giá'}
             </p>
-
 
             {/* Chọn màu */}
             {availableColors.length > 0 && (
@@ -246,6 +237,8 @@ const ProductDetail = () => {
                 >
                   {availableColors.map((colorId: string) => {
                     const color = getColorInfo(colorId);
+                    if (!color) return null; // Bỏ qua nếu không tìm thấy màu
+
                     return (
                       <button
                         key={colorId}
@@ -254,22 +247,21 @@ const ProductDetail = () => {
                         style={{
                           width: 32,
                           height: 32,
-                          borderRadius: 0, // Vuông
-                          border: selectedColor === colorId ? '2px solid #7fc9c4' : '1px solid #ccc',
-                          background: color?.code || '#eee', // Tô màu trực tiếp
+                          borderRadius: 4,
+                          border: selectedColor === colorId ? '2px solid #1890ff' : '1px solid #ccc',
+                          backgroundColor: color.code,
                           cursor: 'pointer',
-                          marginRight: 5,
-                          outline: 'none',
+                          marginRight: 8,
                           padding: 0,
+                          outline: 'none',
                         }}
-                        title={color?.name}
+                        title={color.name}
                       />
                     );
                   })}
                 </div>
               </div>
             )}
-
 
             {/* Chọn size */}
             <div className="size-section">
@@ -298,7 +290,7 @@ const ProductDetail = () => {
 
               <Button
                 icon={<MinusOutlined />}
-                onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                onClick={handleDecrease}
                 disabled={quantity <= 1}
               />
 
@@ -306,14 +298,7 @@ const ProductDetail = () => {
 
               <Button
                 icon={<PlusOutlined />}
-                onClick={() => {
-                  if (selectedVariant && quantity < selectedVariant.stock.quantity) {
-                    setQuantity(prev => prev + 1);
-                  } else {
-                    message.warning(`Chỉ còn ${selectedVariant?.stock?.quantity || 0} sản phẩm trong kho`);
-                  }
-                }}
-                disabled={quantity >= selectedVariant?.stock?.quantity}
+                onClick={handleIncrease}
               />
             </div>
 

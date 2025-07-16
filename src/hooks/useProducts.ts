@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addProduct, deleteProduct, getProductById, getProducts, updateProduct } from "../service/productAPI";
+import { addProduct, deleteProduct, getProductById, getProductBySlug, getProducts, updateProduct } from "../service/productAPI";
 import type { IProduct } from "../interface/product";
 
 export const useProducts = () => {
@@ -48,5 +48,13 @@ export const useDeleteProduct = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
     }
+  });
+};
+
+export const useProductBySlug = (slug: string) => {
+  return useQuery<IProduct>({
+    queryKey: ['product', 'slug', slug],
+    queryFn: () => getProductBySlug(slug),
+    enabled: !!slug, // Chỉ gọi khi slug tồn tại
   });
 };

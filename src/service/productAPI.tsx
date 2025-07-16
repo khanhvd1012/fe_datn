@@ -84,6 +84,7 @@ export const getProductsByBrand = async (brandId: string): Promise<IProduct[]> =
         throw error;
     }
 };
+
 export const getProductsByCategory = async (categoryId: string): Promise<IProduct[]> => {
     try {
         const response = await axios.get(`${API_URL}/products?category=${categoryId}`);
@@ -93,3 +94,14 @@ export const getProductsByCategory = async (categoryId: string): Promise<IProduc
         throw error;
     }
 };
+
+export const getProductBySlug = async (slug: string): Promise<IProduct> => {
+    try {
+        const response = await axios.get(`${API_URL}/products/slug/${slug}`);
+        return response.data.data;
+    } catch (error) {
+        console.error("Error fetching product by slug:", error);
+        throw error;
+    }
+};
+
