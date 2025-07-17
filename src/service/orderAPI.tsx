@@ -1,6 +1,5 @@
 import axios from "axios";
 import type { IOrder } from "../interface/order";
-import type { IUser } from "../interface/user";
 
 const API_URL = import.meta.env.VITE_API_URL;
 

@@ -183,28 +183,36 @@ const ProductDetail = () => {
                   alt={`thumb-${idx}`}
                   className={mainImage === img ? 'active' : ''}
                   onClick={() => setMainImage(img)}
+                  style={{ objectFit: 'cover' }}
                 />
               ))}
             </div>
             <div className="main-image-vertical">
-              <img src={mainImage} alt={product.name} />
+              <img src={mainImage} alt={product.name} 
+              style={{ objectFit: 'cover' }}
+              />
             </div>
           </div>
 
           {/* Thông tin sản phẩm */}
           <div className="product-info">
+
             <h2 className="product-name">{product.name}</h2>
+
+            {selectedVariant && (
+              <>
+                {selectedVariant.gender && (
+                  <div style={{ marginBottom: 2, color: '#bbb', fontWeight: 300 }}>
+                    SKU: {selectedVariant.sku || 'Không có SKU'}
+                  </div>
+                )}
+              </>
+            )}
+
             {brandName && <div className="brand-name">Thương hiệu: {brandName}</div>}
 
             {selectedVariant && (
               <>
-                {selectedVariant.status && (
-                  <div style={{ marginBottom: 2 }}>
-                    Tình trạng: <strong style={{ color: selectedVariant.status === 'inStock' ? 'green' : 'red' }}>
-                      {selectedVariant.status === 'inStock' ? 'Còn hàng' : 'Hết hàng'}
-                    </strong>
-                  </div>
-                )}
                 {selectedVariant.gender && (
                   <div style={{ marginBottom: 2 }}>
                     Giới tính: <strong>

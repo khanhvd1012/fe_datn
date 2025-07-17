@@ -44,7 +44,7 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                 setFileList([]);
             }
 
-            setFile(null); // reset ảnh mới khi mở lại
+            setFile(null);
         }
     }, [open, user, form, address]);
 
@@ -95,18 +95,33 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                     },
                 }
             );
+
+            console.log("res.data:", res.data); // DEBUG
+
             if (!res.data.success) {
-                message.error(res.data.message || "Cập nhật thất bại!");
-                return;
+                return message.open({
+                    type: "error",
+                    content: res.data.message || "Cập nhật thất bại!",
+                });
             }
 
-            message.success("Cập nhật thông tin thành công!");
-            queryClient.invalidateQueries({ queryKey: ["profile"] });
-            onClose();
+            message.open({
+                type: "success",
+                content: "Cập nhật thông tin thành công!",
+            });
+
+            await queryClient.invalidateQueries({ queryKey: ["profile"] });
+            await queryClient.refetchQueries({ queryKey: ["profile"] });
+
+            setTimeout(() => {
+                onClose();
+            }, 300);
         } catch (error) {
             message.error("Cập nhật thất bại!");
+            console.error(error); // DEBUG lỗi JS nếu có
         }
     };
+
 
     return (
         <Drawer

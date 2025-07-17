@@ -118,7 +118,7 @@ const BestSellingProducts: React.FC = () => {
             const minPrice = getMinVariantPrice(product);
             const displayPrice =
               typeof minPrice === 'number'
-                ? `${minPrice.toLocaleString('vi-VN')}₫`
+                ? `${minPrice.toLocaleString('en-US')}$`
                 : 'Giá đang cập nhật';
 
             return (
@@ -138,7 +138,7 @@ const BestSellingProducts: React.FC = () => {
                       <img
                         alt={product.name}
                         src={getDisplayImage(product)}
-                        style={{ height: 200, objectFit: 'contain', padding: 10 }}
+                        style={{ display: 'block', minWidth: '100%', maxWidth: '100%', maxHeight: '100%', minHeight: '100%',objectFit: 'cover' }}
                       />
                     }
                     style={{ textAlign: 'center' }}
