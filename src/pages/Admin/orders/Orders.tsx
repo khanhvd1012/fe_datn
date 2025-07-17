@@ -20,6 +20,8 @@ const Orders = () => {
   const [messageApi, contextHolder] = message.useMessage();
 
   const { data: orders, isLoading } = useAdminOrders();
+  console.log("Orders data:", orders);
+  
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: updateStatus } = useUpdateOrderStatus();
   const { data: users } = useUsers();

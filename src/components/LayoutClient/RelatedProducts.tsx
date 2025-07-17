@@ -41,34 +41,7 @@ const RelatedProducts: React.FC = () => {
       }
     }, 3000);
     return () => clearInterval(interval);
-  }, [products]);
-
-  const getMinVariantPrice = (product: any) => {
-    if (!Array.isArray(product.variants) || product.variants.length === 0) return null;
-    const productVariants = variants.filter(
-      (v) => product.variants.includes(v._id)
-    );
-    if (productVariants.length === 0) return null;
-    const prices = productVariants.map((v) => v.price).filter((p) => typeof p === 'number');
-    if (prices.length === 0) return null;
-    return Math.min(...prices);
-  };
-
-  const getDisplayImage = (product: any) => {
-    if (!Array.isArray(product.variants) || product.variants.length === 0) {
-      return product.images?.[0] || 'https://picsum.photos/200';
-    }
-    const productVariants = variants.filter(
-      (v) => product.variants.includes(v._id)
-    );
-    const variantWithImage = productVariants.find(
-      (v) => Array.isArray(v.image_url) && v.image_url.length > 0
-    );
-    if (variantWithImage) {
-      return variantWithImage.image_url[0];
-    }
-    return product.images?.[0] || 'https://picsum.photos/200';
-  };
+  }, [variants]);
 
   return (
     <div style={{ padding: '40px 20px' }}>
@@ -94,7 +67,7 @@ const RelatedProducts: React.FC = () => {
 
       {loading ? (
         <div style={{ textAlign: 'center' }}><Spin /></div>
-      ) : products.length === 0 ? (
+      ) : variants.length === 0 ? (
         <div style={{ textAlign: 'center' }}>Không có sản phẩm nào</div>
       ) : (
         <div
@@ -105,30 +78,38 @@ const RelatedProducts: React.FC = () => {
             scrollBehavior: 'smooth',
           }}
         >
-          {products.map((product) => {
-            const minPrice = getMinVariantPrice(product);
+          {variants.map((variant) => {
+            const product = products.find((p) => p.variants.includes(variant._id));
+            if (!product) return null;
+
+            const displayImage =
+              Array.isArray(variant.image_url) && variant.image_url.length > 0
+                ? variant.image_url[0]
+                : product.images?.[0] || 'https://picsum.photos/200';
+
             const displayPrice =
-              typeof minPrice === 'number'
-                ? `${minPrice.toLocaleString('vi-VN')}₫`
+              typeof variant.price === 'number'
+                ? `${variant.price.toLocaleString('en-US')}$`
                 : 'Giá đang cập nhật';
 
             return (
               <div
-                key={product._id}
+                key={variant._id}
                 style={{
-                  flex: '0 0 25%',
-                  padding: '0 8px',
+                  flex: '0 0 10%',
+                  padding: '0 10px',
                   minWidth: 250,
+                  marginBottom: 20
                 }}
               >
-                <Link to={`/products/${product.slug}`}>
+                <Link to={`/products/${product.slug}`} state={{ variantId: variant._id }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                   <Card
                     hoverable
                     cover={
                       <img
                         alt={product.name}
-                        src={getDisplayImage(product)}
-                        style={{ height: 200, objectFit: 'contain', padding: 10 }}
+                        src={displayImage}
+                        style={{ objectFit: 'contain' }}
                       />
                     }
                     style={{ textAlign: 'center' }}

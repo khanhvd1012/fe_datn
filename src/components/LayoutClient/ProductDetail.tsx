@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { Button, Spin, message, Card, Row, Col } from 'antd';
 import { MinusOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -20,6 +20,8 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [showVouchers, setShowVouchers] = useState(false);
+  const location = useLocation();
+  const variantIdFromState = location.state?.variantId || null;
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
   const { data: sizes = [] } = useSizes();
   const { data: colors = [] } = useColors();
@@ -35,18 +37,22 @@ const ProductDetail = () => {
   };
 
   useEffect(() => {
-    if (!product) return;
-    const firstVariant = product.variants[0];
-    if (firstVariant) {
-      const firstColor = firstVariant.color;
-      const firstSize = Array.isArray(firstVariant.size)
-        ? firstVariant.size[0]
-        : firstVariant.size;
-      setSelectedColor(firstColor || null);
-      setSelectedSize(firstSize || null);
-      setMainImage(Array.isArray(firstVariant.image_url) ? firstVariant.image_url[0] : '');
+    if (!product || !variantIdFromState) return;
+
+    const targetVariant = product.variants.find((v: any) => v._id === variantIdFromState);
+    if (targetVariant) {
+      const color = typeof targetVariant.color === 'string' ? targetVariant.color : targetVariant.color?._id;
+      const size = Array.isArray(targetVariant.size)
+        ? targetVariant.size[0]
+        : targetVariant.size;
+      const image = Array.isArray(targetVariant.image_url) ? targetVariant.image_url[0] : '';
+
+      setSelectedColor(color || null);
+      setSelectedSize(size || null);
+      setMainImage(image || '');
     }
-  }, [product]);
+  }, [product, variantIdFromState]);
+
 
   useEffect(() => {
     if (!selectedColor || !product?.variants) return;
@@ -106,7 +112,7 @@ const ProductDetail = () => {
     const existing = cart.find((item: any) =>
       item._id === product._id &&
       item.size === selectedSize &&
-      item.color?._id === colorInfo._id 
+      item.color?._id === colorInfo._id
     );
 
     if (selectedVariant && quantity > (selectedVariant.stock?.quantity ?? 0)) {

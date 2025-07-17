@@ -32,12 +32,18 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
 
       const updatedCart = rawCart.map((item: any) => {
         const variant = allVariants.find((v: any) =>
-          v.product_id &&
-          (v.product_id._id === item._id || v.product_id === item._id) &&
+          (v.product_id && (v.product_id._id === item._id || v.product_id === item._id)) &&
           Array.isArray(v.size) &&
           v.size.some((s: any) =>
             (typeof s === 'object' && (s._id === item.size || s.size === item.size)) ||
             (typeof s === 'string' && s === item.size)
+          ) &&
+          (
+            !item.color || !v.color ||
+            (typeof item.color === 'object' && typeof v.color === 'object' &&
+              (item.color._id === v.color._id || item.color.name === v.color.name)) ||
+            (typeof item.color === 'string' &&
+              (item.color === v.color?._id || item.color === v.color?.name))
           )
         );
 
@@ -218,7 +224,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                       +
                     </button>
                     <span className="text-sm font-semibold ml-2">
-                      {item.price?.toLocaleString('vi-VN')}₫
+                      {item.price?.toLocaleString('en-US')}$
                     </span>
                     <button
                       className="ml-auto text-gray-400 hover:text-red-500"
@@ -238,7 +244,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
 
         <div className="flex justify-between text-sm mb-4">
           <span>TỔNG TIỀN:</span>
-          <span>{total.toLocaleString('vi-VN')}₫</span>
+          <span>{total.toLocaleString('en-US')}$</span>
         </div>
 
         <div className="flex gap-2 mb-2">

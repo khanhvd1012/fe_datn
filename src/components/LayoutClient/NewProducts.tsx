@@ -43,35 +43,11 @@ const NewProducts: React.FC = () => {
     return () => clearInterval(interval);
   }, [products]);
 
-  // Hàm lấy giá thấp nhất từ variants của product
-  const getMinVariantPrice = (product: any) => {
-    if (!Array.isArray(product.variants) || product.variants.length === 0) return null;
-    // Lọc ra các variant object thuộc về product này
-    const productVariants = variants.filter(
-      (v) => product.variants.includes(v._id)
-    );
-    if (productVariants.length === 0) return null;
-    const prices = productVariants.map((v) => v.price).filter((p) => typeof p === 'number');
-    if (prices.length === 0) return null;
-    return Math.min(...prices);
-  };
-
-  // Hàm lấy ảnh từ variant đầu tiên (ưu tiên ảnh variant, fallback ảnh sản phẩm)
-  const getDisplayImage = (product: any) => {
-    if (!Array.isArray(product.variants) || product.variants.length === 0) {
-      return product.images?.[0] || 'https://picsum.photos/200';
-    }
-    const productVariants = variants.filter(
-      (v) => product.variants.includes(v._id)
-    );
-    const variantWithImage = productVariants.find(
-      (v) => Array.isArray(v.image_url) && v.image_url.length > 0
-    );
-    if (variantWithImage) {
-      return variantWithImage.image_url[0];
-    }
-    return product.images?.[0] || 'https://picsum.photos/200';
-  };
+  // Lọc ra các biến thể thuộc về các sản phẩm mới
+  const latestProductIds = products.map(p => p._id);
+  const latestVariants = variants.filter(v =>
+    latestProductIds.includes(v.product_id?._id || v.product_id)
+  );
 
   return (
     <div style={{ padding: '40px 20px' }}>
@@ -97,7 +73,7 @@ const NewProducts: React.FC = () => {
 
       {loading ? (
         <div style={{ textAlign: 'center' }}><Spin /></div>
-      ) : products.length === 0 ? (
+      ) : latestVariants.length === 0 ? (
         <div style={{ textAlign: 'center' }}>Không có sản phẩm nào</div>
       ) : (
         <div
@@ -108,37 +84,42 @@ const NewProducts: React.FC = () => {
             scrollBehavior: 'smooth',
           }}
         >
-          {products.map((product) => {
-            const minPrice = getMinVariantPrice(product);
-            const displayPrice =
-              typeof minPrice === 'number'
-                ? `${minPrice.toLocaleString('vi-VN')}₫`
-                : 'Giá đang cập nhật';
+          {latestVariants.map((variant) => {
+            const product = products.find(
+              (p) => p._id === (variant.product_id?._id || variant.product_id)
+            );
+            if (!product) return null;
 
             return (
               <div
-                key={product._id}
+                key={variant._id}
                 style={{
-                  flex: '0 0 25%',
-                  padding: '0 8px',
+                  flex: '0 0 10%',
+                  padding: '0 10px',
                   minWidth: 250,
+                  marginBottom: 20
                 }}
               >
-                {/* Sử dụng slug thay vì _id */}
-                <Link to={`/products/${product.slug}`}>
+                <Link to={`/products/${product.slug}`} state={{ variantId: variant._id }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                   <Card
                     hoverable
                     cover={
                       <img
                         alt={product.name}
-                        src={getDisplayImage(product)}
-                        style={{ height: 200, objectFit: 'contain', padding: 10 }}
+                        src={
+                          Array.isArray(variant.image_url) && variant.image_url.length > 0
+                            ? variant.image_url[0]
+                            : product.images?.[0] || 'https://picsum.photos/200'
+                        }
+                        style={{ objectFit: 'contain' }}
                       />
                     }
                     style={{ textAlign: 'center' }}
                   >
-                    <Text style={{ display: 'block', marginBottom: 8 }}>{product.name}</Text>
-                    <Text strong>{displayPrice}</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                      <Text style={{ fontWeight: 500 }}>{product.name} - {variant.color?.name}</Text>
+                    </div>
+                    <Text strong>{variant.price?.toLocaleString('en-US')}$</Text>
                   </Card>
                 </Link>
               </div>

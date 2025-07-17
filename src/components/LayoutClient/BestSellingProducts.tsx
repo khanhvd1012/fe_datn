@@ -12,7 +12,6 @@ const BestSellingProducts: React.FC = () => {
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Lấy cả products và variants song song
     Promise.all([
       axios.get('http://localhost:3000/api/products'),
       axios.get('http://localhost:3000/api/variants')
@@ -28,7 +27,6 @@ const BestSellingProducts: React.FC = () => {
       });
   }, []);
 
-  // Auto slide
   useEffect(() => {
     const interval = setInterval(() => {
       if (sliderRef.current) {
@@ -43,39 +41,7 @@ const BestSellingProducts: React.FC = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [products]);
-
-  // Hàm lấy giá thấp nhất từ variants của product
-  const getMinVariantPrice = (product: any) => {
-    if (!Array.isArray(product.variants) || product.variants.length === 0) return null;
-    // Lọc ra các variant object thuộc về product này
-    const productVariants = variants.filter(
-      (v) => product.variants.includes(v._id)
-    );
-    if (productVariants.length === 0) return null;
-    const prices = productVariants.map((v) => v.price).filter((p) => typeof p === 'number');
-    if (prices.length === 0) return null;
-    return Math.min(...prices);
-  };
-
-  // Hàm lấy ảnh từ variant đầu tiên (ưu tiên ảnh variant, fallback ảnh sản phẩm)
-  const getDisplayImage = (product: any) => {
-    if (!Array.isArray(product.variants) || product.variants.length === 0) {
-      return product.images?.[0] || 'https://picsum.photos/200';
-    }
-    // Lọc ra các variant object thuộc về product này
-    const productVariants = variants.filter(
-      (v) => product.variants.includes(v._id)
-    );
-    // Ưu tiên variant có image_url
-    const variantWithImage = productVariants.find(
-      (v) => Array.isArray(v.image_url) && v.image_url.length > 0
-    );
-    if (variantWithImage) {
-      return variantWithImage.image_url[0];
-    }
-    return product.images?.[0] || 'https://picsum.photos/200';
-  };
+  }, [variants]);
 
   return (
     <div style={{ padding: '40px 20px' }}>
@@ -114,37 +80,58 @@ const BestSellingProducts: React.FC = () => {
             scrollBehavior: 'smooth',
           }}
         >
-          {products.map((product) => {
-            const minPrice = getMinVariantPrice(product);
-            const displayPrice =
-              typeof minPrice === 'number'
-                ? `${minPrice.toLocaleString('en-US')}$`
-                : 'Giá đang cập nhật';
+          {variants.map((variant) => {
+            const product = products.find((p) =>
+              Array.isArray(p.variants) && p.variants.includes(variant._id)
+            );
+            if (!product) return null;
+            console.log('Hiển thị variant:', {
+              variantId: variant._id,
+              productName: product.name,
+              color: variant.color?.name,
+              price: variant.price,
+            });
+            const image =
+              Array.isArray(variant.image_url) && variant.image_url.length > 0
+                ? variant.image_url[0]
+                : product.images?.[0] || 'https://picsum.photos/200';
 
             return (
               <div
-                key={product._id}
+                key={variant._id}
                 style={{
-                  flex: '0 0 25%',
-                  padding: '0 8px',
+                  flex: '0 0 10%',
+                  padding: '0 10px',
                   minWidth: 250,
+                  marginBottom: 20
                 }}
               >
-                {/* Sử dụng slug thay vì _id */}
-                <Link to={`/products/${product.slug}`}>
+                <Link to={`/products/${product.slug}`}
+                  state={{ variantId: variant._id }}
+                >
                   <Card
                     hoverable
                     cover={
                       <img
                         alt={product.name}
-                        src={getDisplayImage(product)}
-                        style={{ display: 'block', minWidth: '100%', maxWidth: '100%', maxHeight: '100%', minHeight: '100%',objectFit: 'cover' }}
+                        src={image}
+                        style={{
+                          display: 'block',
+                          minWidth: '100%',
+                          maxWidth: '100%',
+                          maxHeight: '100%',
+                          minHeight: '100%',
+                          objectFit: 'cover',
+                        }}
                       />
                     }
                     style={{ textAlign: 'center' }}
                   >
-                    <Text style={{ display: 'block', marginBottom: 8 }}>{product.name}</Text>
-                    <Text strong>{displayPrice}</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                      <Text style={{ fontWeight: 500 }}>{product.name} - {variant.color?.name}</Text>
+                    </div>
+
+                    <Text strong>{variant.price?.toLocaleString('en-US')}$</Text>
                   </Card>
                 </Link>
               </div>
