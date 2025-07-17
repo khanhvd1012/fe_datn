@@ -28,12 +28,14 @@ const IndexClient = () => {
   const location = useLocation();
   const matchProductDetail = useMatch('/products/:slug');
   const matchCollectionPage = useMatch('/collection/:slug');
+   const matchOrderDetailPage = useMatch('/OrderDetail/:id');
 
   // Kiểm tra các trang cần ẩn slideshow
   const isNoSlidePage =
     ['/login', '/register', '/profile', '/cart', '/checkout','/checkout/success' ,'/order-history'].includes(location.pathname) ||
     Boolean(matchProductDetail) ||
-    Boolean(matchCollectionPage);
+    Boolean(matchCollectionPage) ||
+    Boolean(matchOrderDetailPage);
 
   return (
     <div>
