@@ -323,7 +323,7 @@ const OrderDetail = () => {
                         ⬅ Quay lại danh sách
                     </Button>
 
-                    {order.status !== 'canceled' && (
+                    {order.status === 'pending' && (
                         <Button danger onClick={handleCancel}>
                             Hủy đơn hàng
                         </Button>
