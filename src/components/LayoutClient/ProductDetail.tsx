@@ -89,18 +89,31 @@ const ProductDetail = () => {
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
-
   const addToCart = () => {
     if (!product || !selectedSize) {
       message.warning("Vui lòng chọn size!");
       return;
     }
+
+    const colorInfo = getColorInfo(selectedColor || '');
+    if (!colorInfo) {
+      message.warning("Màu không hợp lệ!");
+      return;
+    }
+
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    const existing = cart.find((item: any) => item._id === product._id && item.size === selectedSize);
+
+    const existing = cart.find((item: any) =>
+      item._id === product._id &&
+      item.size === selectedSize &&
+      item.color?._id === colorInfo._id 
+    );
+
     if (selectedVariant && quantity > (selectedVariant.stock?.quantity ?? 0)) {
       message.warning(`Chỉ còn ${selectedVariant.stock?.quantity ?? 0} sản phẩm trong kho`);
       return;
     }
+
     if (existing) {
       existing.quantity += quantity;
       existing.voucher = selectedVoucherId || null;
@@ -112,14 +125,21 @@ const ProductDetail = () => {
         size: selectedSize,
         quantity,
         voucher: selectedVoucherId || null,
+        color: {
+          _id: colorInfo._id,
+          name: colorInfo.name,
+          code: colorInfo.code,
+        },
       });
     }
+
     localStorage.setItem("cart", JSON.stringify(cart));
     if (selectedVoucherId) {
       localStorage.setItem("selected_voucher_id", selectedVoucherId);
     }
     message.success("Đã thêm vào giỏ hàng!");
   };
+
 
   const handleToggleVouchers = () => {
     if (!showVouchers && vouchers.length === 0) {
@@ -188,8 +208,8 @@ const ProductDetail = () => {
               ))}
             </div>
             <div className="main-image-vertical">
-              <img src={mainImage} alt={product.name} 
-              style={{ objectFit: 'cover' }}
+              <img src={mainImage} alt={product.name}
+                style={{ objectFit: 'cover' }}
               />
             </div>
           </div>
@@ -312,7 +332,9 @@ const ProductDetail = () => {
 
             <div className="action-buttons">
               <Button type="default" size="large" className="add-cart" onClick={addToCart}>
+                <Link to={`/cart`}>
                   THÊM VÀO GIỎ
+                </Link>
               </Button>
 
               <Link to="/checkout-access">

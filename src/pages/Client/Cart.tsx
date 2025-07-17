@@ -11,6 +11,7 @@ const Cart = () => {
 
   useEffect(() => {
     const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
     axios.get('http://localhost:3000/api/variants')
       .then(res => {
         const allVariants = res.data.data || [];
@@ -22,8 +23,16 @@ const Cart = () => {
               v.size.some((s: any) =>
                 (typeof s === 'object' && (s._id === item.size || s.size === item.size)) ||
                 (typeof s === 'string' && s === item.size)
+              ) &&
+              (
+                !item.color || !v.color ||
+                (typeof item.color === 'object' && typeof v.color === 'object' &&
+                  (item.color._id === v.color._id || item.color.name === v.color.name)) ||
+                (typeof item.color === 'string' &&
+                  (item.color === v.color?._id || item.color === v.color?.name))
               )
             );
+
             const image = variant && Array.isArray(variant.image_url) && variant.image_url.length > 0
               ? variant.image_url[0]
               : item.image;
@@ -74,7 +83,7 @@ const Cart = () => {
 
 
   const formatCurrency = (value: number) =>
-    value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
 
   const updateQuantity = (idx: number, newQty: number) => {
     if (newQty < 1) return;
