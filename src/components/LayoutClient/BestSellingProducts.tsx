@@ -85,12 +85,7 @@ const BestSellingProducts: React.FC = () => {
               Array.isArray(p.variants) && p.variants.includes(variant._id)
             );
             if (!product) return null;
-            console.log('Hiển thị variant:', {
-              variantId: variant._id,
-              productName: product.name,
-              color: variant.color?.name,
-              price: variant.price,
-            });
+
             const image =
               Array.isArray(variant.image_url) && variant.image_url.length > 0
                 ? variant.image_url[0]
@@ -106,29 +101,60 @@ const BestSellingProducts: React.FC = () => {
                   marginBottom: 20
                 }}
               >
-                <Link to={`/products/${product.slug}`}
-                  state={{ variantId: variant._id }}
-                >
+                <Link to={`/products/${product.slug}`} state={{ variantId: variant._id }}>
                   <Card
                     hoverable
                     cover={
-                      <img
-                        alt={product.name}
-                        src={image}
+                      <div
                         style={{
-                          display: 'block',
-                          minWidth: '100%',
-                          maxWidth: '100%',
-                          maxHeight: '100%',
-                          minHeight: '100%',
-                          objectFit: 'cover',
+                          height: 200,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          borderTopLeftRadius: 8,
+                          borderTopRightRadius: 8,
                         }}
-                      />
+                      >
+                        <img
+                          alt={product.name}
+                          src={
+                            Array.isArray(variant.image_url) && variant.image_url.length > 0
+                              ? variant.image_url[0]
+                              : product.images?.[0] || 'https://picsum.photos/200'
+                          }
+                          style={{
+                            marginTop: 2,
+                            maxHeight: '100%',
+                            maxWidth: '100%',
+                            objectFit: 'contain',
+                            display: 'block',
+                          }}
+                        />
+                      </div>
                     }
-                    style={{ textAlign: 'center' }}
+                    style={{
+                      textAlign: 'center',
+                      height: 340,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                      <Text style={{ fontWeight: 500 }}>{product.name} - {variant.color?.name}</Text>
+                    <div
+                      style={{
+                        height: 48,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        marginBottom: 8,
+                      }}
+                    >
+                      <Text style={{ fontWeight: 500 }}>
+                        {product.name} - {variant.color?.name}
+                      </Text>
                     </div>
 
                     <Text strong>{variant.price?.toLocaleString('en-US')}$</Text>

@@ -104,19 +104,53 @@ const NewProducts: React.FC = () => {
                   <Card
                     hoverable
                     cover={
-                      <img
-                        alt={product.name}
-                        src={
-                          Array.isArray(variant.image_url) && variant.image_url.length > 0
-                            ? variant.image_url[0]
-                            : product.images?.[0] || 'https://picsum.photos/200'
-                        }
-                        style={{ objectFit: 'contain' }}
-                      />
+                      <div
+                        style={{
+                          height: 200,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          overflow: 'hidden',
+                          borderTopLeftRadius: 8,
+                          borderTopRightRadius: 8,
+                        }}
+                      >
+                        <img
+                          alt={product.name}
+                          src={
+                            Array.isArray(variant.image_url) && variant.image_url.length > 0
+                              ? variant.image_url[0]
+                              : product.images?.[0] || 'https://picsum.photos/200'
+                          }
+                          style={{
+                            marginTop: 2,
+                            maxHeight: '100%',
+                            maxWidth: '100%',
+                            objectFit: 'contain',
+                            display: 'block',
+                          }}
+                        />
+                      </div>
                     }
-                    style={{ textAlign: 'center' }}
+                    style={{
+                      textAlign: 'center',
+                      height: 340,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                    }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                    <div
+                      style={{
+                        height: 48,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        marginBottom: 8,
+                      }}
+                    >
                       <Text style={{ fontWeight: 500 }}>{product.name} - {variant.color?.name}</Text>
                     </div>
                     <Text strong>{variant.price?.toLocaleString('en-US')}$</Text>
