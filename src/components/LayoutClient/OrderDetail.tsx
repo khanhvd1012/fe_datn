@@ -10,16 +10,18 @@ import {
     Image,
     message,
     Spin,
-    Button
+    Button,
+    Modal,
+    Input,
 } from 'antd';
 import Breadcrumb from './Breadcrumb';
 
 const { Title, Text } = Typography;
 
 const statusColor: Record<string, string> = {
-    pending: 'gold',
-    confirmed: 'blue',
-    delivering: 'orange',
+    pending: 'orange',
+    processing: 'blue',
+    shipped: 'purple',
     delivered: 'green',
     canceled: 'red',
 };
@@ -37,7 +39,52 @@ const OrderDetail = () => {
         phone: string;
         address: string;
     } | null>(null);
+    const handleCancel = () => {
+        let cancelReason = "";
 
+        Modal.confirm({
+            title: "Xác nhận hủy đơn hàng",
+            content: (
+                <div>
+                    <p>Vui lòng nhập lý do hủy:</p>
+                    <Input
+                        placeholder="Lý do hủy đơn"
+                        onChange={(e) => (cancelReason = e.target.value)}
+                    />
+                </div>
+            ),
+            okText: "Xác nhận hủy",
+            cancelText: "Thoát",
+            onOk: async () => {
+                if (!cancelReason.trim()) {
+                    message.warning("Vui lòng nhập lý do hủy đơn");
+                    return Promise.reject();
+                }
+
+                try {
+                    const token = localStorage.getItem("token");
+
+                    await axios.put(
+                        `http://localhost:3000/api/orders/${order._id}/cancel`,
+                        { cancel_reason: cancelReason },
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+
+                    message.success("Hủy đơn hàng thành công");
+                    // Reload lại chi tiết đơn:
+                    window.location.reload();
+                } catch (error) {
+                    console.error("Lỗi khi hủy đơn hàng:", error);
+                    message.error("Hủy đơn hàng thất bại");
+                }
+            },
+        });
+    };
     const fetchSizes = async () => {
         try {
             const res = await axios.get('http://localhost:3000/api/sizes');
@@ -209,7 +256,7 @@ const OrderDetail = () => {
         {
             title: 'Giá',
             render: (_: any, record: any) => (
-                <>{(record.price || 0).toLocaleString()}₫</>
+                <>{(record.price || 0).toLocaleString()}$</>
             )
         }
     ];
@@ -230,11 +277,12 @@ const OrderDetail = () => {
                         {new Date(order.createdAt).toLocaleString('vi-VN')}
                     </Descriptions.Item>
                     <Descriptions.Item label="Trạng thái">
+
                         <Tag color={statusColor[order.status] || 'default'}>
                             {order.status === 'pending' && 'Chờ xác nhận'}
-                            {order.status === 'confirmed' && 'Đã xác nhận'}
-                            {order.status === 'delivering' && 'Đang giao'}
-                            {order.status === 'delivered' && 'Đã giao'}
+                            {order.status === 'processing' && 'Đã xác nhận'}
+                            {order.status === 'shipped' && 'Đang giao'}
+                            {order.status === 'delivered    ' && 'Đã giao'}
                             {order.status === 'canceled' && 'Đã hủy'}
                         </Tag>
                     </Descriptions.Item>
@@ -270,9 +318,18 @@ const OrderDetail = () => {
                     </Text>
                 </div>
 
-                <div className="mt-6 text-right">
-                    <Button onClick={() => navigate('/order-history')}>⬅ Quay lại danh sách</Button>
+                <div className="mt-6 flex justify-between">
+                    <Button onClick={() => navigate('/order-history')}>
+                        ⬅ Quay lại danh sách
+                    </Button>
+
+                    {order.status !== 'canceled' && (
+                        <Button danger onClick={handleCancel}>
+                            Hủy đơn hàng
+                        </Button>
+                    )}
                 </div>
+
             </Card>
         </div>
     );

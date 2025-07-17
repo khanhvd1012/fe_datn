@@ -10,19 +10,20 @@ import {
   Spin,
   Divider,
   Button,
-  Popconfirm
+  Popconfirm, Modal, Input,
 } from 'antd';
 import Breadcrumb from './Breadcrumb';
 
 const { Title, Text } = Typography;
 
 const statusColor: Record<string, string> = {
-  pending: 'gold',
-  confirmed: 'blue',
-  delivering: 'orange',
+  pending: 'orange',
+  processing: 'blue',
+  shipped: 'purple',
   delivered: 'green',
   canceled: 'red',
 };
+
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -45,6 +46,56 @@ const OrderHistory = () => {
       return 'Không rõ';
     }
   };
+
+  const handleCancel = (orderId: string) => {
+    let cancelReason = "";
+
+    Modal.confirm({
+      title: "Xác nhận hủy đơn hàng",
+      content: (
+        <div>
+          <p>Vui lòng nhập lý do hủy:</p>
+          <Input
+            placeholder="Lý do hủy đơn"
+            onChange={(e) => (cancelReason = e.target.value)}
+          />
+        </div>
+      ),
+      okText: "Xác nhận hủy",
+      cancelText: "Thoát",
+      onOk: async () => {
+        if (!cancelReason.trim()) {
+          message.warning("Vui lòng nhập lý do hủy đơn");
+          return Promise.reject();
+        }
+
+        try {
+          const token = localStorage.getItem("token");
+
+          await axios.put(
+            `http://localhost:3000/api/orders/${orderId}/cancel`,
+            { cancel_reason: cancelReason },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          message.success("Hủy đơn hàng thành công");
+          // navigate(0);
+          window.location.reload();
+          
+        } catch (error) {
+          console.error("Hủy đơn hàng thất bại:", error);
+          message.error("Hủy đơn hàng thất bại");
+        }
+      },
+    });
+  };
+
+
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -72,7 +123,7 @@ const OrderHistory = () => {
                 const sizeId = item.variant_id?.size;
                 const sizeName = sizeId ? await fetchSizeName(sizeId) : 'Không rõ';
 
-                 const variantId = item.variant_id?._id ;
+                const variantId = item.variant_id?._id;
 
                 const imageUrl = await axios
                   .get(`http://localhost:3000/api/variants/${variantId}`)
@@ -161,8 +212,8 @@ const OrderHistory = () => {
                   render: () => (
                     <Tag color={statusColor[order.status] || 'default'}>
                       {order.status === 'pending' && 'Chờ xác nhận'}
-                      {order.status === 'confirmed' && 'Đã xác nhận'}
-                      {order.status === 'delivering' && 'Đang giao'}
+                      {order.status === 'processing' && 'Đã xác nhận'}
+                      {order.status === 'shipped' && 'Đang giao'}
                       {order.status === 'delivered' && 'Đã giao'}
                       {order.status === 'canceled' && 'Đã hủy'}
                     </Tag>
@@ -172,7 +223,7 @@ const OrderHistory = () => {
                   title: 'Tổng tiền',
                   render: () => (
                     <span className="text-green-600 font-semibold">
-                      {(order.total_price || 0).toLocaleString()}₫
+                      {(order.total_price || 0).toLocaleString()}$
                     </span>
                   ),
                 },
@@ -187,16 +238,11 @@ const OrderHistory = () => {
                         Xem chi tiết
                       </a>
                       {order.status !== 'canceled' && (
-                        <Popconfirm
-                          title="Hủy đơn hàng"
-                          description="Bạn có chắc muốn hủy đơn hàng này?"
-                          // onConfirm={() => handleCancelOrder(order._id)}
-                          okText="Hủy đơn"
-                          cancelText="Không"
-                        >
-                          <Button danger size="small">Hủy</Button>
-                        </Popconfirm>
+                        <Button danger size="small" onClick={() => handleCancel(order._id)}>
+                          Hủy
+                        </Button>
                       )}
+
                     </div>
                   ),
                 },

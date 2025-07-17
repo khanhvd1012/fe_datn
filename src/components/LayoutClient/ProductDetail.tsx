@@ -401,7 +401,7 @@ const ProductDetail = () => {
                               <Col flex="auto" style={{ color: '#FFFFFF' }}>
                                 <strong style={{ fontSize: '16px' }}>{voucher.code}</strong><br />
                                 <small>
-                                  Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString()}₫</strong>
+                                  Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString()}$</strong>
                                 </small><br />
                                 <small style={{ color: '#660000' }}>Còn lại: {timeLeft}</small>
                               </Col>
@@ -422,7 +422,7 @@ const ProductDetail = () => {
                                 }}>
                                   {voucher.type === 'percentage'
                                     ? `-${voucher.value}%`
-                                    : `-${voucher.value.toLocaleString()}₫`}
+                                    : `-${voucher.value.toLocaleString()}$`}
                                 </div>
                               </Col>
                             </Row>

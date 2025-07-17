@@ -392,7 +392,7 @@ const Checkout = () => {
                       </div>
                       <div className="ml-auto">
                         <Text>
-                          {(item.variant_id.price * item.quantity).toLocaleString()} ₫
+                          {(item.variant_id.price * item.quantity).toLocaleString()} $
                         </Text>
                       </div>
                     </div>
@@ -402,7 +402,7 @@ const Checkout = () => {
 
                   <div className="flex justify-between">
                     <Text>Tổng tiền:</Text>
-                    <Text>{total.toLocaleString()} ₫</Text>
+                    <Text>{total.toLocaleString()} $</Text>
                   </div>
 
                   {formData.voucher_code && (
@@ -411,20 +411,20 @@ const Checkout = () => {
                       <Text className="text-red-600">
                         {formData.voucher_type === 'percentage'
                           ? `- ${formData.voucher_value}%`
-                          : `- ${formData.voucher_value?.toLocaleString()} ₫`}
+                          : `- ${formData.voucher_value?.toLocaleString()} $`}
                       </Text>
                     </div>
                   )}
 
                   <div className="flex justify-between">
                     <Text>Phí vận chuyển:</Text>
-                    <Text>{shippingFee.toLocaleString()} ₫</Text>
+                    <Text>{shippingFee.toLocaleString()} $</Text>
                   </div>
 
                   <div className="flex justify-between mt-2">
                     <Text strong className="text-lg">Tổng cộng:</Text>
                     <Text strong className="text-lg text-black">
-                      {finalTotal.toLocaleString()} ₫
+                      {finalTotal.toLocaleString()} $
                     </Text>
                   </div>
                 </>
