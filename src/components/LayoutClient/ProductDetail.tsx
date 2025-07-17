@@ -338,9 +338,9 @@ const ProductDetail = () => {
 
             <div className="action-buttons">
               <Button type="default" size="large" className="add-cart" onClick={addToCart}>
-                <Link to={`/cart`}>
+                
                   THÊM VÀO GIỎ
-                </Link>
+               
               </Button>
 
               <Link to="/checkout-access">

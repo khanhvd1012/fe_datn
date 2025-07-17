@@ -8,7 +8,9 @@ import {
   Typography,
   message,
   Spin,
-  Divider
+  Divider,
+  Button,
+  Popconfirm
 } from 'antd';
 import Breadcrumb from './Breadcrumb';
 
@@ -70,9 +72,15 @@ const OrderHistory = () => {
                 const sizeId = item.variant_id?.size;
                 const sizeName = sizeId ? await fetchSizeName(sizeId) : 'Không rõ';
 
-                const variantId = item.variant_id._id || item.variant_id;
-                const variantRes = await axios.get(`http://localhost:3000/api/variants/${variantId}`);
-                const imageUrl = variantRes.data.data.image_url?.[0] || 'Không có ảnh';
+                 const variantId = item.variant_id?._id ?? item.variant_id;
+
+                const imageUrl = await axios
+                  .get(`http://localhost:3000/api/variants/${variantId}`)
+                  .then(res => res.data?.data?.image_url?.[0] ?? 'Không có ảnh')
+                  .catch(err => {
+                    console.error("Không lấy được ảnh cho variant:", variantId, err);
+                    return 'Không có ảnh';
+                  });
 
                 return {
                   ...item,
@@ -122,19 +130,11 @@ const OrderHistory = () => {
                     {new Date(order.createdAt).toLocaleString('vi-VN')}
                   </span>
                 </div>
-                <Tag color={statusColor[order.status] || 'default'}>
-                  {order.status === 'pending' && 'Chờ xác nhận'}
-                  {order.status === 'confirmed' && 'Đã xác nhận'}
-                  {order.status === 'delivering' && 'Đang giao'}
-                  {order.status === 'delivered' && 'Đã giao'}
-                  {order.status === 'canceled' && 'Đã hủy'}
-                </Tag>
               </div>
             }
           >
             <Table
               columns={[
-
                 {
                   title: 'Sản phẩm',
                   render: (_: any, record: any) => (
@@ -154,27 +154,57 @@ const OrderHistory = () => {
                 {
                   title: 'Số lượng',
                   dataIndex: 'quantity',
-                  render: (quantity: number) => <>{quantity}</>
+                  render: (quantity: number) => <>{quantity}</>,
                 },
-
+                {
+                  title: 'Trạng thái',
+                  render: () => (
+                    <Tag color={statusColor[order.status] || 'default'}>
+                      {order.status === 'pending' && 'Chờ xác nhận'}
+                      {order.status === 'confirmed' && 'Đã xác nhận'}
+                      {order.status === 'delivering' && 'Đang giao'}
+                      {order.status === 'delivered' && 'Đã giao'}
+                      {order.status === 'canceled' && 'Đã hủy'}
+                    </Tag>
+                  ),
+                },
+                {
+                  title: 'Tổng tiền',
+                  render: () => (
+                    <span className="text-green-600 font-semibold">
+                      {(order.total_price || 0).toLocaleString()}₫
+                    </span>
+                  ),
+                },
+                {
+                  title: 'Hành động',
+                  render: () => (
+                    <div className="space-x-2">
+                      <a
+                        href={`/OrderDetail/${order._id}`}
+                        className="text-blue-500 hover:underline"
+                      >
+                        Xem chi tiết
+                      </a>
+                      {order.status !== 'canceled' && (
+                        <Popconfirm
+                          title="Hủy đơn hàng"
+                          description="Bạn có chắc muốn hủy đơn hàng này?"
+                          // onConfirm={() => handleCancelOrder(order._id)}
+                          okText="Hủy đơn"
+                          cancelText="Không"
+                        >
+                          <Button danger size="small">Hủy</Button>
+                        </Popconfirm>
+                      )}
+                    </div>
+                  ),
+                },
               ]}
               dataSource={order.items}
               rowKey={(record) => record._id}
               pagination={false}
             />
-
-            <div className="flex justify-between items-center mt-4">
-              <Text strong>Tổng thanh toán:</Text>
-              <Text strong className="text-lg text-green-600">
-                {(order.total_price || 0).toLocaleString()}₫
-              </Text>
-            </div>
-
-            <div className="text-right mt-2">
-              <a href={`/OrderDetail/${order._id}`} className="text-blue-500 hover:underline">
-                Xem chi tiết
-              </a>
-            </div>
           </Card>
         ))}
       </div>
