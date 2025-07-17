@@ -211,7 +211,7 @@ const Products = () => {
                 <Link
                   to={`/products/${product.slug}`}
                   key={variant._id}
-                  className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block"
+                  className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[340px]"
                   state={{ variantId: variant._id }}
                 >
                   <img
@@ -224,7 +224,7 @@ const Products = () => {
                   </div>
                   <div className="text-sm font-semibold text-gray-800 mt-1">
                     {typeof variant.price === 'number'
-                      ? variant.price.toLocaleString('vi-VN') + '₫'
+                      ? variant.price.toLocaleString('en-US', { minimumFractionDigits: 0 }) + '$'
                       : 'Giá đang cập nhật'}
                   </div>
                 </Link>
