@@ -1,5 +1,4 @@
 import { Navigate } from "react-router-dom";
-import { Result, Button } from "antd";
 import type { ReactNode } from "react";
 
 interface PrivateRouteProps {
@@ -7,30 +6,28 @@ interface PrivateRouteProps {
   requiredRole?: string;
 }
 
-const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requiredRole }) => {
+const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
   const token = localStorage.getItem("token");
   const role = localStorage.getItem("role");
 
+  // Chưa đăng nhập
   if (!token) {
+    if (requiredRole?.toLowerCase() === "admin") {
+      return <Navigate to="/admin-login" replace />;
+    }
     return <Navigate to="/login" replace />;
   }
 
+  // Đã đăng nhập nhưng sai quyền
   if (requiredRole && role?.toLowerCase() !== requiredRole.toLowerCase()) {
-    return (
-      <Result
-        status="403"
-        title="403 - Không được phép"
-        subTitle="Bạn không có quyền truy cập vào trang này."
-        extra={
-          <Button type="primary" onClick={() => (window.location.href = "/")}>
-            Quay về trang chủ
-          </Button>
-        }
-      />
-    );
+    // ❌ Không hiển thị 403 nữa — chỉ redirect về trang phù hợp hoặc giữ nguyên
+    if (requiredRole.toLowerCase() === "admin") {
+      return <Navigate to="/admin-login" replace />;
+    }
+    return <Navigate to="/" replace />;
   }
 
-  return <>{children}</>; // đảm bảo render mọi loại nội dung hợp lệ
+  return <>{children}</>;
 };
 
 export default PrivateRoute;
