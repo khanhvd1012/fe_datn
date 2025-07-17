@@ -34,11 +34,11 @@ const Collection: React.FC<Props> = ({ onClose }) => {
   }, [onClose]);
 
   return (
-    <div className="fixed top-[100px] left-0 w-full h-[400px] bg-gradient-to-b from-white via-gray-50 to-white z-50 shadow-xl overflow-y-auto font-[Quicksand]">
+    <div className="fixed top-[100px] left-0 w-full h-[400px] bg-gradient-to-b from-white via-gray-50 to-white z-50 shadow-xl overflow-y-auto font-quicksand">
       <div className="max-w-6xl mx-auto px-6 py-8 grid grid-cols-2 gap-10">
         {/* Cột 1 - Thương hiệu */}
         <div>
-          <h3 className="text-base font-semibold mb-4 text-gray-800 uppercase tracking-wide">Thương hiệu</h3>
+          <h3 className="text-lg font-semibold mb-5 text-gray-800 uppercase tracking-wide border-b border-gray-300 pb-2">Thương hiệu</h3>
           {loadingBrands ? (
             <p>Đang tải...</p>
           ) : (
@@ -48,14 +48,14 @@ const Collection: React.FC<Props> = ({ onClose }) => {
                   <NavLink
                     to={`/collection/${slugify(brand.name)}`}
                     onClick={onClose}
-                    className="flex items-center gap-3 hover:bg-gray-100 p-2 rounded transition"
+                    className="flex items-center gap-4 hover:bg-gray-100 p-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                   >
                     <img
                       src={brand.logo_image || '/no-image.jpg'}
                       alt={brand.name}
-                      className="w-8 h-8 object-contain"
+                      className="w-10 h-10 object-contain rounded-md bg-white shadow"
                     />
-                    <span className="text-sm text-gray-800">{brand.name}</span>
+                    <span className="text-base text-gray-800 font-medium">{brand.name}</span>
                   </NavLink>
                 </li>
               ))}
@@ -65,7 +65,7 @@ const Collection: React.FC<Props> = ({ onClose }) => {
 
         {/* Cột 2 - Danh mục */}
         <div>
-          <h3 className="text-base font-semibold mb-4 text-gray-800 uppercase tracking-wide">Danh mục</h3>
+          <h3 className="text-lg font-semibold mb-5 text-gray-800 uppercase tracking-wide border-b border-gray-300 pb-2">Danh mục</h3>
           {loadingCategories ? (
             <p>Đang tải...</p>
           ) : (
@@ -75,14 +75,14 @@ const Collection: React.FC<Props> = ({ onClose }) => {
                   <NavLink
                     to={`/collection/${slugify(cat.name)}`}
                     onClick={onClose}
-                    className="flex items-center gap-3 hover:bg-gray-100 p-2 rounded transition"
+                    className="flex items-center gap-4 hover:bg-gray-100 p-3 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                   >
                     <img
                       src={cat.logo_image || '/no-image.jpg'}
                       alt={cat.name}
-                      className="w-8 h-8 object-contain"
+                      className="w-10 h-10 object-contain rounded-md bg-white shadow"
                     />
-                    <span className="text-sm text-gray-800">{cat.name}</span>
+                    <span className="text-base text-gray-800 font-medium">{cat.name}</span>
                   </NavLink>
                 </li>
               ))}

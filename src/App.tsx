@@ -5,6 +5,7 @@ import IndexAdmin from './components/LayoutAdmin'
 import IndexClient from './components/LayoutClient'
 import ErrorBoundary from 'antd/es/alert/ErrorBoundary'
 import PrivateRoute from './components/PrivateRoute'
+import AdminLogin from './pages/Auth/login-admin'
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
             <IndexAdmin />
           </PrivateRoute>
         } />
+        <Route path="/admin-login" element={<AdminLogin />} />
         <Route path="/*" element={<IndexClient />} />
       </Routes>
     </ErrorBoundary>
