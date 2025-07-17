@@ -72,7 +72,7 @@ const OrderHistory = () => {
                 const sizeId = item.variant_id?.size;
                 const sizeName = sizeId ? await fetchSizeName(sizeId) : 'Không rõ';
 
-                 const variantId = item.variant_id?._id ?? item.variant_id;
+                 const variantId = item.variant_id?._id ;
 
                 const imageUrl = await axios
                   .get(`http://localhost:3000/api/variants/${variantId}`)
