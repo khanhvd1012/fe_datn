@@ -50,7 +50,7 @@ const Cart = () => {
               const foundSize = sizes.find((s: ISize) => s._id === item.size);
               if (foundSize) sizeName = foundSize.size || item.size;
             }
-            return { ...item, image, sizeName, variant_id: variant?._id, color: variant?.color || item.color, stock: variant?.stock?.quantity || 0 };
+            return { ...item, image, sizeName, size_id: typeof item.size === 'object' ? item.size._id : item.size, variant_id: variant?._id, color: variant?.color || item.color, stock: variant?.stock?.quantity || 0 };
           })
         ).then(setCartItems);
       });
@@ -65,6 +65,7 @@ const Cart = () => {
           {
             variant_id: item.variant_id,
             quantity: item.quantity,
+            size_id: item.size_id,
           },
           {
             headers: {
@@ -74,7 +75,10 @@ const Cart = () => {
         );
       }));
       message.success('Đã cập nhật giỏ hàng!');
-      window.location.href = "/checkout";
+      setTimeout(() => {
+  window.location.href = "/checkout";
+}, 3000); 
+
     } catch (err: any) {
       console.error(err);
       message.error('Có lỗi khi cập nhật giỏ hàng!');

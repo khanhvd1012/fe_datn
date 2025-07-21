@@ -102,7 +102,7 @@ const Checkout = () => {
       const newColorMap: Record<string, { name: string; code: string }> = {};
 
       for (const item of cartData.cart_items) {
-        const colorId = item.variant_id.color;
+        const colorId = item.variant_id.color._id;
 
         if (!newColorMap[colorId]) {
           try {
@@ -364,9 +364,12 @@ const Checkout = () => {
                       />
                       <div>
                         <Text strong>{item.variant_id.product_id.name}</Text>
-                        <div>Size: {sizeMap[item.variant_id.size[0]] || 'Không rõ'}</div>
+                        <div>Size: {item.size_id?.size || 'Không rõ'}</div>
                         {(() => {
-                          const color = itemColors[item.variant_id.color];
+                          const color = itemColors[item.variant_id.color._id];
+                          console.log("Màu của sản phẩm là:", item.variant_id.color.name);
+                          console.log("Màu của sản phẩm là:", item.variant_id.color._id);
+
                           return color ? (
                             <div className="flex items-center mt-1 gap-2 text-sm">
                               <span>Màu:</span>

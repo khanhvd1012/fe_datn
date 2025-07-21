@@ -127,6 +127,8 @@ const OrderHistory = () => {
               }
             );
 
+            console.log("Chi tiết đơn hàng:", detailRes.data);
+
             const itemsWithDetails = await Promise.all(
               (detailRes.data.items || []).map(async (item: any) => {
                 const sizeId = item.variant_id?.size;
