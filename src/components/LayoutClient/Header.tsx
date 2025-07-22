@@ -5,7 +5,7 @@ import {
   ShoppingCartOutlined,
   BellOutlined,
 } from '@ant-design/icons';
-import { Dropdown, Menu } from 'antd';
+import { Avatar, Button, Dropdown, Menu } from 'antd';
 import {
   HeaderTop,
   HeaderMain,
@@ -25,6 +25,8 @@ import SearchBox from './SearchBox';
 import Collection from '../../pages/Client/Collection';
 import axios from 'axios';
 import NotificationPopup from './NotificationPopup.tsx';
+import type { INotification } from '../../interface/notification.ts';
+
 
 const Header: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,9 +35,10 @@ const Header: React.FC = () => {
   const [showCollectionMenu, setShowCollectionMenu] = useState(false);
   const [products, setProducts] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
+  const [notifications, setNotifications] = useState<INotification[]>([]);
 
   const collectionRef = useRef<HTMLDivElement>(null);
-  const notificationRef = useRef<HTMLDivElement>(null);
+  const notificationRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
 
   const token = localStorage.getItem('token');
@@ -152,9 +155,12 @@ const Header: React.FC = () => {
 
         <IconGroup>
           <Dropdown overlay={menu} trigger={['hover']} placement="bottomRight">
-            <div style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-              <Icon><UserOutlined /></Icon>
-              {token && <span style={{ marginLeft: 8, fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>}
+            <div className="flex items-center gap-2 cursor-pointer">
+              <Avatar
+                src={user?.image || "https://i.pravatar.cc/300"}
+                size={32}
+              />
+              <span className="text-sm font-medium">{user?.username}</span>
             </div>
           </Dropdown>
 
@@ -187,6 +193,7 @@ const Header: React.FC = () => {
         <NotificationPopup
           onClose={() => setShowNotification(false)}
           wrapperRef={notificationRef}
+          notifications={notifications} // 🔥 dòng bắt buộc
         />
       )}
     </>

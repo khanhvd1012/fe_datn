@@ -98,17 +98,11 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
 
             console.log("res.data:", res.data); // DEBUG
 
-            if (!res.data.success) {
-                return message.open({
-                    type: "error",
-                    content: res.data.message || "Cập nhật thất bại!",
-                });
+         
+            if (res.data.error || res.status !== 200) {
+                return message.error(res.data.message || "Cập nhật thất bại!");
             }
-
-            message.open({
-                type: "success",
-                content: "Cập nhật thông tin thành công!",
-            });
+            message.success(res.data.message || "Cập nhật thông tin thành công!");
 
             await queryClient.invalidateQueries({ queryKey: ["profile"] });
             await queryClient.refetchQueries({ queryKey: ["profile"] });

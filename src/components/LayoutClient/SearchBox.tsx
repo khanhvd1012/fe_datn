@@ -17,14 +17,14 @@ interface SearchBoxProps {
 }
 
 const popularKeywords = [
-  'những thứ cần thiết cho mùa hè',
-  'thời đại jordan cmft',
-  'không quân 1',
+  'nike',
+  'adidas',
+  'puma',
   'jordan',
-  'giày bóng rổ',
-  'không khí tối đa',
-  'jordan 1 thấp',
-  'nike dunk thấp',
+  'giày trẻ em',
+  'giày thể thao',
+  'bóng rổ',
+  'bóng đá',
 ];
 
 const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
@@ -84,7 +84,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
   const handleClose = useCallback(() => onClose(), [onClose]);
 
   return (
-    <div className="fixed top-[64px] left-0 w-full h-1/2 bg-white z-[999] p-6 shadow-md border-b overflow-y-auto">
+    <div className="fixed top-[64px] left-0 w-full h-1/2 bg-white z-[999] p-6 shadow-md border-b overflow-y-auto mt-10">
       <div ref={containerRef} className="relative w-full h-full max-w-6xl mx-auto px-4">
         {/* Hàng ngang: Logo - Search - X */}
         <div className="flex items-center w-full mb-6 gap-4">

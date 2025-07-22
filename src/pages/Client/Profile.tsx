@@ -91,22 +91,6 @@ const Profile = () => {
             {user.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}
           </Descriptions.Item>
         </Descriptions>
-
-        <div className="mt-6 bg-blue-50 p-4 rounded-md">
-          <p className="font-medium text-sm">
-            Hạng thẻ tiếp theo <strong>Silver</strong> – chiết khấu 3% membership
-          </p>
-          <a
-            href="#"
-            className="text-sm text-blue-600 hover:underline mt-1 inline-block"
-          >
-            Xem thêm chính sách khách hàng thân thiết.
-          </a>
-        </div>
-
-        <div className="text-center mt-10 text-sm text-gray-500">
-          Đang cập nhật danh sách..
-        </div>
       </div>
       <UpdateProfileDrawer open={openDrawer} onClose={() => setOpenDrawer(false)} user={user} />
     </div>
