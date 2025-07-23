@@ -109,6 +109,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
             {
               variant_id: item.variant_id,
               quantity: item.quantity,
+              size_id: item.size,
             },
             {
               headers: {

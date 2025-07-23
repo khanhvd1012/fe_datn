@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Button, Spin, message, Card, Row, Col } from 'antd';
+import { Button, Spin, message, Card, Row, Col,Rate,Progress } from 'antd';
 import { MinusOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Breadcrumb from './Breadcrumb';
@@ -26,7 +26,7 @@ const ProductDetail = () => {
   const { data: sizes = [] } = useSizes();
   const { data: colors = [] } = useColors();
   const { data: product, isLoading } = useProductBySlug(slug || '');
-
+  const [reviews, setReviews] = useState([]);
   const getColorInfo = (id: string) => {
     return colors.find((c: IColor) => c._id === id) || null;
   };
@@ -50,6 +50,7 @@ const ProductDetail = () => {
       setSelectedColor(color || null);
       setSelectedSize(size || null);
       setMainImage(image || '');
+      fetchProductReviews();
     }
   }, [product, variantIdFromState]);
 
@@ -176,6 +177,29 @@ const ProductDetail = () => {
       message.success(`Đã chọn mã: ${voucher.code}`);
     }
   };
+  // reviews
+  const fetchProductReviews = async () => {
+    try {
+      const res = await axios.get(`http://localhost:3000/api/reviews/${product?._id}`);
+      setReviews(res.data.reviews);
+
+    } catch (error) {
+      console.error('Lỗi khi lấy danh sách đánh giá:', error);
+    }
+  };
+
+  const totalReviews = reviews.length;
+
+  const ratingStats = [1, 2, 3, 4, 5].reduce((acc, star) => {
+    const count = reviews.filter((r) => r.rating === star).length;
+    acc[star] = count;
+    return acc;
+  }, {});
+
+  const avgRating = (
+    reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+  ).toFixed(1);
+  //
 
   const sizeIdsFromVariant =
     Array.isArray(product?.variants) && selectedColor
@@ -338,9 +362,9 @@ const ProductDetail = () => {
 
             <div className="action-buttons">
               <Button type="default" size="large" className="add-cart" onClick={addToCart}>
-                
-                  THÊM VÀO GIỎ
-               
+
+                THÊM VÀO GIỎ
+
               </Button>
 
               <Link to="/checkout-access">
@@ -439,6 +463,49 @@ const ProductDetail = () => {
         <div className="product-description">
           <h3><u>Mô tả sản phẩm</u></h3>
           <p>{product.description}</p>
+        </div>
+        {/* reviews */}
+        <div style={{ display: 'flex', gap: '40px', alignItems: 'center', marginBottom: 24 }}>
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ fontSize: '40px', margin: 0 }}>{avgRating}</h1>
+            <Rate allowHalf disabled defaultValue={Number(avgRating)} />
+            <div>{totalReviews} đánh giá</div>
+          </div>
+
+          <div style={{ flex: 1 }}>
+            {[5, 4, 3, 2, 1].map((star) => {
+              const count = ratingStats[star] || 0;
+              const percent = totalReviews ? (count / totalReviews) * 100 : 0;
+              return (
+                <div key={star} style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                  <div style={{ width: 30 }}>{star} ★</div>
+                  <Progress
+                    percent={Math.round(percent)}
+                    showInfo={false}
+                    strokeColor="#1890ff"
+                    style={{ flex: 1 }}
+                  />
+                  <div style={{ width: 40, textAlign: 'right' }}>{count}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div>
+          <h3>Đánh giá sản phẩm</h3>
+          {reviews.length === 0 ? (
+            <p>Chưa có đánh giá nào.</p>
+          ) : (
+            reviews.map((review: any) => (
+              <div key={review._id} style={{ marginBottom: '16px' }}>
+                <strong style={{ fontSize: '20px', marginRight: '12px' }} >{review.user_id?.username || 'Ẩn danh'}</strong>
+                <Rate value={review.rating} disabled />
+                <p>{review.comment}</p>
+                <div>{new Date(review.createdAt).toLocaleString()}</div>
+              </div>
+            ))
+          )}
         </div>
       </div>
       <RelatedProducts />
