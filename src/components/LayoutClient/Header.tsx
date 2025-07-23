@@ -5,7 +5,7 @@ import {
   ShoppingCartOutlined,
   BellOutlined,
 } from '@ant-design/icons';
-import { Avatar, Button, Dropdown, Menu } from 'antd';
+import { Avatar, Button, Dropdown, Menu, message } from 'antd';
 import {
   HeaderTop,
   HeaderMain,
@@ -18,7 +18,7 @@ import {
 } from '../css/style';
 import { NavLink, useNavigate } from 'react-router-dom';
 import SideCart from '../../pages/Client/SideCart';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProfile } from '../../service/authAPI';
 import type { IUser } from '../../interface/user';
 import SearchBox from './SearchBox';
@@ -29,6 +29,7 @@ import type { INotification } from '../../interface/notification.ts';
 
 
 const Header: React.FC = () => {
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [showCart, setShowCart] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
@@ -73,6 +74,8 @@ const Header: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.clear();
+    queryClient.removeQueries({ queryKey: ['profile'] });
+    message.info('Đăng xuất thành công!');
     navigate('/');
   };
 
@@ -156,14 +159,26 @@ const Header: React.FC = () => {
         <IconGroup>
           <Dropdown overlay={menu} trigger={['hover']} placement="bottomRight">
             <div className="flex items-center gap-2 cursor-pointer">
-              <Avatar
-                src={user?.image || "https://i.pravatar.cc/300"}
-                size={32}
-              />
-              <span className="text-sm font-medium">{user?.username}</span>
+              {user ? (
+                <div className="flex items-center gap-2">
+                  <Avatar
+                    src={user.image || 'https://i.pravatar.cc/300'}
+                    size={32}
+                  />
+                  <span className="text-sm font-medium">{user.username}</span>
+                </div>
+              ) : (
+                <Avatar
+                  icon={<UserOutlined style={{ color: 'black' }} />} 
+                  size={32}
+                  style={{
+                    backgroundColor: 'white', 
+                    marginRight : '-10px'
+                  }}
+                />
+              )}
             </div>
           </Dropdown>
-
           <Icon onClick={() => setShowNotification(true)} style={{ cursor: 'pointer' }}>
             <BellOutlined />
           </Icon>

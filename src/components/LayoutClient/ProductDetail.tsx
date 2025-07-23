@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { Button, Spin, message, Card, Row, Col,Rate,Progress } from 'antd';
+import { Button, Spin, message, Card, Row, Col, Rate, Progress } from 'antd';
 import { MinusOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Breadcrumb from './Breadcrumb';
@@ -465,44 +465,87 @@ const ProductDetail = () => {
           <p>{product.description}</p>
         </div>
         {/* reviews */}
-        <div style={{ display: 'flex', gap: '40px', alignItems: 'center', marginBottom: 24 }}>
-          <div style={{ textAlign: 'center' }}>
-            <h1 style={{ fontSize: '40px', margin: 0 }}>{avgRating}</h1>
-            <Rate allowHalf disabled defaultValue={Number(avgRating)} />
-            <div>{totalReviews} đánh giá</div>
+        <div
+          style={{
+            display: 'flex',
+            gap: '40px',
+            alignItems: 'flex-start',
+            padding: '30px 50px',
+            backgroundColor: '#fafafa',
+            borderRadius: '8px',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+            marginBottom: 40,
+          }}
+        >
+          {/* Tổng điểm trung bình */}
+          <div style={{ textAlign: 'center', minWidth: '150px' }}>
+            <h1 style={{ fontSize: '48px', margin: '0 0 10px', color: '#1890ff' }}>{avgRating}</h1>
+            <Rate allowHalf disabled value={Number(avgRating)} />
+            <div style={{ marginTop: 8, color: '#555' }}>{totalReviews} đánh giá</div>
           </div>
 
+          {/* Thanh phần trăm theo số sao */}
           <div style={{ flex: 1 }}>
             {[5, 4, 3, 2, 1].map((star) => {
               const count = ratingStats[star] || 0;
               const percent = totalReviews ? (count / totalReviews) * 100 : 0;
               return (
-                <div key={star} style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                  <div style={{ width: 30 }}>{star} ★</div>
+                <div
+                  key={star}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: 10,
+                  }}
+                >
+                  <div style={{ width: 40, fontWeight: '500' }}>{star} ★</div>
                   <Progress
                     percent={Math.round(percent)}
                     showInfo={false}
-                    strokeColor="#1890ff"
-                    style={{ flex: 1 }}
+                    strokeColor="#52c41a"
+                    style={{ flex: 1, marginRight: 10 }}
                   />
-                  <div style={{ width: 40, textAlign: 'right' }}>{count}</div>
+                  <div style={{ width: 30, textAlign: 'right' }}>{count}</div>
                 </div>
               );
             })}
           </div>
         </div>
 
+        {/* Danh sách đánh giá */}
         <div>
-          <h3>Đánh giá sản phẩm</h3>
+          <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: 16 }}>Đánh giá sản phẩm</h3>
           {reviews.length === 0 ? (
-            <p>Chưa có đánh giá nào.</p>
+            <p style={{ color: '#999' }}>Chưa có đánh giá nào.</p>
           ) : (
             reviews.map((review: any) => (
-              <div key={review._id} style={{ marginBottom: '16px' }}>
-                <strong style={{ fontSize: '20px', marginRight: '12px' }} >{review.user_id?.username || 'Ẩn danh'}</strong>
-                <Rate value={review.rating} disabled />
-                <p>{review.comment}</p>
-                <div>{new Date(review.createdAt).toLocaleString()}</div>
+              <div
+                key={review._id}
+                style={{
+                  marginBottom: '24px',
+                  padding: '16px',
+                  borderRadius: '8px',
+                  backgroundColor: '#fff',
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                  <strong
+                    style={{
+                      fontSize: '16px',
+                      color: '#333',
+                      marginRight: '12px',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {review.user_id?.username || 'Ẩn danh'}
+                  </strong>
+                  <Rate value={review.rating} disabled style={{ fontSize: 16 }} />
+                </div>
+                <p style={{ margin: '4px 0 8px', color: '#444' }}>{review.comment}</p>
+                <div style={{ fontSize: '12px', color: '#999' }}>
+                  {new Date(review.createdAt).toLocaleString()}
+                </div>
               </div>
             ))
           )}

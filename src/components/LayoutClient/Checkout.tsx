@@ -212,15 +212,38 @@ const Checkout = () => {
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!formData.full_name.trim()) newErrors.full_name = 'Vui lòng nhập họ tên';
-    if (!formData.phone.trim()) newErrors.phone = 'Vui lòng nhập số điện thoại';
-    if (!formData.shipping_address.trim()) newErrors.shipping_address = 'Vui lòng nhập địa chỉ';
-    if (formData.email && !/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = 'Email không hợp lệ';
+
+    // Kiểm tra họ tên: phải có ít nhất 2 từ, không chứa số
+    if (!formData.full_name.trim()) {
+      newErrors.full_name = 'Vui lòng nhập họ tên';
+    } else if (!/^[\p{L}\s']+$/u.test(formData.full_name)) {
+      newErrors.full_name = 'Họ tên chỉ được chứa chữ và khoảng trắng';
+    } else if (formData.full_name.trim().split(/\s+/).length < 2) {
+      newErrors.full_name = 'Vui lòng nhập đầy đủ họ và tên';
+    }
+
+    // Kiểm tra số điện thoại Việt Nam
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Vui lòng nhập số điện thoại';
+    } else if (!/^0[3-9]\d{8}$/.test(formData.phone)) {
+      newErrors.phone = 'Số điện thoại không hợp lệ';
+    }
+
+    // Kiểm tra địa chỉ: ít nhất 10 ký tự
+    if (!formData.shipping_address.trim()) {
+      newErrors.shipping_address = 'Vui lòng nhập địa chỉ';
+    } else if (formData.shipping_address.length < 10) {
+      newErrors.shipping_address = 'Địa chỉ quá ngắn';
+    }
+
+    // Kiểm tra email (nếu có nhập)
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Email không hợp lệ';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = async () => {
     if (!validate()) return;
 
