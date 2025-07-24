@@ -22,7 +22,7 @@ import CollectionPage from './CollectionPage';
 import CheckoutSuccess from './CheckoutSuccess';
 import OrderHistory from './OrderHistory';
 import OrderDetail from './OrderDetail';
-
+import ProductReview from './ProductReview';
 
 const IndexClient = () => {
   const location = useLocation();
@@ -64,6 +64,7 @@ const IndexClient = () => {
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/OrderDetail/:id" element={<OrderDetail />} />
+          <Route path="/ProductReview" element={<ProductReview />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
