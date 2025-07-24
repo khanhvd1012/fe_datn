@@ -50,7 +50,6 @@ import CreateBlog from '../../pages/Admin/blog/CreateBlog';
 // import EditBlog from '../../pages/Admin/blog/EditBlog';
 
 import Contacts from '../../pages/Admin/contact/Contacts';
-import ContactDetail from '../../pages/Admin/contact/ContactDetail';
 import EditBlog from '../../pages/Admin/blog/EditBlog';
 import EditBanner from '../../pages/Admin/banners/EditBanner';
 
@@ -349,9 +348,7 @@ const IndexAdmin = () => {
                                 {/* Routes quản lý contacts */}
                                 <Route path="contacts">
                                     <Route path="" element={<Contacts />} />
-                                    <Route path=":id" element={<ContactDetail />} />
                                 </Route>
-                                <Route path="contacts/:id" element={<ContactDetail />} />
                             </Routes>
                         </div>
                     </Content>

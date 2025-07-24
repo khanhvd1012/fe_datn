@@ -114,7 +114,9 @@ const RelatedProducts: React.FC = () => {
                     }
                     style={{ textAlign: 'center' }}
                   >
-                    <Text style={{ display: 'block', marginBottom: 8 }}>{product.name}</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
+                      <Text style={{ fontWeight: 500 }}>{product.name} - {variant.color?.name}</Text>
+                    </div>
                     <Text strong>{displayPrice}</Text>
                   </Card>
                 </Link>

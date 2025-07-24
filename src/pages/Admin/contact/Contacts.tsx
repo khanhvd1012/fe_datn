@@ -1,75 +1,110 @@
-import { Table, Button, Space, Typography } from 'antd';
-import { EyeOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
-import type { ColumnsType } from 'antd/es/table';
-
-const { Title } = Typography;
-
-// Dữ liệu mẫu
-const contactData = [
-  {
-    _id: '1',
-    name: 'Nguyễn Văn A',
-    email: 'vana@example.com',
-    phone: '0987654321',
-    message: 'Tôi muốn biết thêm về sản phẩm.',
-    createdAt: '2025-07-12T14:30:00Z',
-  },
-  {
-    _id: '2',
-    name: 'Trần Thị B',
-    email: 'thib@example.com',
-    phone: '0912345678',
-    message: 'Tôi cần hỗ trợ đặt hàng.',
-    createdAt: '2025-07-11T09:15:00Z',
-  },
-];
+import { Empty, Input, message, Skeleton, Table } from "antd";
+import { useState } from "react";
+import { FilterOutlined, SearchOutlined } from "@ant-design/icons";
+import type { IContact } from "../../../interface/contact";
+import { useGetAllContacts } from "../../../hooks/useContact";
 
 const Contacts = () => {
-  const columns: ColumnsType<any> = [
-    {
-      title: 'Họ tên',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Email',
-      dataIndex: 'email',
-      key: 'email',
-    },
-    {
-      title: 'Số điện thoại',
-      dataIndex: 'phone',
-      key: 'phone',
-    },
-    {
-      title: 'Ngày gửi',
-      dataIndex: 'createdAt',
-      key: 'createdAt',
-      render: (value) => new Date(value).toLocaleString(),
-    },
-  {
-  title: 'Thao tác',
-  key: 'actions',
-  render: (_, record) => (
-    <Space>
-      <Button type="link">
-        <Link to={`/admin/contacts/${record._id}`}>Chi tiết</Link>
-      </Button>
-    </Space>
-  ),
-},
+  const [messageApi, contextHolder] = message.useMessage();
+  const { data, isLoading } = useGetAllContacts();
+  
+  const [filters, setFilters] = useState({ name: '', email: '', phone: '' });
 
+  const filteredData = data?.filter((contact: IContact) => {
+    const nameMatch = filters.name ? contact.username.toLowerCase().includes(filters.name.toLowerCase()) : true;
+    const emailMatch = filters.email ? contact.email.toLowerCase().includes(filters.email.toLowerCase()) : true;
+    const phoneMatch = filters.phone ? contact.phone.includes(filters.phone) : true;
+
+    return nameMatch && emailMatch && phoneMatch;
+  });
+
+
+  const handleFilterChange = (value: string, type: string) => {
+    setFilters(prev => ({ ...prev, [type]: value }));
+  };
+
+  if (isLoading) return <Skeleton active />;
+  if (!data) return <Empty />;
+
+  const columns = [
+    {
+      title: "Tên",
+      dataIndex: "username",
+      key: "username",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên"
+            value={filters.name}
+            onChange={(e) => handleFilterChange(e.target.value, 'name')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.name ? '#1890ff' : undefined }} />,
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+      key: "email",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm email"
+            value={filters.email}
+            onChange={(e) => handleFilterChange(e.target.value, 'email')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.email ? '#1890ff' : undefined }} />,
+    },
+    {
+      title: "SĐT",
+      dataIndex: "phone",
+      key: "phone",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm SĐT"
+            value={filters.phone}
+            onChange={(e) => handleFilterChange(e.target.value, 'phone')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.phone ? '#1890ff' : undefined }} />,
+    },
+    {
+      title: "Địa chỉ",
+      dataIndex: "address",
+      key: "address",
+    },
+    {
+      title: "Tin nhắn",
+      dataIndex: "message",
+      key: "message",
+    },
+    
   ];
 
   return (
     <div>
-      <Title level={3}>Danh sách liên hệ</Title>
+      {contextHolder}
       <Table
-        rowKey="_id"
-        dataSource={contactData}
         columns={columns}
-        pagination={{ pageSize: 5 }}
+        dataSource={filteredData}
+        rowKey="_id"
+        pagination={{
+          total: filteredData?.length,
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `Tổng ${total} liên hệ`,
+        }}
       />
     </div>
   );

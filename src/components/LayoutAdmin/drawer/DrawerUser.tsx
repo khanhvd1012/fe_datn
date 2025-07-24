@@ -1,4 +1,4 @@
-import { Descriptions, Divider, Drawer, Skeleton } from "antd";
+import { Descriptions, Divider, Drawer, Empty, Skeleton } from "antd";
 import type { IUser } from "../../../interface/user";
 
 interface DrawerUserProps {
@@ -34,7 +34,26 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
                 {user?.email}
               </Descriptions.Item>
               <Descriptions.Item label="Avatar" className="bg-gray-50">
-                {user?.image}
+                {user?.image ? (
+                  <img
+                    src={user.image}
+                    alt={user.username}
+                    style={{
+                      width: 100,
+                      height: 100,
+                      objectFit: 'cover',
+                      borderRadius: 4,
+                      border: '1px solid #f0f0f0',
+                    }}
+                  />
+                ) : (
+                  <Empty
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                    description="Không có ảnh"
+                    style={{ margin: 0, textAlign: 'center' }}
+                  />
+                )
+              }
               </Descriptions.Item>
               <Descriptions.Item label="Vai trò">
                 {user?.role === 'admin'

@@ -68,7 +68,13 @@ const DrawerVariant = ({ visible, variant, onClose, loading }: DrawerVariantProp
                         key={idx}
                         src={url}
                         alt={`Ảnh ${idx + 1}`}
-                        style={{ width: 60, height: 60, objectFit: 'cover', borderRadius: 4, border: '1px solid #eee' }}
+                        style={{
+                          width: 100,
+                          height: 100,
+                          objectFit: 'cover',
+                          borderRadius: 4,
+                          border: '1px solid #f0f0f0',
+                        }}
                       />
                     ))}
                   </div>

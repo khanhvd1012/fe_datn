@@ -44,10 +44,10 @@ const DrawerCategory = ({ visible, category, onClose, loading }: DrawerCategoryP
                     src={category.logo_image}
                     alt={category.name}
                     style={{
-                      width: 120,
-                      height: 120,
+                      width: 100,
+                      height: 100,
                       objectFit: 'cover',
-                      borderRadius: 8,
+                      borderRadius: 4,
                       border: '1px solid #f0f0f0',
                     }}
                   />
