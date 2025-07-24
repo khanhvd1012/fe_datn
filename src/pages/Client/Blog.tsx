@@ -1,44 +1,17 @@
 import React from 'react';
-import { Col, Row, Typography } from 'antd';
+import { Col, Row, Typography, Spin, Card } from 'antd';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import SidebarMenu from '../../components/LayoutClient/SideBarMenu';
-
+import { useGetNews } from '../../hooks/useBlogs';
+import dayjs from 'dayjs';
+import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
-
-const blogPosts = [
-  {
-    title: 'Adidas Falcon nổi bật mùa Hè với phối màu color block',
-    author: 'Nguyen',
-    date: '11.06.2019',
-    image: 'https://picsum.photos/id/21/480/280',
-    desc: 'Cuối tháng 5, adidas Falcon đã cho ra mắt nhiều phối màu đón chào mùa Hè khiến giới trẻ yêu thích không thôi...',
-  },
-  {
-    title: 'Saucony hồi sinh mẫu giày chạy bộ cổ điển – Aya Runner',
-    author: 'Nguyen',
-    date: '11.06.2019',
-    image: 'https://picsum.photos/id/28/480/280',
-    desc: 'Là một trong những đôi giày chạy bộ tốt nhất vào những năm 1994, 1995, Saucony Aya Runner vừa có màn trở lại...',
-  },
-  {
-    title: 'Nike Vapormax Plus trở lại với sắc tím mộng mơ',
-    author: 'Runner Inn',
-    date: '11.06.2019',
-    image: 'https://picsum.photos/id/28/480/280',
-    desc: 'Nike Vapormax Plus là mẫu retro có nhiều phối màu gradient đẹp mắt từ trước đến nay...',
-  },
-];
 
 const styles: { [key: string]: React.CSSProperties } = {
   page: {
     padding: '24px',
     fontFamily: "'Quicksand', sans-serif",
-  },
-  breadcrumb: {
-    marginBottom: '16px',
-    fontSize: '14px',
-    opacity: 0.7,
   },
   sidebar: {
     paddingRight: '12px',
@@ -49,11 +22,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   thumb: {
     width: '100%',
     borderRadius: '4px',
+    objectFit: 'cover',
+    height: '70px',
   },
   mainImg: {
     width: '100%',
     borderRadius: '8px',
     objectFit: 'cover',
+    height: '200px',
     marginBottom: '8px',
   },
   blogPost: {
@@ -62,48 +38,89 @@ const styles: { [key: string]: React.CSSProperties } = {
 };
 
 const Blog = () => {
+  const { data: blogPosts, isLoading } = useGetNews();
+
   return (
     <>
-    <Breadcrumb current="Blog" />
-    <div style={styles.page}>
-      <Title level={2}>Tin tức</Title>
+      <Breadcrumb current="Tin tức" />
+      <div style={styles.page}>
+        <Title level={2}>Tin tức</Title>
 
-      <Row gutter={24}>
-        <Col xs={24} md={6}>
-          <div style={styles.sidebar}>
-            <Title level={4}>Bài viết mới nhất</Title>
-            {blogPosts.map((post, index) => (
-              <Row key={index} gutter={8} style={styles.recentPost}>
-                <Col span={8}>
-                  <img src={post.image} alt={post.title} style={styles.thumb} />
-                </Col>
-                <Col span={16}>
-                  <Text strong>{post.title}</Text>
-                  <br />
-                  <Text type="secondary">{post.author} {post.date}</Text>
-                </Col>
+        {isLoading ? (
+          <Spin size="large" />
+        ) : (
+          <Row gutter={24}>
+            {/* Sidebar */}
+            <Col xs={24} md={6}>
+              <div style={styles.sidebar}>
+                <Title level={4}>Bài viết mới nhất</Title>
+                {blogPosts?.slice(0, 5).map((post) => (
+                  <Row key={post._id} gutter={8} style={styles.recentPost}>
+                    <Col span={8}>
+                      <Link to={`/blog/${post._id}`}>
+                        <img
+                          src={post.images?.[0] || '/default-blog-thumb.jpg'}
+                          alt={post.title}
+                          style={styles.thumb}
+                        />
+                      </Link>
+                    </Col>
+                    <Col span={16}>
+                      <Link to={`/blog/${post._id}`}>
+                        <Text strong style={{ color: '#000' }}>{post.title}</Text>
+                      </Link>
+                      <br />
+                      <Text type="secondary">
+                        {post.author?.username} - {dayjs(post.createdAt).format('DD/MM/YYYY')}
+                      </Text>
+                    </Col>
+                  </Row>
+                ))}
+                <SidebarMenu />
+              </div>
+            </Col>
+
+            {/* Main Content */}
+            <Col xs={24} md={18}>
+              <Row gutter={[16, 24]}>
+                {blogPosts?.map((post) => (
+                  <Col key={post._id} xs={24}>
+                    <Link to={`/blog/${post._id}`} style={{ color: 'inherit' }}>
+                      <Card
+                        hoverable
+                        style={styles.blogPost}
+                        bodyStyle={{ padding: 16 }}
+                      >
+                        <Row gutter={16} align="middle">
+                          <Col xs={24} md={8}>
+                            <img
+                              alt={post.title}
+                              src={post.images?.[0] || '/default-blog-thumb.jpg'}
+                              style={{
+                                width: '100%',
+                                height: '150px',
+                                objectFit: 'cover',
+                                borderRadius: '8px',
+                              }}
+                            />
+                          </Col>
+                          <Col xs={24} md={16}>
+                            <Title level={5} style={{ marginBottom: 4 }}>{post.title}</Title>
+                            <Text type="secondary">
+                              Người viết: {post.author?.username} / {dayjs(post.createdAt).format('DD/MM/YYYY')}
+                            </Text>
+                            <p style={{ marginTop: 8 }}>{post.content.slice(0, 150)}...</p>
+                          </Col>
+                        </Row>
+                      </Card>
+                    </Link>
+                  </Col>
+                ))}
               </Row>
-            ))}
-            <SidebarMenu />
-          </div>
-        </Col>
-
-        <Col xs={24} md={18}>
-          {blogPosts.map((post, index) => (
-            <Row key={index} gutter={16} style={styles.blogPost}>
-              <Col xs={24} md={10}>
-                <img src={post.image} alt={post.title} style={styles.mainImg} />
-              </Col>
-              <Col xs={24} md={14}>
-                <Title level={5}>{post.title}</Title>
-                <Text type="secondary">Người viết: {post.author} / {post.date}</Text>
-                <p>{post.desc}</p>
-              </Col>
-            </Row>
-          ))}
-        </Col>
-      </Row>
-    </div>
+            </Col>
+          </Row>
+        )}
+      </div>
     </>
   );
 };

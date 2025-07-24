@@ -23,19 +23,23 @@ import CheckoutSuccess from './CheckoutSuccess';
 import OrderHistory from './OrderHistory';
 import OrderDetail from './OrderDetail';
 import ProductReview from './ProductReview';
+import BlogDetail from '../../pages/Client/BlogDetail';
+
 
 const IndexClient = () => {
   const location = useLocation();
   const matchProductDetail = useMatch('/products/:slug');
   const matchCollectionPage = useMatch('/collection/:slug');
    const matchOrderDetailPage = useMatch('/OrderDetail/:id');
+     const matchBlogDetailPage = useMatch('/blog/:id');
 
   // Kiểm tra các trang cần ẩn slideshow
   const isNoSlidePage =
-    ['/login', '/register', '/profile', '/cart', '/checkout','/checkout/success' ,'/order-history'].includes(location.pathname) ||
+    ['/login', '/register', '/profile', '/cart', '/checkout','/checkout/success' ,'/order-history' ,'/ProductReview'].includes(location.pathname) ||
     Boolean(matchProductDetail) ||
     Boolean(matchCollectionPage) ||
-    Boolean(matchOrderDetailPage);
+    Boolean(matchOrderDetailPage)||
+    Boolean(matchBlogDetailPage);
 
   return (
     <div>
@@ -65,6 +69,7 @@ const IndexClient = () => {
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/OrderDetail/:id" element={<OrderDetail />} />
           <Route path="/ProductReview" element={<ProductReview />} />
+          <Route path="/blog/:id" element={<BlogDetail />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />

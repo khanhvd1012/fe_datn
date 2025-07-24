@@ -1,7 +1,7 @@
-// Slideshow.tsx
 import React from 'react';
-import { Carousel } from 'antd';
+import { Carousel, Spin } from 'antd';
 import styled from 'styled-components';
+import { useBanners } from '../../hooks/useBanner'; // hoặc đường dẫn tương ứng
 
 const SlideContainer = styled.div`
   width: 100%;
@@ -30,25 +30,33 @@ const SlideContainer = styled.div`
 const SlideImage = styled.img`
   width: 100%;
   height: 400px;
-  object-fit: cover;
+  object-fit: cover; /* Hoặc contain tùy mục đích */
+  object-position: center;
+  display: block;
 `;
 
 const Slideshow: React.FC = () => {
+  const { data: banners, isLoading } = useBanners();
+
+  if (isLoading) {
+    return (
+      <SlideContainer>
+        <Spin tip="Đang tải banner..." />
+      </SlideContainer>
+    );
+  }
+
+  // Lọc banner có status là true
+  const visibleBanners = banners?.filter((banner) => banner.status);
+
   return (
     <SlideContainer>
       <Carousel autoplay autoplaySpeed={3000} arrows>
-        <div>
-          <SlideImage
-            src="https://i1252.photobucket.com/albums/hh579/Shopburin/banner01_zpsddaf983d.jpg"
-            alt="Slide 1"
-          />
-        </div>
-        <div>
-          <SlideImage
-            src="https://file.hstatic.net/1000230642/collection/3_da9a91027cd0488581c18e767bd6e453.jpg"
-            alt="Slide 2"
-          />
-        </div>
+        {visibleBanners?.map((banner) => (
+          <div key={banner._id}>
+            <SlideImage src={banner.image} alt={banner.title} />
+          </div>
+        ))}
       </Carousel>
     </SlideContainer>
   );

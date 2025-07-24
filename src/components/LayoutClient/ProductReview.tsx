@@ -20,7 +20,7 @@ const { TextArea } = Input;
 const { Text } = Typography;
 const { TabPane } = Tabs;
 
-const ProductReview = ({ productId }: { productId: string }) => {
+const ProductReview = () => {
   const [reviews, setReviews] = useState<any[]>([]);
   const [stats, setStats] = useState({ total: 0, ratingCounts: [0, 0, 0, 0, 0] });
   const [unreviewedProducts, setUnreviewedProducts] = useState<any[]>([]);

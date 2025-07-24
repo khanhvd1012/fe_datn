@@ -191,8 +191,16 @@ const OrderHistory = () => {
     <>
       <Breadcrumb current="Đơn hàng" />
       <div className="max-w-5xl mx-auto p-6">
-        <Title level={2}>Lịch sử đơn hàng</Title> <br />
+        <div className="flex justify-between items-center mb-4">
+          <Title level={2} style={{ margin: 0 }}>Lịch sử đơn hàng</Title>
 
+          <Button
+            type="primary"
+            onClick={() => (window.location.href = '/ProductReview')}
+          >
+            Đánh giá sản phẩm
+          </Button>
+        </div>
         <Tabs defaultActiveKey="pending" type="card">
           {Object.keys(statusLabels).map((status) => (
             <TabPane tab={statusLabels[status]} key={status}>
