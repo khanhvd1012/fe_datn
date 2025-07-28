@@ -1,11 +1,10 @@
-// src/pages/AdminLogin.tsx
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Logo } from '../../components/css/style';
 
-const AdminLogin: React.FC = () => {
+const AdminLogin = () => {
     const [form] = Form.useForm();
     const navigate = useNavigate();
 
@@ -17,8 +16,8 @@ const AdminLogin: React.FC = () => {
             });
 
             if (res.data.token && res.data.user) {
-                if (res.data.user.role !== 'admin') {
-                    return message.error('Chỉ quản trị viên mới được truy cập!');
+                if (res.data.user.role !== 'admin' && res.data.user.role !== 'employee') {
+                    return message.error('Chỉ quản trị viên hoặc nhân viên mới được truy cập!');
                 }
 
                 localStorage.setItem('token', res.data.token);
@@ -38,7 +37,7 @@ const AdminLogin: React.FC = () => {
     return (
         <div style={styles.container}>
             <div style={styles.leftColumn}>
-               <h1 style={styles.title}>Đăng nhập quản trị</h1>
+                <h1 style={styles.title}>Đăng nhập quản trị</h1>
                 <Logo>
                     SNEAKER<span>TREND</span>
                 </Logo>

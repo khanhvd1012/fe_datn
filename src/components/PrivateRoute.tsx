@@ -8,7 +8,7 @@ interface PrivateRouteProps {
 
 const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
   const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role");
+  const role = localStorage.getItem("role")?.toLowerCase();
 
   // Chưa đăng nhập
   if (!token) {
@@ -18,12 +18,15 @@ const PrivateRoute = ({ children, requiredRole }: PrivateRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // Đã đăng nhập nhưng sai quyền
-  if (requiredRole && role?.toLowerCase() !== requiredRole.toLowerCase()) {
-    // ❌ Không hiển thị 403 nữa — chỉ redirect về trang phù hợp hoặc giữ nguyên
-    if (requiredRole.toLowerCase() === "admin") {
+  // Cho phép cả admin và employee nếu requiredRole là "admin"
+  if (requiredRole?.toLowerCase() === "admin") {
+    if (role !== "admin" && role !== "employee") {
       return <Navigate to="/admin-login" replace />;
     }
+  }
+
+  // Nếu requiredRole là user thì chỉ cho user
+  if (requiredRole?.toLowerCase() === "user" && role !== "user") {
     return <Navigate to="/" replace />;
   }
 
