@@ -1,9 +1,18 @@
-import { Avatar, Dropdown, Space, theme } from 'antd';
+import { Avatar, Badge, List, Popover, Space, Typography, theme } from 'antd';
 import { Header } from 'antd/es/layout/layout';
-import { UserOutlined } from '@ant-design/icons';
+import { BellOutlined, UserOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { Logo } from '../css/style';
+import { useCurrentUser } from '../../hooks/useUser';
+import {
+  useNotifications,
+  useLowStockNotifications,
+  useMarkNotificationAsRead,
+} from '../../hooks/useNotification';
+import { useState } from 'react';
+import dayjs from 'dayjs';
 
+const { Text } = Typography;
 
 const Headers = () => {
   const {
@@ -11,25 +20,59 @@ const Headers = () => {
   } = theme.useToken();
   const navigate = useNavigate();
 
-  const user = {
-    name: 'Admin User',
-    avatar: null,
-    role: 'Administrator',
-  };
+  const { data: user, isLoading } = useCurrentUser();
+  const { data: notis } = useNotifications();
+  const { data: lowStockNotis } = useLowStockNotifications();
+  const { mutate: markAsRead } = useMarkNotificationAsRead();
+
+  const allNotis = [...(lowStockNotis || []), ...(notis || [])]
+    .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
+    .slice(0, 5);
+
+  const unreadCount = allNotis.filter((n) => !n.read).length;
 
   const handleLogout = () => {
     localStorage.clear();
     navigate('/');
   };
 
-  const items = [
-    {
-      key: '1',
-      label: 'Đăng xuất',
-      danger: true,
-      onClick: handleLogout,
-    },
-  ];
+  const [visible, setVisible] = useState(false);
+
+  const handleNotificationClick = (id: string, read: boolean) => {
+    if (!read) markAsRead(id);
+    setVisible(false);
+    navigate('/admin/notifications');
+  };
+
+  const notificationContent = (
+    <div style={{ width: 320, maxHeight: 320, overflowY: 'auto' }}>
+      {allNotis.length === 0 ? (
+        <div style={{ padding: 16 }}>Không có thông báo</div>
+      ) : (
+        <List
+          dataSource={allNotis}
+          renderItem={(item) => (
+            <List.Item
+              style={{ cursor: 'pointer', backgroundColor: item.read ? '#fff' : '#f6f6f6' }}
+              onClick={() => handleNotificationClick(item._id, item.read)}
+            >
+              <List.Item.Meta
+                title={<Text strong>{item.title}</Text>}
+                description={
+                  <>
+                    <div>{item.message}</div>
+                    <div style={{ fontSize: 12, color: '#999' }}>
+                      {dayjs(item.createdAt).format('HH:mm DD/MM/YYYY')}
+                    </div>
+                  </>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
 
   return (
     <Header
@@ -41,25 +84,49 @@ const Headers = () => {
         alignItems: 'center',
       }}
     >
-      {/* Logo bên trái */}
-      <Link to={"/"}>
+      <Link to="/">
         <Logo>
           SNEAKER<span>TREND</span>
         </Logo>
       </Link>
-      
-      {/* Avatar dropdown bên phải */}
-      <Dropdown menu={{ items }} placement="bottomRight">
-        <Space style={{ cursor: 'pointer' }}>
-          <Avatar
-            size="large"
-            icon={<UserOutlined />}
-            src={user.avatar}
-            style={{ backgroundColor: '#1890ff' }}
-          />
-          <span style={{ marginLeft: 8 }}>{user.name}</span>
-        </Space>
-      </Dropdown>
+
+      <Space>
+        <Popover
+          content={notificationContent}
+          trigger="click"
+          placement="bottomRight"
+          open={visible}
+          onOpenChange={(open) => setVisible(open)}
+        >
+          <Badge count={unreadCount} offset={[-4, 4]} style={{ cursor: 'pointer' }}>
+            <BellOutlined
+              style={{ padding: 10 }}
+              onClick={() => setVisible(!visible)}
+            />
+          </Badge>
+        </Popover>
+
+        <Popover
+          content={
+            <div onClick={handleLogout} style={{ cursor: 'pointer', padding: 10, color: 'red' }}>
+              Đăng xuất
+            </div>
+          }
+          trigger="click"
+          placement="bottomRight"
+        >
+          <Space style={{ cursor: 'pointer' }}>
+            <Avatar
+              size="large"
+              icon={!user?.image && <UserOutlined />}
+              src={user?.image}
+            />
+            <span style={{ marginLeft: 8, fontWeight: 500 }}>
+              {isLoading ? 'Đang tải...' : user?.username || 'Người dùng'}
+            </span>
+          </Space>
+        </Popover>
+      </Space>
     </Header>
   );
 };

@@ -9,21 +9,19 @@ import {
 } from '../service/notificationAPI';
 import type { INotification } from '../interface/notification';
 
-// ✅ Lấy tất cả thông báo
 export const useNotifications = () =>
   useQuery<INotification[]>({
     queryKey: ['notifications'],
     queryFn: getNotifications,
   });
 
-// ✅ Lấy thông báo tồn kho thấp
 export const useLowStockNotifications = () =>
   useQuery<INotification[]>({
     queryKey: ['notifications', 'low-stock'],
     queryFn: getLowStockNotifications,
+    select: (data) => data ?? [],
   });
 
-// ✅ Đánh dấu 1 thông báo là đã đọc
 export const useMarkNotificationAsRead = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -34,7 +32,6 @@ export const useMarkNotificationAsRead = () => {
   });
 };
 
-// ✅ Đánh dấu tất cả là đã đọc
 export const useMarkAllNotificationsAsRead = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -45,7 +42,6 @@ export const useMarkAllNotificationsAsRead = () => {
   });
 };
 
-// ✅ Xóa 1 thông báo
 export const useDeleteNotification = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -56,7 +52,6 @@ export const useDeleteNotification = () => {
   });
 };
 
-// ✅ Xóa tất cả thông báo đã đọc
 export const useDeleteAllReadNotifications = () => {
   const queryClient = useQueryClient();
   return useMutation({

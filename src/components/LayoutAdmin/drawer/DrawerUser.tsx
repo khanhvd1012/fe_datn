@@ -1,5 +1,6 @@
-import { Descriptions, Divider, Drawer, Empty, Skeleton } from "antd";
+import { Descriptions, Divider, Drawer, Empty, message, Select, Skeleton } from "antd";
 import type { IUser } from "../../../interface/user";
+import { useChangeUserRole } from "../../../hooks/useRole";
 
 interface DrawerUserProps {
   visible: boolean;
@@ -9,6 +10,24 @@ interface DrawerUserProps {
 }
 
 const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
+  const { mutate: changeUserRole, isPending } = useChangeUserRole();
+
+  const handleRoleChange = (newRole: string) => {
+    if (!user) return;
+
+    changeUserRole(
+      { userId: user._id!, newRole },
+      {
+        onSuccess: () => {
+          message.success("Cập nhật vai trò thành công");
+        },
+        onError: () => {
+          message.error("Cập nhật vai trò thất bại");
+        },
+      }
+    );
+  };
+
   return (
     <Drawer
       title={<span className="text-lg font-semibold">Chi tiết người dùng</span>}
@@ -53,14 +72,14 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
                     style={{ margin: 0, textAlign: 'center' }}
                   />
                 )
-              }
+                }
               </Descriptions.Item>
               <Descriptions.Item label="Vai trò">
                 {user?.role === 'admin'
                   ? 'Quản trị viên'
                   : user?.role === 'employee'
-                  ? 'Nhân viên'
-                  : 'Khách hàng'}
+                    ? 'Nhân viên'
+                    : 'Khách hàng'}
               </Descriptions.Item>
             </Descriptions>
           </div>
@@ -88,6 +107,19 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
               <p>Không có địa chỉ nào</p>
             )}
           </div>
+          <Descriptions.Item label="Vai trò">
+            <Select
+              value={user?.role}
+              onChange={handleRoleChange}
+              style={{ width: 200 }}
+              loading={isPending}
+              options={[
+                { label: "Khách hàng", value: "user" },
+                { label: "Nhân viên", value: "employee" },
+              ]}
+            />
+          </Descriptions.Item>
+
 
           <Divider />
 

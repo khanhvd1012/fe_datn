@@ -52,6 +52,7 @@ import CreateBlog from '../../pages/Admin/blog/CreateBlog';
 import Contacts from '../../pages/Admin/contact/Contacts';
 import EditBlog from '../../pages/Admin/blog/EditBlog';
 import EditBanner from '../../pages/Admin/banners/EditBanner';
+import Notifications from '../../pages/Admin/Notifications';
 
 // Component chính quản lý layout của trang admin
 const IndexAdmin = () => {
@@ -348,6 +349,10 @@ const IndexAdmin = () => {
                                 {/* Routes quản lý contacts */}
                                 <Route path="contacts">
                                     <Route path="" element={<Contacts />} />
+                                </Route>
+
+                                <Route path="notifications">
+                                    <Route path="" element={<Notifications />} />
                                 </Route>
                             </Routes>
                         </div>

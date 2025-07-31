@@ -9,12 +9,12 @@ const getAuthHeader = () => ({
 // Lấy tất cả thông báo
 export const getNotifications = async (): Promise<INotification[]> => {
   try {
-    const res = await axios.get(`${API_URL}/notification`, {
-      headers: getAuthHeader()
+    const res = await axios.get(`${API_URL}/notifications`, {
+      headers: getAuthHeader(),
     });
-    return res.data;
+    return res.data.data;
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    console.error("Lỗi API:", error);
     throw error;
   }
 };
@@ -22,10 +22,10 @@ export const getNotifications = async (): Promise<INotification[]> => {
 // Lấy thông báo tồn kho thấp (admin/employee)
 export const getLowStockNotifications = async (): Promise<INotification[]> => {
   try {
-    const res = await axios.get(`${API_URL}/notification/low-stock`, {
+    const res = await axios.get(`${API_URL}/notifications/low-stock`, {
       headers: getAuthHeader()
     });
-    return res.data;
+    return res.data.data;
   } catch (error) {
     console.error("Error fetching low stock notifications:", error);
     throw error;
@@ -35,7 +35,7 @@ export const getLowStockNotifications = async (): Promise<INotification[]> => {
 // Đánh dấu đã đọc 1 thông báo
 export const markNotificationAsRead = async (id: string): Promise<INotification> => {
   try {
-    const res = await axios.put(`${API_URL}/notification/${id}/read`, {}, {
+    const res = await axios.put(`${API_URL}/notifications/${id}/read`, {}, {
       headers: getAuthHeader()
     });
     return res.data;
@@ -48,7 +48,7 @@ export const markNotificationAsRead = async (id: string): Promise<INotification>
 // Đánh dấu tất cả là đã đọc
 export const markAllNotificationsAsRead = async (): Promise<{ message: string }> => {
   try {
-    const res = await axios.put(`${API_URL}/notification/read-all`, {}, {
+    const res = await axios.put(`${API_URL}/notifications/read-all`, {}, {
       headers: getAuthHeader()
     });
     return res.data;
@@ -61,7 +61,7 @@ export const markAllNotificationsAsRead = async (): Promise<{ message: string }>
 // Xóa 1 thông báo
 export const deleteNotification = async (id: string): Promise<INotification> => {
   try {
-    const res = await axios.delete(`${API_URL}/notification/${id}`, {
+    const res = await axios.delete(`${API_URL}/notifications/${id}`, {
       headers: getAuthHeader()
     });
     return res.data;
@@ -74,7 +74,7 @@ export const deleteNotification = async (id: string): Promise<INotification> => 
 // Xóa tất cả thông báo đã đọc
 export const deleteAllReadNotifications = async (): Promise<{ message: string }> => {
   try {
-    const res = await axios.delete(`${API_URL}/notification/read/all`, {
+    const res = await axios.delete(`${API_URL}/notifications/read/all`, {
       headers: getAuthHeader()
     });
     return res.data;

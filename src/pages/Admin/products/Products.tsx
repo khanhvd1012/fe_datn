@@ -53,7 +53,7 @@ const Products = () => {
             queryKey: ["products"],
           });
         },
-        onError: () => messageApi.error("Lỗi khi xóa danh mục"),
+        onError: () => messageApi.error("Lỗi khi xóa sản phẩm"),
       });
     } catch (error) {
       console.error("Error deleting product:", error);

@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   UserOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
   BellOutlined,
 } from '@ant-design/icons';
-import { Avatar, Button, Dropdown, Menu, message } from 'antd';
+import { Avatar, Dropdown, Menu, message } from 'antd';
 import {
   HeaderTop,
   HeaderMain,
@@ -25,10 +25,10 @@ import SearchBox from './SearchBox';
 import Collection from '../../pages/Client/Collection';
 import axios from 'axios';
 import NotificationPopup from './NotificationPopup.tsx';
-import type { INotification } from '../../interface/notification.ts';
 
-
-const Header: React.FC = () => {
+const Header = () => {
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('role');
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [showCart, setShowCart] = useState(false);
@@ -36,14 +36,9 @@ const Header: React.FC = () => {
   const [showCollectionMenu, setShowCollectionMenu] = useState(false);
   const [products, setProducts] = useState([]);
   const [showNotification, setShowNotification] = useState(false);
-  const [notifications, setNotifications] = useState<INotification[]>([]);
-
   const collectionRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
-
-  const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role');
 
   const { data: user } = useQuery<IUser>({
     queryKey: ['profile'],
@@ -81,22 +76,22 @@ const Header: React.FC = () => {
 
   const menuItems = token
     ? [
-      {
-        key: '0',
-        label: <span style={{ fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>,
-        disabled: true,
-      },
-      { key: '1', label: <NavLink to="/profile">Thông tin tài khoản</NavLink> },
-      { key: '2', label: <NavLink to="/order-history">Đơn hàng của bạn</NavLink> },
-      ...(userRole === 'admin'
-        ? [{ key: '3', label: <NavLink to="/admin">Trang quản trị</NavLink> }]
-        : []),
-      { key: '4', label: <span onClick={handleLogout}>Đăng xuất</span>, danger: true },
-    ]
+        {
+          key: '0',
+          label: <span style={{ fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>,
+          disabled: true,
+        },
+        { key: '1', label: <NavLink to="/profile">Thông tin tài khoản</NavLink> },
+        { key: '2', label: <NavLink to="/order-history">Đơn hàng của bạn</NavLink> },
+        ...(userRole === 'admin' || userRole === 'employee'
+          ? [{ key: '3', label: <NavLink to="/admin">Trang quản trị</NavLink> }]
+          : []),
+        { key: '4', label: <span onClick={handleLogout}>Đăng xuất</span>, danger: true },
+      ]
     : [
-      { key: '1', label: <NavLink to="/login">Đăng nhập</NavLink> },
-      { key: '2', label: <NavLink to="/register">Đăng ký</NavLink> },
-    ];
+        { key: '1', label: <NavLink to="/login">Đăng nhập</NavLink> },
+        { key: '2', label: <NavLink to="/register">Đăng ký</NavLink> },
+      ];
 
   const menu = <Menu items={menuItems} />;
 
@@ -169,12 +164,9 @@ const Header: React.FC = () => {
                 </div>
               ) : (
                 <Avatar
-                  icon={<UserOutlined style={{ color: 'black' }} />} 
+                  icon={<UserOutlined style={{ color: 'black' }} />}
                   size={32}
-                  style={{
-                    backgroundColor: 'white', 
-                    marginRight : '-10px'
-                  }}
+                  style={{ backgroundColor: 'white', marginRight: '-10px' }}
                 />
               )}
             </div>
@@ -208,7 +200,6 @@ const Header: React.FC = () => {
         <NotificationPopup
           onClose={() => setShowNotification(false)}
           wrapperRef={notificationRef}
-          notifications={notifications} // 🔥 dòng bắt buộc
         />
       )}
     </>

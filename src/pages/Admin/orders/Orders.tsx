@@ -77,7 +77,7 @@ const Orders = () => {
       dataIndex: "sub_total",
       key: "sub_total",
       render: (value: number) =>
-        value.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+        value.toLocaleString("en-US", { style: "currency", currency: "USD" }),
     },
     {
       title: "Giảm giá",
@@ -85,9 +85,9 @@ const Orders = () => {
       key: "voucher_discount",
       render: (value: number) =>
         value
-          ? `- ${value.toLocaleString("vi-VN", {
+          ? `- ${value.toLocaleString("en-US", {
             style: "currency",
-            currency: "VND",
+            currency: "USD",
           })}`
           : "-",
     },
@@ -96,7 +96,7 @@ const Orders = () => {
       dataIndex: "total_price",
       key: "total_price",
       render: (value: number) =>
-        value.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
+        value.toLocaleString("en-US", { style: "currency", currency: "USD" }),
     },
     {
       title: "Phương thức",
@@ -138,7 +138,7 @@ const Orders = () => {
           canceled: 4,
         };
 
-        const labelMap: Record<IOrder["status"], string> = {
+        const labelMap: Partial<Record<IOrder["status"], string>> = {
           pending: "Chờ xử lý",
           processing: "Đang xử lý",
           shipped: "Đang giao",
