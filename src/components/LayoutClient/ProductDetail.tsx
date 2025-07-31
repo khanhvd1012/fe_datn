@@ -97,6 +97,11 @@ const ProductDetail = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
   const addToCart = () => {
+    const token = localStorage.getItem("Token");
+    if (!token) {
+      message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
+      return;
+    }
     if (!product || !selectedSize) {
       message.warning("Vui lòng chọn size!");
       return;
