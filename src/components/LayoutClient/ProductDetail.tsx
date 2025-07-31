@@ -92,12 +92,11 @@ const ProductDetail = () => {
       message.warning(`Chỉ còn ${stockQty} sản phẩm trong kho`);
     }
   };
-
+  const token = localStorage.getItem("token");
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
   const addToCart = () => {
-    const token = localStorage.getItem("Token");
     if (!token) {
       message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
       return;
