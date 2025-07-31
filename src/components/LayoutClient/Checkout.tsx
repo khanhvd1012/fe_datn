@@ -262,12 +262,19 @@ const Checkout = () => {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      const orderId = res.data?.donHang?._id || res.data?.data?._id;
+
+      // Nếu chọn ZaloPay thì redirect sang link thanh toán
+      if (formData.payment_method === 'ZALOPAY' && res.data?.redirectUrl) {
+        window.location.href = res.data.redirectUrl;
+        return;
+      }
+
+      // Các phương thức khác
       message.success('Đặt hàng thành công!');
-      const orderId = res.data?.data?._id;
       localStorage.setItem('last_order_id', orderId);
       localStorage.removeItem('selected_voucher_id');
       localStorage.removeItem('cart_backup');
-
       navigate('/checkout/success');
     } catch (err) {
       console.error(err);
@@ -344,6 +351,7 @@ const Checkout = () => {
                     { label: 'Thanh toán khi nhận hàng', value: 'cod', icon: '💰' },
                     { label: 'Chuyển khoản ngân hàng', value: 'bank', icon: '🏦' },
                     { label: 'Thanh toán qua Momo', value: 'momo', icon: '📱' },
+                    { label: 'Thanh toán qua ZaloPay', value: 'ZALOPAY', icon: '🟦' },
                   ].map((method) => (
                     <div
                       key={method.value}
