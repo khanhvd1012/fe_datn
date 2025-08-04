@@ -11,9 +11,11 @@ import type { IColor } from '../../interface/color';
 import { useSizes } from '../../hooks/useSizes';
 import { useColors } from '../../hooks/useColors';
 import type { ISize } from '../../interface/size';
+import type { IReview } from '../../interface/review';
 
 const ProductDetail = () => {
   const { slug } = useParams();
+  const token = localStorage.getItem("token")
   const [mainImage, setMainImage] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -26,7 +28,7 @@ const ProductDetail = () => {
   const { data: sizes = [] } = useSizes();
   const { data: colors = [] } = useColors();
   const { data: product, isLoading } = useProductBySlug(slug || '');
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState<IReview[]>([]);
   const getColorInfo = (id: string) => {
     return colors.find((c: IColor) => c._id === id) || null;
   };
@@ -41,15 +43,9 @@ const ProductDetail = () => {
 
     const targetVariant = product.variants.find((v: any) => v._id === variantIdFromState);
     if (targetVariant) {
-      const color = typeof targetVariant.color === 'string' ? targetVariant.color : targetVariant.color?._id;
-      const size = Array.isArray(targetVariant.size)
-        ? targetVariant.size[0]
-        : targetVariant.size;
-      const image = Array.isArray(targetVariant.image_url) ? targetVariant.image_url[0] : '';
-
-      setSelectedColor(color || null);
-      setSelectedSize(size || null);
-      setMainImage(image || '');
+      setSelectedColor(targetVariant.color || null);
+      setSelectedSize(targetVariant.size || null);
+      setMainImage(Array.isArray(targetVariant.image_url) ? targetVariant.image_url[0] : '');
       fetchProductReviews();
     }
   }, [product, variantIdFromState]);
@@ -59,8 +55,7 @@ const ProductDetail = () => {
     if (!selectedColor || !product?.variants) return;
     const variant = product.variants.find((v: any) => v.color === selectedColor);
     if (variant) {
-      const firstSize = variant.size?.[0] || (typeof variant.size === 'string' ? variant.size : null);
-      setSelectedSize(firstSize || null);
+      setSelectedSize(variant.size || null);
       setMainImage(Array.isArray(variant.image_url) ? variant.image_url[0] : '');
     }
     setQuantity(1);
@@ -84,15 +79,13 @@ const ProductDetail = () => {
 
   // Validate tăng/giảm số lượng
   const handleIncrease = () => {
-    const stockQty = selectedVariant?.stock?.quantity ?? 0;
-
-    if (quantity < stockQty) {
+    if (quantity < currentStock) {
       setQuantity(q => q + 1);
     } else {
-      message.warning(`Chỉ còn ${stockQty} sản phẩm trong kho`);
+      message.warning(`Chỉ còn ${currentStock} sản phẩm trong kho`);
     }
   };
-  const token = localStorage.getItem("token");
+
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
@@ -194,11 +187,12 @@ const ProductDetail = () => {
 
   const totalReviews = reviews.length;
 
-  const ratingStats = [1, 2, 3, 4, 5].reduce((acc, star) => {
+  const ratingStats = [1, 2, 3, 4, 5].reduce((acc: Record<number, number>, star) => {
     const count = reviews.filter((r) => r.rating === star).length;
     acc[star] = count;
     return acc;
-  }, {});
+  }, {} as Record<number, number>);
+
 
   const avgRating = (
     reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
@@ -209,15 +203,15 @@ const ProductDetail = () => {
     Array.isArray(product?.variants) && selectedColor
       ? product.variants
         .filter((v: any) => v.color === selectedColor)
-        .flatMap((v: any) =>
-          Array.isArray(v.size) ? v.size : [v.size]
-        )
+        .map((v: any) => v.size)
         .filter((val, idx, arr) => val && arr.indexOf(val) === idx)
       : [];
 
   const availableColors = Array.isArray(product?.variants)
     ? product.variants.map((v: any) => v.color).filter((val, i, arr) => val && arr.indexOf(val) === i)
     : [];
+
+  const currentStock = selectedVariant?.stock?.quantity ?? 0;
 
   if (isLoading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
   if (!product) return <div>Không tìm thấy sản phẩm</div>;
@@ -364,11 +358,21 @@ const ProductDetail = () => {
               />
             </div>
 
+            <p style={{ marginBottom: 5, color: currentStock === 0 ? 'red' : '#666' }}>
+              {currentStock === 0
+                ? 'Hết hàng'
+                : `Còn lại trong kho: ${currentStock} sản phẩm`}
+            </p>
+
             <div className="action-buttons">
-              <Button type="default" size="large" className="add-cart" onClick={addToCart}>
-
+              <Button
+                type="default"
+                size="large"
+                className="add-cart"
+                onClick={addToCart}
+                disabled={currentStock === 0}
+              >
                 THÊM VÀO GIỎ
-
               </Button>
 
               <Link to="/checkout-access">

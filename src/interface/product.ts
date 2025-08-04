@@ -2,7 +2,7 @@ export interface IVariant {
   _id?: string;
   sku: string;
   color: string;
-  size: string[] | string;
+  size: string;
   gender: string;
   price: number;
   image_url: string[];

@@ -2,8 +2,8 @@ export interface IVariant {
     _id?: string;
     product_id: string | { _id: string; name: string };
     sku: string;
-    color: string | { _id: string; name: string }[];
-    size: string[] | { _id: string; name: string }[];
+    color: string | { _id: string; name: string };
+    size: string | { _id: string; size: string };
     price: number;
     image_url: string[];
     import_price: number;

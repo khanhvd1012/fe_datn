@@ -103,12 +103,6 @@ const Brands = () => {
       render: (products: string[]) => products?.length || 0,
     },
     {
-      title: "Số lượng danh mục",
-      dataIndex: "category",
-      key: "category",
-      render: (category: string[]) => category?.length || 0,
-    },
-    {
       title: "Thao tác",
       key: "actions",
       render: (_: any, brand: IBrand) => (

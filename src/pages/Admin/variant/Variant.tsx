@@ -49,9 +49,7 @@ const Variant = () => {
 
     if (
       filters.size &&
-      !variant.size?.some((s: any) =>
-        normalizeText(s).includes(filters.size.toLowerCase())
-      )
+      !normalizeText(variant.size).includes(filters.size.toLowerCase())
     ) {
       return false;
     }
@@ -182,10 +180,8 @@ const Variant = () => {
         </div>
       ),
       filterIcon: () => <FilterOutlined style={{ color: filters.size ? '#1890ff' : undefined }} />,
-      render: (sizes: any[]) =>
-        Array.isArray(sizes)
-          ? sizes.map(s => typeof s === 'string' ? s : s?.size).join(', ')
-          : '',
+      render: (size: any) =>
+        typeof size === 'string' ? size : size?.size || 'Không rõ',
     },
     {
       title: "Giới tính",

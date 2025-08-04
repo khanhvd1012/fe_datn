@@ -15,7 +15,11 @@ const DrawerVariant = ({ visible, variant, onClose, loading }: DrawerVariantProp
       return arr.length > 0 ? (
         arr.map((item: any, idx: number) => (
           <Tag color={color} key={idx}>
-            {typeof item === 'string' ? item : item?.name}
+            {typeof item === 'string'
+              ? item
+              : typeof item === 'object' && item.name
+                ? item.name
+                : '---'}
           </Tag>
         ))
       ) : (
@@ -50,9 +54,9 @@ const DrawerVariant = ({ visible, variant, onClose, loading }: DrawerVariantProp
                 {renderArray(variant?.color, 'blue')}
               </Descriptions.Item>
               <Descriptions.Item label="Kích cỡ">
-                {Array.isArray(variant?.size)
-                  ? variant.size.map((s: any) => (typeof s === 'string' ? s : s.size)).join(', ')
-                  : '---'}
+                {typeof variant?.size === 'string'
+                  ? variant.size
+                  : variant?.size?.size || '---'}
               </Descriptions.Item>
               <Descriptions.Item label="Giá bán" className="bg-gray-50">
                 {variant?.price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}

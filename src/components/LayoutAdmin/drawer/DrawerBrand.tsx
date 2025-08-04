@@ -33,11 +33,6 @@ const DrawerBrand = ({ visible, brand, onClose, loading }: DrawerBrandProps) => 
               <Descriptions.Item label="Số lượng sản phẩm" className="bg-gray-50">
                 {brand.products?.length || 0}
               </Descriptions.Item>
-              <Descriptions.Item label="Danh mục">
-                {brand.category && brand.category.length > 0
-                  ? brand.category.map((category) => category?.name).join(", ")
-                  : "---"}
-              </Descriptions.Item>
               <Descriptions.Item label="Hình ảnh">
                 {brand.logo_image ? (
                   <img

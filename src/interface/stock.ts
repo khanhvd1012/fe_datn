@@ -1,11 +1,15 @@
 export interface IStock {
   _id?: string;
-  product_variant_id: string;
+  sku: string;
   quantity: number;
-  last_updated?: string;
-  createdAt?: string;
-  updatedAt?: string;
+  color: string;
+  size: string;
+  product_name: string;
+  product_variant_id: string; 
+  last_updated: string;
+  createdAt: string;
 }
+
 
 export interface IStockHistory {
   _id?: string;
