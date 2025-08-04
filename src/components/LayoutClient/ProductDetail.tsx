@@ -346,7 +346,11 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
-
+{selectedVariant && (
+  <div style={{ margin: '8px 0', color: '#000000ff', fontWeight: 500 }}>
+    Số lượng trong kho: {selectedVariant.stock?.quantity ?? 0}
+  </div>
+)}
             <div className="quantity-control">
               <span className="label">Số lượng:</span>
 
@@ -363,16 +367,33 @@ const ProductDetail = () => {
                 onClick={handleIncrease}
               />
             </div>
+            {/* Hiển thị số lượng trong kho cho biến thể đã chọn */}
+
+
 
             <div className="action-buttons">
-              <Button type="default" size="large" className="add-cart" onClick={addToCart}>
+              <Button
+                type="default"
+                size="large"
+                className="add-cart"
+                onClick={addToCart}
+                disabled={selectedVariant?.stock?.quantity === 0}
+                style={selectedVariant?.stock?.quantity === 0 ? { background: '#ccc', color: '#fff', border: 'none', cursor: 'not-allowed' } : {}}
+              >
 
                 THÊM VÀO GIỎ
 
               </Button>
 
               <Link to="/checkout-access">
-                <Button type="primary" size="large" danger className="buy-now">
+                <Button
+                  type="primary"
+                  size="large"
+                  danger
+                  className="buy-now"
+                  disabled={selectedVariant?.stock?.quantity === 0}
+                  style={selectedVariant?.stock?.quantity === 0 ? { background: '#ccc', color: '#fff', border: 'none', cursor: 'not-allowed' } : {}}
+                >
                   Mua Ngay
                 </Button>
               </Link>
