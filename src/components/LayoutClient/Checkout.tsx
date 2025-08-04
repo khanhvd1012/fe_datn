@@ -351,20 +351,31 @@ const Checkout = () => {
                     { label: 'Thanh toán khi nhận hàng', value: 'cod', icon: '💰' },
                     { label: 'Chuyển khoản ngân hàng', value: 'bank', icon: '🏦' },
                     { label: 'Thanh toán qua Momo', value: 'momo', icon: '📱' },
-                    { label: 'Thanh toán qua ZaloPay', value: 'ZALOPAY', icon: '🟦' },
-                  ].map((method) => (
-                    <div
-                      key={method.value}
-                      onClick={() => handleChange('payment_method', method.value)}
-                      className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
-                        ? 'border-green-600 bg-green-50'
-                        : 'border-gray-300 hover:border-green-400'
-                        }`}
-                    >
-                      <div className="text-2xl mb-1">{method.icon}</div>
-                      <Text>{method.label}</Text>
-                    </div>
-                  ))}
+                    {
+                      label: (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <img
+                            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwPynD27LbXlPsbofv1AX-5ZXDn_XMGo-1TA&s"
+                            alt="ZaloPay"
+                            style={{ width: 20, height: 20 }}
+                          />
+                          Thanh toán qua ZaloPay
+                        </span>
+                      ),
+                      value: 'ZALOPAY'
+                    }].map((method) => (
+                      <div
+                        key={method.value}
+                        onClick={() => handleChange('payment_method', method.value)}
+                        className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
+                          ? 'border-green-600 bg-green-50'
+                          : 'border-gray-300 hover:border-green-400'
+                          }`}
+                      >
+                        <div className="text-2xl mb-1">{method.icon}</div>
+                        <Text>{method.label}</Text>
+                      </div>
+                    ))}
                 </div>
               </div>
 
