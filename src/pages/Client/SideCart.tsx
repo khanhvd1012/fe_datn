@@ -1,67 +1,67 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
-import { useSizes } from '../../hooks/useSizes';
-import type { ISize } from '../../interface/size';
-import axios from 'axios';
-import { message } from 'antd';
+import { useCart, useRemoveFromCart, useUpdateCartItem } from '../../hooks/useCart';
+import { getColorById } from '../../service/colorAPI';
 
 const SideCart = ({ onClose }: { onClose: () => void }) => {
-  const [cart, setCart] = useState<any[]>([]);
+  const { mutate: updateCartItem } = useUpdateCartItem();
+
+  const { data: cartData } = useCart();
+  const cart = cartData?.cart_items || [];
+  const [cartWithColors, setCartWithColors] = useState(cart);
+  const { mutate: removeFromCart } = useRemoveFromCart();
+  console.log("🛒 Cart data:", cart);
+  // const [cart, setCart] = useState<any[]>([]);
   const [closing, setClosing] = useState(false);
   const [opening, setOpening] = useState(false);
-  const { data: sizes = [] } = useSizes();
   const location = useLocation();
   const cartRef = useRef<HTMLDivElement>(null);
 
   const total = cart.reduce(
-    (sum: number, item: any) => sum + item.price * item.quantity,
+    (sum, item) => sum + item.quantity * item.variant_id.price,
     0
   );
+
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const updatedCart = await Promise.all(
+          cart.map(async (item) => {
+            if (
+              item.variant_id?.color._id &&
+              typeof item.variant_id.color._id === 'string'
+            ) {
+              console.log('✅ Màu sắc:', item.variant_id.color);
+              const color = await getColorById(item.variant_id.color._id);
+              console.log('✅ Màu sắc:', color);
+              return {
+                ...item,
+                variant_id: {
+                  ...item.variant_id,
+                  color,
+                },
+              };
+            }
+            return item;
+          })
+        );
+        setCartWithColors(updatedCart);
+        console.log("🖌️ Cart with colors:", updatedCart);
+      } catch (err) {
+        console.error("❌ Lỗi lấy màu:", err);
+      }
+    };
+
+    fetchColors();
+  }, [cartData]);
 
   // Auto đóng khi chuyển route
   useEffect(() => {
     if (opening) handleClose();
   }, [location.pathname]);
 
-  useEffect(() => {
-    const fetchCartWithImages = async () => {
-      const rawCart = JSON.parse(localStorage.getItem('cart') || '[]');
-      const res = await axios.get('http://localhost:3000/api/variants');
-      const allVariants = res.data.data || [];
 
-      const updatedCart = rawCart.map((item: any) => {
-        const variant = allVariants.find((v: any) =>
-          (v.product_id && (v.product_id._id === item._id || v.product_id === item._id)) &&
-          Array.isArray(v.size) &&
-          v.size.some((s: any) =>
-            (typeof s === 'object' && (s._id === item.size || s.size === item.size)) ||
-            (typeof s === 'string' && s === item.size)
-          ) &&
-          (
-            !item.color || !v.color ||
-            (typeof item.color === 'object' && typeof v.color === 'object' &&
-              (item.color._id === v.color._id || item.color.name === v.color.name)) ||
-            (typeof item.color === 'string' &&
-              (item.color === v.color?._id || item.color === v.color?.name))
-          )
-        );
-
-        const image = variant?.image_url?.[0] || '/no-image.png';
-
-        return {
-          ...item,
-          image,
-          variant_id: variant?._id || null,
-          color: variant?.color || item.color,
-        };
-      });
-
-      setCart(updatedCart);
-    };
-
-    fetchCartWithImages();
-  }, []);
 
   useEffect(() => {
     setTimeout(() => setOpening(true), 10);
@@ -88,66 +88,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
     };
   }, []);
 
-  const addAllToCart = async () => {
-    try {
-      const token = localStorage.getItem('token');
 
-      if (!cart || cart.length === 0) {
-        message.warning('Không có sản phẩm nào để thêm vào giỏ!');
-        return;
-      }
-
-      await Promise.all(
-        cart.map(async (item, idx) => {
-          if (!item.variant_id) {
-            console.warn(` Item ${idx + 1} thiếu variant_id`);
-            return null;
-          }
-
-          await axios.post(
-            'http://localhost:3000/api/carts',
-            {
-              variant_id: item.variant_id,
-              quantity: item.quantity,
-              size_id: item.size,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-        })
-      );
-
-      message.success('Đã cập nhật giỏ hàng!');
-      window.location.href = '/checkout';
-    } catch (err) {
-      console.error('Lỗi khi thêm giỏ hàng:', err);
-      message.error('Có lỗi khi cập nhật giỏ hàng!');
-    }
-  };
-
-  const removeItem = (idx: number) => {
-    const newCart = [...cart];
-    newCart.splice(idx, 1);
-    setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
-    message.success('Đã xóa sản phẩm khỏi giỏ hàng');
-  };
-
-  const getSizeName = (id: string) => {
-    const found = sizes.find((s: ISize) => s._id === id);
-    return found ? found.size : id;
-  };
-
-  const updateQuantity = (idx: number, newQty: number) => {
-    if (newQty < 1) return;
-    const newCart = [...cart];
-    newCart[idx].quantity = newQty;
-    setCart(newCart);
-    localStorage.setItem('cart', JSON.stringify(newCart));
-  };
 
   const handleClose = () => {
     setClosing(true);
@@ -178,34 +119,42 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
               Chưa có sản phẩm nào trong giỏ hàng.
             </div>
           ) : (
-            cart.map((item: any, idx: number) => (
+            cartWithColors.map((item: any, idx: number) => (
               <div className="flex gap-3 mb-4" key={idx}>
                 <img
-                  src={item.image || '/no-image.png'}
-                  alt={item.name}
+                  src={item.variant_id.image_url || '/no-image.png'}
+                  alt={item.variant_id.product_id.name}
                   className="border w-20 h-20 object-cover"
                   onError={(e) => (e.currentTarget.src = '/no-image.png')}
                 />
                 <div className="flex-1">
                   <h3 className="text-xs font-semibold uppercase leading-snug">
-                    {item.name}
+                    {item.variant_id.product_id.name}
                   </h3>
                   <div className="text-xs text-gray-500 mt-1">
-                    {item.color && typeof item.color === 'object' && (
+                    {item.variant_id.color && typeof item.variant_id.color === 'object' && (
                       <div className="flex items-center gap-1">
+                        Màu:
                         <span
                           className="w-3 h-3 border"
-                          style={{ backgroundColor: item.color.code }}
+                          style={{
+                            backgroundColor: item.variant_id.color?.code || 'transparent',
+                          }}
                         />
-                        <span>{item.color.name}</span>
+                        <span>{item.variant_id.color.name}</span>
                       </div>
                     )}
-                    <span>Size: {getSizeName(item.size)}</span>
+                    <span>Size: {item.variant_id.size.size}</span>
                   </div>
                   <div className="flex items-center mt-2">
                     <button
                       className="w-7 h-7 border border-gray-400 text-lg"
-                      onClick={() => updateQuantity(idx, item.quantity - 1)}
+                      onClick={() =>
+                        updateCartItem({
+                          variant_id: item.variant_id._id,
+                          quantity: item.quantity - 1,
+                        })
+                      }
                     >
                       -
                     </button>
@@ -214,22 +163,33 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                       value={item.quantity}
                       min={1}
                       className="w-8 h-8 text-center border border-gray-400 text-sm mx-2"
-                      onChange={(e) =>
-                        updateQuantity(idx, Number(e.target.value))
-                      }
+                      onChange={(e) => {
+                        const newQty = Number(e.target.value);
+                        if (newQty >= 1) {
+                          updateCartItem({
+                            variant_id: item.variant_id._id,
+                            quantity: newQty,
+                          });
+                        }
+                      }}
                     />
                     <button
                       className="w-7 h-7 border border-gray-400 text-lg"
-                      onClick={() => updateQuantity(idx, item.quantity + 1)}
+                      onClick={() =>
+                        updateCartItem({
+                          variant_id: item.variant_id._id,
+                          quantity: item.quantity + 1,
+                        })
+                      }
                     >
                       +
                     </button>
                     <span className="text-sm font-semibold ml-2">
-                      {item.price?.toLocaleString('en-US')}$
+                      {(item.quantity * item.variant_id.price)?.toLocaleString('en-US')}$
                     </span>
                     <button
                       className="ml-auto text-gray-400 hover:text-red-500"
-                      onClick={() => removeItem(idx)}
+                      onClick={() => removeFromCart(item._id)}
                       title="Xóa sản phẩm"
                     >
                       <CloseOutlined />
@@ -258,7 +218,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
           <Link
             to="/checkout"
             className="bg-black text-white w-1/2 py-2 text-sm text-center flex items-center justify-center"
-            onClick={addAllToCart}
+          // onClick={addAllToCart}
           >
             THANH TOÁN
           </Link>

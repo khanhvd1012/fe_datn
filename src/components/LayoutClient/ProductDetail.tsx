@@ -11,6 +11,7 @@ import type { IColor } from '../../interface/color';
 import { useSizes } from '../../hooks/useSizes';
 import { useColors } from '../../hooks/useColors';
 import type { ISize } from '../../interface/size';
+import { addToCart as addToCartApi } from "../../service/cartAPI";
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -125,30 +126,47 @@ const ProductDetail = () => {
       return;
     }
 
-    if (existing) {
-      existing.quantity += quantity;
-      existing.voucher = selectedVoucherId || null;
-    } else {
-      cart.push({
-        _id: product._id,
-        name: product.name,
-        price: displayPrice,
-        size: selectedSize,
-        quantity,
-        voucher: selectedVoucherId || null,
-        color: {
-          _id: colorInfo._id,
-          name: colorInfo.name,
-          code: colorInfo.code,
-        },
-      });
+    // if (existing) {
+    //   existing.quantity += quantity;
+    //   existing.voucher = selectedVoucherId || null;
+    // } else {
+    //   cart.push({
+    //     _id: product._id,
+    //     name: product.name,
+    //     price: displayPrice,
+    //     size: selectedSize,
+    //     quantity,
+    //     voucher: selectedVoucherId || null,
+    //     color: {
+    //       _id: colorInfo._id,
+    //       name: colorInfo.name,
+    //       code: colorInfo.code,
+    //     },
+    //   });
+    // }
+
+    // localStorage.setItem("cart", JSON.stringify(cart));
+    // if (selectedVoucherId) {
+    //   localStorage.setItem("selected_voucher_id", selectedVoucherId);
+    // }
+    // message.success("Đã thêm vào giỏ hàng!");
+
+    if (!selectedVariant || !selectedVariant._id) {
+      message.warning("Vui lòng chọn phân loại sản phẩm!");
+      return;
     }
 
-    localStorage.setItem("cart", JSON.stringify(cart));
-    if (selectedVoucherId) {
-      localStorage.setItem("selected_voucher_id", selectedVoucherId);
+    try {
+      await addToCartApi({
+        variant_id: selectedVariant._id,
+        quantity,
+      });
+      message.success("Đã thêm vào giỏ hàng!");
+      console.log("🛒 Thêm vào giỏ hàng:", selectedVariant._id, quantity);
+    } catch (err) {
+      message.error("Thêm vào giỏ hàng thất bại!");
+      console.error(err);
     }
-    message.success("Đã thêm vào giỏ hàng!");
   };
 
 
