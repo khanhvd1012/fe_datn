@@ -78,7 +78,7 @@ const DashBoard = () => {
       dataIndex: 'totalRevenue',
       key: 'totalRevenue',
       width: '30%',
-      render: (value: number) => `${value.toLocaleString('en-US')}$`,
+      render: (value: number) => `${value.toLocaleString('vn-VN')}đ`,
       sorter: (a: DashboardProduct, b: DashboardProduct) => a.totalRevenue - b.totalRevenue,
     },
   ];
@@ -121,7 +121,7 @@ const DashBoard = () => {
               title="Doanh thu tháng"
               value={stats?.monthlyRevenue || 0}
               prefix={<DollarOutlined />}
-              suffix="$"
+              suffix="đ"
               valueStyle={{ fontSize: '18px' }}
             />
           </Card>

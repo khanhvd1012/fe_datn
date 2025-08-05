@@ -152,7 +152,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
                   <div>
                     <div className="font-medium">{product.name}</div>
                     {product.price && (
-                      <div className="text-xs text-gray-500">{product.price.toLocaleString('en-US')}$</div>
+                      <div className="text-xs text-gray-500">{product.price.toLocaleString('vi-VN')}đ</div>
                     )}
                   </div>
                 </a>

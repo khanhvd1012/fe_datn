@@ -87,7 +87,7 @@ const Cart = () => {
 
 
   const formatCurrency = (value: number) =>
-    value.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+    value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
 
   const updateQuantity = (idx: number, newQty: number) => {
     if (newQty < 1) return;

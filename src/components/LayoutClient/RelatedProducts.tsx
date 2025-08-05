@@ -89,7 +89,7 @@ const RelatedProducts: React.FC = () => {
 
             const displayPrice =
               typeof variant.price === 'number'
-                ? `${variant.price.toLocaleString('en-US')}$`
+                ? `${variant.price.toLocaleString('vi-VN')}đ`
                 : 'Giá đang cập nhật';
 
             return (

@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Card, Typography, Spin, message } from 'antd';
+import { Typography, Spin, message } from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
-const NewProducts: React.FC = () => {
+const NewProducts = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -14,7 +14,7 @@ const NewProducts: React.FC = () => {
   useEffect(() => {
     Promise.all([
       axios.get('http://localhost:3000/api/products?limit=4'),
-      axios.get('http://localhost:3000/api/variants')
+      axios.get('http://localhost:3000/api/variants'),
     ])
       .then(([productsRes, variantsRes]) => {
         setProducts(productsRes.data?.data?.products || []);
@@ -43,9 +43,8 @@ const NewProducts: React.FC = () => {
     return () => clearInterval(interval);
   }, [products]);
 
-  // Lọc ra các biến thể thuộc về các sản phẩm mới
-  const latestProductIds = products.map(p => p._id);
-  const latestVariants = variants.filter(v =>
+  const latestProductIds = products.map((p) => p._id);
+  const latestVariants = variants.filter((v) =>
     latestProductIds.includes(v.product_id?._id || v.product_id)
   );
 
@@ -68,11 +67,15 @@ const NewProducts: React.FC = () => {
       </Title>
 
       <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
-        <Text type="secondary" style={{ fontSize: 12 }}>Tự động trượt qua sản phẩm</Text>
+        <Text type="secondary" style={{ fontSize: 12 }}>
+          Tự động trượt qua sản phẩm
+        </Text>
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center' }}><Spin /></div>
+        <div style={{ textAlign: 'center' }}>
+          <Spin />
+        </div>
       ) : latestVariants.length === 0 ? (
         <div style={{ textAlign: 'center' }}>Không có sản phẩm nào</div>
       ) : (
@@ -90,71 +93,48 @@ const NewProducts: React.FC = () => {
             );
             if (!product) return null;
 
+            const image =
+              Array.isArray(variant.image_url) && variant.image_url.length > 0
+                ? variant.image_url[0]
+                : product.images?.[0] || 'https://via.placeholder.com/300x300?text=No+Image';
+
+            const colorName = typeof variant.color === 'object' ? variant.color.name : '';
+
             return (
               <div
                 key={variant._id}
                 style={{
-                  flex: '0 0 10%',
+                  flex: '0 0 auto',
+                  width: 250,
                   padding: '0 10px',
-                  minWidth: 250,
-                  marginBottom: 20
+                  marginBottom: 20,
                 }}
               >
-                <Link to={`/products/${product.slug}`} state={{ variantId: variant._id }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                  <Card
-                    hoverable
-                    cover={
-                      <div
-                        style={{
-                          height: 200,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          overflow: 'hidden',
-                          borderTopLeftRadius: 8,
-                          borderTopRightRadius: 8,
-                        }}
-                      >
-                        <img
-                          alt={product.name}
-                          src={
-                            Array.isArray(variant.image_url) && variant.image_url.length > 0
-                              ? variant.image_url[0]
-                              : product.images?.[0] || 'https://picsum.photos/200'
-                          }
-                          style={{
-                            marginTop: 2,
-                            maxHeight: '100%',
-                            maxWidth: '100%',
-                            objectFit: 'contain',
-                            display: 'block',
-                          }}
-                        />
-                      </div>
-                    }
-                    style={{
-                      textAlign: 'center',
-                      height: 340,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div
-                      style={{
-                        height: 48,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        marginBottom: 8,
-                      }}
-                    >
-                      <Text style={{ fontWeight: 500 }}>{product.name} - {variant.color?.name}</Text>
-                    </div>
-                    <Text strong>{variant.price?.toLocaleString('en-US')}$</Text>
-                  </Card>
+                <Link
+                  to={`/products/${product.slug}`}
+                  state={{ variantId: variant._id }}
+                  className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[340px]"
+                  onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                >
+                  <img
+                    src={image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover rounded-md"
+                  />
+                  <div className="mt-3 pt-[9px]">
+                    <Text strong>
+                      {product.name} - {colorName}
+                    </Text>
+                  </div>
+                  <div className="mt-1 pt-[9px]">
+                    <Text type="secondary" style={{ color: 'black' }}>
+                      {typeof variant.price === 'number'
+                        ? variant.price.toLocaleString('vi-VN', {
+                            minimumFractionDigits: 0,
+                          }) + 'đ'
+                        : 'Giá đang cập nhật'}
+                    </Text>
+                  </div>
                 </Link>
               </div>
             );

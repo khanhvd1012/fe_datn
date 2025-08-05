@@ -19,5 +19,6 @@ export interface IProduct {
   description?: string;
   brand: string | { _id: string; name: string };
   category: string | { _id: string; name: string };
+  slug: string; 
   variants: IVariant[];
 }

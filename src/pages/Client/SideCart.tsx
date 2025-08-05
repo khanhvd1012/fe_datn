@@ -225,7 +225,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                       +
                     </button>
                     <span className="text-sm font-semibold ml-2">
-                      {item.price?.toLocaleString('en-US')}$
+                      {item.price?.toLocaleString('vi-VN')}đ
                     </span>
                     <button
                       className="ml-auto text-gray-400 hover:text-red-500"
@@ -245,7 +245,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
 
         <div className="flex justify-between text-sm mb-4">
           <span>TỔNG TIỀN:</span>
-          <span>{total.toLocaleString('en-US')}$</span>
+          <span>{total.toLocaleString('vi-VN')}đ</span>
         </div>
 
         <div className="flex gap-2 mb-2">

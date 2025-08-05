@@ -199,7 +199,7 @@ const CollectionPage: React.FC = () => {
                           {product.name} - {variant.color?.name}
                         </Text>
                       </div>
-                      <Text strong>{variant.price?.toLocaleString('en-US')}$</Text>
+                      <Text strong>{variant.price?.toLocaleString('vi-VN')}đ</Text>
                     </Card>
                   </Link>
                 </div>

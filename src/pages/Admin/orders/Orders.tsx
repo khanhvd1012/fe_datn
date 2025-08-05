@@ -77,7 +77,7 @@ const Orders = () => {
       dataIndex: "sub_total",
       key: "sub_total",
       render: (value: number) =>
-        value.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        value.toLocaleString("vn-VN", { style: "currency", currency: "VND" }),
     },
     {
       title: "Giảm giá",
@@ -85,9 +85,9 @@ const Orders = () => {
       key: "voucher_discount",
       render: (value: number) =>
         value
-          ? `- ${value.toLocaleString("en-US", {
+          ? `- ${value.toLocaleString("vn-VN", {
             style: "currency",
-            currency: "USD",
+            currency: "VND",
           })}`
           : "-",
     },
@@ -96,7 +96,7 @@ const Orders = () => {
       dataIndex: "total_price",
       key: "total_price",
       render: (value: number) =>
-        value.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        value.toLocaleString("vn-VN", { style: "currency", currency: "VND" }),
     },
     {
       title: "Phương thức",

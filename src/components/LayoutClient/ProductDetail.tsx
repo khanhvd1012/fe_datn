@@ -273,7 +273,7 @@ const ProductDetail = () => {
 
             <p className="price">
               {typeof displayPrice === 'number'
-                ? displayPrice.toLocaleString('en-US') + '$'
+                ? displayPrice.toLocaleString('vi-VN') + 'đ'
                 : 'Đang cập nhật giá'}
             </p>
 
@@ -433,7 +433,7 @@ const ProductDetail = () => {
                               <Col flex="auto" style={{ color: '#FFFFFF' }}>
                                 <strong style={{ fontSize: '16px' }}>{voucher.code}</strong><br />
                                 <small>
-                                  Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString()}$</strong>
+                                  Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString('vi-VN')}đ</strong>
                                 </small><br />
                                 <small style={{ color: '#660000' }}>Còn lại: {timeLeft}</small>
                               </Col>
@@ -454,7 +454,7 @@ const ProductDetail = () => {
                                 }}>
                                   {voucher.type === 'percentage'
                                     ? `-${voucher.value}%`
-                                    : `-${voucher.value.toLocaleString()}$`}
+                                    : `-${voucher.value.toLocaleString('vi-VN')}đ`}
                                 </div>
                               </Col>
                             </Row>
@@ -552,7 +552,7 @@ const ProductDetail = () => {
                 </div>
                 <p style={{ margin: '4px 0 8px', color: '#444' }}>{review.comment}</p>
                 <div style={{ fontSize: '12px', color: '#999' }}>
-                  {new Date(review.createdAt).toLocaleString()}
+                  {new Date(review.createdAt).toLocaleString('vi-VN')}
                 </div>
               </div>
             ))

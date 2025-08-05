@@ -249,7 +249,7 @@ const Variant = () => {
         </div>
       ),
       filterIcon: () => <FilterOutlined style={{ color: filters.priceMin || filters.priceMax ? '#1890ff' : undefined }} />,
-      render: (price: number) => price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+      render: (price: number) => price?.toLocaleString('vn-VN', { style: 'currency', currency: 'VND' }),
     },
     {
       title: "Giá nhập",
@@ -272,7 +272,7 @@ const Variant = () => {
         </div>
       ),
       filterIcon: () => <FilterOutlined style={{ color: filters.importPriceMin || filters.importPriceMax ? '#1890ff' : undefined }} />,
-      render: (price: number) => price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' }),
+      render: (price: number) => price?.toLocaleString('vn-VN', { style: 'currency', currency: 'VND' }),
     },
     {
       title: "Hình ảnh",

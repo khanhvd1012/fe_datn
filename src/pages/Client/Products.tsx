@@ -18,10 +18,10 @@ interface FilterValues {
 }
 
 const Products = () => {
-  const [sortOption, setSortOption] = useState('desc');
+  const [sortOption, setSortOption] = useState('default');
 
   const [filters, setFilters] = useState<FilterValues>({
-    price: [0, 1000],
+    price: [0, 500000000],
     brands: [],
     categories: [],
     colors: [],
@@ -29,6 +29,8 @@ const Products = () => {
   });
 
   const { data: allVariants = [], isLoading: loadingAll } = useVariants();
+  console.log('allVariants', allVariants);
+  
 
   const { data: topSelling = [], isLoading: loadingTopSelling } = useTopSellingVariants({
     enabled: sortOption === 'top-selling',
@@ -169,13 +171,13 @@ const Products = () => {
                       alt={product.name}
                       className="w-full h-48 object-cover rounded-md"
                     />
-                    <div className="mt-3">
+                    <div className="mt-3 pt-[9px]">
                       <Text strong>{product.name} - {color}</Text>
                     </div>
-                    <div className="mt-1">
-                      <Text type="secondary">
+                    <div className="mt-1 pt-[9px]">
+                      <Text type="secondary" style={{ color: 'black'}}>
                         {typeof variant.price === 'number'
-                          ? variant.price.toLocaleString('en-US', { minimumFractionDigits: 0 }) + '$'
+                          ? variant.price.toLocaleString('vi-VN', { minimumFractionDigits: 0 }) + 'đ'
                           : 'Giá đang cập nhật'}
                       </Text>
                     </div>

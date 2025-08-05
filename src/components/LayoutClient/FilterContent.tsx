@@ -80,16 +80,16 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
             <Slider
                 range
                 min={0}
-                max={1000}
+                max={500000000}
                 step={10}
                 value={priceFilters}
                 onChange={(value) => {
                     if (Array.isArray(value)) {
                         setPriceFilters([value[0], value[1]]);
                     }
-                }} tipFormatter={(value) => `$${value}`}
+                }}   tipFormatter={(value) => `${value?.toLocaleString('vi-VN')}đ`}
             />
-            <div>Khoảng giá: ${priceFilters[0]} - ${priceFilters[1]}</div>
+            <div>  Khoảng giá: {priceFilters[0].toLocaleString('vi-VN')}đ - {priceFilters[1].toLocaleString('vi-VN')}đ</div>
 
             <Title level={5} style={{ paddingTop: 9}}>MÀU SẮC</Title>
             <div className="flex flex-wrap gap-2 mb-4">
