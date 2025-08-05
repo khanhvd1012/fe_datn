@@ -97,7 +97,7 @@ const ProductDetail = () => {
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
-  const addToCart = () => {
+  const addToCart = async () => {
     if (!token) {
       message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
       return;
@@ -113,13 +113,13 @@ const ProductDetail = () => {
       return;
     }
 
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    // const cart = JSON.parse(localStorage.getItem("cart") || "[]");
 
-    const existing = cart.find((item: any) =>
-      item._id === product._id &&
-      item.size === selectedSize &&
-      item.color?._id === colorInfo._id
-    );
+    // const existing = cart.find((item: any) =>
+    //   item._id === product._id &&
+    //   item.size === selectedSize &&
+    //   item.color?._id === colorInfo._id
+    // );
 
     if (selectedVariant && quantity > (selectedVariant.stock?.quantity ?? 0)) {
       message.warning(`Chỉ còn ${selectedVariant.stock?.quantity ?? 0} sản phẩm trong kho`);
@@ -364,11 +364,11 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
-{selectedVariant && (
-  <div style={{ margin: '8px 0', color: '#000000ff', fontWeight: 500 }}>
-    Số lượng trong kho: {selectedVariant.stock?.quantity ?? 0}
-  </div>
-)}
+            {selectedVariant && (
+              <div style={{ margin: '8px 0', color: '#000000ff', fontWeight: 500 }}>
+                Số lượng trong kho: {selectedVariant.stock?.quantity ?? 0}
+              </div>
+            )}
             <div className="quantity-control">
               <span className="label">Số lượng:</span>
 
