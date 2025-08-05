@@ -1,20 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import axios from 'axios';
-import {
-  Input,
-  Select,
-  Button,
-  Card,
-  Image,
-  Row,
-  Col,
-  Typography,
-  Divider,
-  Spin,
-  message,
-
-} from 'antd';
+import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 
 const Checkout = () => {
@@ -35,7 +22,7 @@ const Checkout = () => {
     email: '',
     note: '',
     shipping_type: 'standard',
-    payment_method: 'cod',
+    payment_method: 'cod zalopay',
     voucher_code: '',
     voucher_type: '',
     voucher_value: 0,
@@ -279,6 +266,7 @@ const Checkout = () => {
     } catch (err) {
       console.error(err);
       message.error('Đặt hàng thất bại!');
+      navigate('/checkout/failed');
     }
   };
 
@@ -350,7 +338,6 @@ const Checkout = () => {
                   {[
                     { label: 'Thanh toán khi nhận hàng', value: 'cod', icon: '💰' },
                     { label: 'Chuyển khoản ngân hàng', value: 'bank', icon: '🏦' },
-                    { label: 'Thanh toán qua Momo', value: 'momo', icon: '📱' },
                     {
                       label: (
                         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

@@ -24,6 +24,7 @@ import OrderHistory from './OrderHistory';
 import OrderDetail from './OrderDetail';
 import ProductReview from './ProductReview';
 import BlogDetail from '../../pages/Client/BlogDetail';
+import CheckoutFailed from './CheckoutFailed';
 
 
 const IndexClient = () => {
@@ -66,6 +67,7 @@ const IndexClient = () => {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/collection/:slug" element={<CollectionPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
+          <Route path="/checkout/failed" element={<CheckoutFailed />} />
           <Route path="/order-history" element={<OrderHistory />} />
           <Route path="/OrderDetail/:id" element={<OrderDetail />} />
           <Route path="/ProductReview" element={<ProductReview />} />
