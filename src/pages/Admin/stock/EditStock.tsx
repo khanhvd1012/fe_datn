@@ -86,8 +86,13 @@ const EditStock = () => {
           label="Số lượng thay đổi"
           name="quantity"
           rules={[
-            { required: true, message: 'Vui lòng nhập số lượng!' },
-            { type: 'number', message: 'Số lượng phải là số!' },
+            { required: true, message: 'Vui lòng nhập lượng thay đổi!' },
+            {
+              validator(_, value) {
+                if (value < 0) return Promise.reject('Số lượng không được âm!');
+                return Promise.resolve();
+              }
+            }
           ]}
         >
           <InputNumber style={{ width: '100%' }} />

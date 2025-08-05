@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { addVariant, deleteVariant, getVariantById, getVariants, updateVariant } from "../service/variantAPI";
+import { addVariant, deleteVariant, getTopRatedVariants, getTopSellingVariants, getVariantById, getVariants, updateVariant } from "../service/variantAPI";
 import type { IVariant } from "../interface/variant";
 
 export const useVariants = () => {
@@ -48,5 +48,23 @@ export const useDeleteVariant = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['variants'] });
     }
+  });
+};
+
+// Biến thể bán chạy nhất (dựa vào đơn hàng đã giao)
+export const useTopSellingVariants = (options?: { enabled?: boolean }) => {
+  return useQuery<IVariant[]>({
+    queryKey: ["top-selling-variants"],
+    queryFn: getTopSellingVariants,
+    enabled: options?.enabled ?? true,
+  });
+};
+
+// Biến thể được đánh giá cao nhất (rating >= 4)
+export const useTopRatedVariants = (options?: { enabled?: boolean }) => {
+  return useQuery<IVariant[]>({
+    queryKey: ["top-rated-variants"],
+    queryFn: getTopRatedVariants,
+    enabled: options?.enabled ?? true,
   });
 };
