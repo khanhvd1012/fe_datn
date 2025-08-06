@@ -15,6 +15,7 @@ interface FilterValues {
     categories: string[];
     colors: string[];
     sizes: string[];
+    gender: string[];
 }
 
 interface Props {
@@ -28,6 +29,7 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
     const [sizeFilters, setSizeFilters] = useState<string[]>(defaultValues?.sizes || []);
     const [brandFilters, setBrandFilters] = useState<string[]>(defaultValues?.brands || []);
     const [categoryFilters, setCategoryFilters] = useState<string[]>(defaultValues?.categories || []);
+    const [genderFilters, setGenderFilters] = useState<string[]>(defaultValues?.gender || []);
 
     const { data: colors = [] } = useColors();
     const { data: sizes = [] } = useSizes();
@@ -42,8 +44,9 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
             sizes: sizeFilters,
             brands: brandFilters,
             categories: categoryFilters,
+            gender: genderFilters,
         });
-    }, [priceFilters, colorFilters, sizeFilters, brandFilters, categoryFilters]);
+    }, [priceFilters, colorFilters, sizeFilters, brandFilters, categoryFilters, genderFilters]);
 
 
     return (
@@ -62,7 +65,7 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
                 }))}
             />
 
-            <Title level={5} style={{ paddingTop: 9}}>DANH MỤC</Title>
+            <Title level={5} style={{ paddingTop: 9 }}>DANH MỤC</Title>
             <Select
                 mode="multiple"
                 allowClear
@@ -75,8 +78,21 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
                     value: category._id!,
                 }))}
             />
-
-            <Title level={5} style={{ paddingTop: 9}}>GIÁ SẢN PHẨM</Title>
+            <Title level={5} style={{ paddingTop: 9 }}>GIỚI TÍNH</Title>
+            <Select
+                mode="multiple"
+                allowClear
+                placeholder="Chọn giới tính"
+                value={genderFilters}
+                onChange={setGenderFilters}
+                className="w-full mb-4"
+                options={[
+                    { label: 'Nam', value: 'male' },
+                    { label: 'Nữ', value: 'female' },
+                    { label: 'Unisex', value: 'unisex' },
+                ]}
+            />
+            <Title level={5} style={{ paddingTop: 9 }}>GIÁ SẢN PHẨM</Title>
             <Slider
                 range
                 min={0}
@@ -87,11 +103,11 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
                     if (Array.isArray(value)) {
                         setPriceFilters([value[0], value[1]]);
                     }
-                }}   tipFormatter={(value) => `${value?.toLocaleString('vi-VN')}đ`}
+                }} tipFormatter={(value) => `${value?.toLocaleString('vi-VN')}đ`}
             />
             <div>  Khoảng giá: {priceFilters[0].toLocaleString('vi-VN')}đ - {priceFilters[1].toLocaleString('vi-VN')}đ</div>
 
-            <Title level={5} style={{ paddingTop: 9}}>MÀU SẮC</Title>
+            <Title level={5} style={{ paddingTop: 9 }}>MÀU SẮC</Title>
             <div className="flex flex-wrap gap-2 mb-4">
                 {colors
                     .filter(color => color.status === 'active')

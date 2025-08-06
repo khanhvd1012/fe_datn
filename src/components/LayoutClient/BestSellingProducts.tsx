@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Typography, Spin } from 'antd';
+import { Typography, Spin, Rate } from 'antd';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTopSellingVariants } from '../../hooks/useVariants';
@@ -33,6 +33,8 @@ const BestSellingProducts: React.FC = () => {
     return () => clearInterval(interval);
   }, [variants]);
 
+
+
   if (loadingVariants || loadingProducts) {
     return (
       <div className="text-center py-10">
@@ -43,7 +45,7 @@ const BestSellingProducts: React.FC = () => {
 
   return (
     <div className="px-5 py-10">
-      <Title level={2} style={{ textAlign: 'center', fontSize: '20px', marginBottom: 20 }}>
+      <Title level={2} style={{ textAlign: 'center', fontSize: '20px', marginBottom: 10 }}>
         <span style={{ display: 'inline-block', paddingBottom: 4, position: 'relative' }}>
           Sản phẩm bán chạy
           <span
@@ -59,12 +61,6 @@ const BestSellingProducts: React.FC = () => {
         </span>
       </Title>
 
-      <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          Tự động trượt qua sản phẩm
-        </Text>
-      </div>
-
       <div
         ref={sliderRef}
         style={{ display: 'flex', overflowX: 'hidden', scrollBehavior: 'smooth' }}
@@ -76,11 +72,32 @@ const BestSellingProducts: React.FC = () => {
           );
           if (!product) return null;
 
+          const currentColorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
+
+          const sameProductVariants = variants.filter(
+            (v) => {
+              const pid = typeof v.product_id === 'object' ? v.product_id._id : v.product_id;
+              const cid = typeof v.color === 'object' ? v.color._id : v.color;
+              return pid === product._id && cid;
+            }
+          );
+
+          const sortedByCurrentFirst = [
+            ...sameProductVariants.filter((v) => {
+              const cid = typeof v.color === 'object' ? v.color._id : v.color;
+              return cid === currentColorId;
+            }),
+            ...sameProductVariants.filter((v) => {
+              const cid = typeof v.color === 'object' ? v.color._id : v.color;
+              return cid !== currentColorId;
+            }),
+          ];
+
           return (
             <Link
               to={`/products/${product.slug}`}
               key={variant._id}
-              className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[340px] min-w-[250px] mx-2 mb-5"
+              className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
               state={{ variantId: variant._id }}
             >
               <img
@@ -89,6 +106,21 @@ const BestSellingProducts: React.FC = () => {
                 } alt={product.name}
                 className="w-full h-48 object-cover rounded-md"
               />
+              <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                {sortedByCurrentFirst.map((v, idx) => {
+                  const colorObj = typeof v.color === 'object' ? v.color : null;
+                  return (
+                    <div
+                      key={idx}
+                      className="w-4 h-4 rounded-full border"
+                      style={{
+                        backgroundColor: colorObj?.code || '#ccc',
+                        borderColor: colorObj?._id === currentColorId ? 'black' : '#ccc',
+                      }}
+                    />
+                  );
+                })}
+              </div>
               <div className="mt-3 pt-[9px]">
                 <Text strong>{product.name}</Text>
               </div>
@@ -97,10 +129,13 @@ const BestSellingProducts: React.FC = () => {
                   {variant.price?.toLocaleString('vi-VN')}đ
                 </Text>
               </div>
-              <div className="mt-1">
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Đã bán: {variant.totalSold}
-                </Text>
+              <div className="mt-1 pt-[6px] flex justify-center items-center gap-1 h-5">
+                <Rate
+                  disabled
+                  allowHalf
+                  value={variant.averageRating || 0}
+                  style={{ fontSize: 14 }}
+                />
               </div>
             </Link>
           );

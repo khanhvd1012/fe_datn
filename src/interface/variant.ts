@@ -4,7 +4,7 @@ export interface IVariant {
     _id?: string;
     product_id: string | IProduct;
     sku: string;
-    color: string | { _id: string; name: string };
+    color: string | { _id: string; name: string; code: string };
     size: string | { _id: string; size: string };
     price: number;
     image_url: string[];

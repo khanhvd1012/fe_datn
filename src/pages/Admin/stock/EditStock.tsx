@@ -18,10 +18,18 @@ const EditStock = () => {
   const handleSubmit = (values: { quantity: number; reason: string }) => {
     if (!id || !stock) return;
 
+    const selectedStock = stock.find(item => item._id === id);
+    if (!selectedStock) return;
+
     const quantity_change = values.quantity;
 
     if (quantity_change === 0) {
       messageApi.warning('Số lượng không thay đổi!');
+      return;
+    }
+
+    if (quantity_change < 0 && Math.abs(quantity_change) > selectedStock.quantity) {
+      messageApi.error('Không thể giảm quá số lượng hiện có!');
       return;
     }
 
@@ -88,11 +96,20 @@ const EditStock = () => {
           rules={[
             { required: true, message: 'Vui lòng nhập lượng thay đổi!' },
             {
-              validator(_, value) {
-                if (value < 0) return Promise.reject('Số lượng không được âm!');
+              validator: (_, value) => {
+                if (value === undefined) return Promise.resolve();
+
+                if (value === 0) {
+                  return Promise.reject('Số lượng không thay đổi!');
+                }
+
+                if (value < 0 && Math.abs(value) > selectedStock.quantity) {
+                  return Promise.reject(`Không thể giảm quá ${selectedStock.quantity} sản phẩm hiện có!`);
+                }
+
                 return Promise.resolve();
-              }
-            }
+              },
+            },
           ]}
         >
           <InputNumber style={{ width: '100%' }} />
@@ -108,7 +125,7 @@ const EditStock = () => {
 
         <Form.Item>
           <div className="flex justify-end gap-4">
-            <Button onClick={() => navigate('/admin/stocks')}>Hủy</Button>
+            <Button onClick={() => navigate('/admin/stocks/stock')}>Hủy</Button>
             <Button type="primary" htmlType="submit" loading={isUpdating}>
               {isUpdating ? 'Đang cập nhật...' : 'Cập nhật'}
             </Button>

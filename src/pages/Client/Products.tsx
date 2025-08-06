@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Typography, Button, Dropdown, Select, Spin } from 'antd';
+import { Typography, Button, Dropdown, Select, Spin, Pagination, Rate } from 'antd';
 import { FilterOutlined } from '@ant-design/icons';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import FilterContent from '../../components/LayoutClient/FilterContent';
@@ -15,6 +15,7 @@ interface FilterValues {
   categories: string[];
   colors: string[];
   sizes: string[];
+  gender: string[];
 }
 
 const Products = () => {
@@ -26,11 +27,13 @@ const Products = () => {
     categories: [],
     colors: [],
     sizes: [],
+    gender: [],
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
+
   const { data: allVariants = [], isLoading: loadingAll } = useVariants();
-  console.log('allVariants', allVariants);
-  
 
   const { data: topSelling = [], isLoading: loadingTopSelling } = useTopSellingVariants({
     enabled: sortOption === 'top-selling',
@@ -98,8 +101,31 @@ const Products = () => {
     const categoryId = typeof product?.category === 'object' ? product.category._id : product?.category;
     const categoryMatch = filters.categories.length === 0 || (categoryId && filters.categories.includes(categoryId));
 
-    return priceMatch && colorMatch && sizeMatch && brandMatch && categoryMatch;
+    const genderMatch = filters.gender.length === 0 || (variant.gender && filters.gender.includes(variant.gender));
+
+    return priceMatch && colorMatch && sizeMatch && brandMatch && categoryMatch && genderMatch;
   });
+
+  const variantsByProduct: { [key: string]: IVariant[] } = {};
+
+  filteredVariants.forEach(variant => {
+    const productId =
+      typeof variant.product_id === 'object'
+        ? variant.product_id._id
+        : variant.product_id;
+
+    if (!productId) return; 
+
+    if (!variantsByProduct[productId]) {
+      variantsByProduct[productId] = [];
+    }
+
+    variantsByProduct[productId].push(variant);
+  });
+
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedVariants = filteredVariants.slice(startIndex, endIndex);
 
   return (
     <>
@@ -153,17 +179,33 @@ const Products = () => {
                 <Spin size="large" />
               </div>
             ) : (
-              filteredVariants.map(variant => {
+              paginatedVariants.map(variant => {
                 const product = typeof variant.product_id === 'object' ? variant.product_id : null;
+                const productId = product?._id;
                 const image =
                   variant.image_url?.[0] || 'https://via.placeholder.com/300x300?text=No+Image';
-                const color = typeof variant.color === 'object' ? variant.color.name : '';
+                const currentColorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
+
+                // Các biến thể cùng sản phẩm
+                const variantsOfSameProduct = productId ? variantsByProduct[productId] || [] : [];
+
+                // Đưa biến thể hiện tại lên đầu
+                const sortedByCurrentFirst = [
+                  ...variantsOfSameProduct.filter(v => {
+                    const colorId = typeof v.color === 'object' ? v.color._id : v.color;
+                    return colorId === currentColorId;
+                  }),
+                  ...variantsOfSameProduct.filter(v => {
+                    const colorId = typeof v.color === 'object' ? v.color._id : v.color;
+                    return colorId !== currentColorId;
+                  }),
+                ];
 
                 return product ? (
                   <Link
                     to={`/products/${product.slug}`}
                     key={variant._id}
-                    className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[340px]"
+                    className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
                     state={{ variantId: variant._id }}
                   >
                     <img
@@ -171,20 +213,56 @@ const Products = () => {
                       alt={product.name}
                       className="w-full h-48 object-cover rounded-md"
                     />
-                    <div className="mt-3 pt-[9px]">
-                      <Text strong>{product.name} - {color}</Text>
+
+                    {/* Danh sách các màu */}
+                    <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                      {sortedByCurrentFirst.map((v, idx) => {
+                        const colorObj = typeof v.color === 'object' ? v.color : null;
+                        return (
+                          <div
+                            key={idx}
+                            className="w-4 h-4 rounded-full border"
+                            style={{
+                              backgroundColor: colorObj?.code || '#ccc',
+                              borderColor: colorObj?._id === currentColorId ? 'black' : '#ccc',
+                            }}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    <div className="mt-3 pt-[6px]">
+                      <Text strong>{product.name}</Text>
                     </div>
                     <div className="mt-1 pt-[9px]">
-                      <Text type="secondary" style={{ color: 'black'}}>
+                      <Text type="secondary" style={{ color: 'black' }}>
                         {typeof variant.price === 'number'
                           ? variant.price.toLocaleString('vi-VN', { minimumFractionDigits: 0 }) + 'đ'
                           : 'Giá đang cập nhật'}
                       </Text>
                     </div>
+                    <div className="mt-1 pt-[6px] flex justify-center items-center gap-1">
+                      <Rate
+                        disabled
+                        allowHalf
+                        defaultValue={variant.averageRating || 0}
+                        style={{ fontSize: 14 }}
+                      />
+                    </div>
                   </Link>
                 ) : null;
               })
+
             )}
+            <div className="col-span-full flex justify-center mt-8">
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={filteredVariants.length}
+                onChange={(page) => setCurrentPage(page)}
+                showSizeChanger={false}
+              />
+            </div>
           </div>
         </div>
       </div>

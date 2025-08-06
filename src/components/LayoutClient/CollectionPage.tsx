@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Typography, Card, Spin, message } from 'antd';
+import { Typography, Card, Spin, message, Rate } from 'antd';
 import axios from 'axios';
 import { useBrands } from '../../hooks/useBrands';
 import { useCategories } from '../../hooks/useCategories';
@@ -81,6 +81,8 @@ const CollectionPage: React.FC = () => {
     return () => clearInterval(interval);
   }, [variants]);
 
+
+
   return (
     <>
       <Breadcrumb current="Bộ sưu tập" />
@@ -90,8 +92,8 @@ const CollectionPage: React.FC = () => {
             {matchedBrand
               ? `Thương hiệu: ${matchedBrand.name}`
               : matchedCategory
-              ? `Danh mục: ${matchedCategory.name}`
-              : 'Không xác định'}
+                ? `Danh mục: ${matchedCategory.name}`
+                : 'Không xác định'}
             <span
               style={{
                 position: 'absolute',
@@ -104,12 +106,6 @@ const CollectionPage: React.FC = () => {
             />
           </span>
         </Title>
-
-        <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
-          <Text type="secondary" style={{ fontSize: 12 }}>
-            Tự động trượt qua sản phẩm
-          </Text>
-        </div>
 
         {loading ? (
           <div style={{ textAlign: 'center' }}>
@@ -134,6 +130,25 @@ const CollectionPage: React.FC = () => {
               );
               if (!product) return null;
 
+              const currentColorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
+
+              const sameProductVariants = variants.filter((v) => {
+                const pid = typeof v.product_id === 'object' ? v.product_id._id : v.product_id;
+                const cid = typeof v.color === 'object' ? v.color._id : v.color;
+                return pid === product._id && cid;
+              });
+
+              const sortedByCurrentFirst = [
+                ...sameProductVariants.filter((v) => {
+                  const cid = typeof v.color === 'object' ? v.color._id : v.color;
+                  return cid === currentColorId;
+                }),
+                ...sameProductVariants.filter((v) => {
+                  const cid = typeof v.color === 'object' ? v.color._id : v.color;
+                  return cid !== currentColorId;
+                }),
+              ];
+
               const image =
                 Array.isArray(variant.image_url) && variant.image_url.length > 0
                   ? variant.image_url[0]
@@ -149,58 +164,47 @@ const CollectionPage: React.FC = () => {
                     marginBottom: 20,
                   }}
                 >
-                  <Link to={`/products/${product.slug}`} state={{ variantId: variant._id }}>
-                    <Card
-                      hoverable
-                      cover={
-                        <div
-                          style={{
-                            height: 200,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            overflow: 'hidden',
-                            borderTopLeftRadius: 8,
-                            borderTopRightRadius: 8,
-                          }}
-                        >
-                          <img
-                            alt={product.name}
-                            src={image}
+                  <Link
+                    to={`/products/${product.slug}`}
+                    state={{ variantId: variant._id }}
+                    className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
+                  >
+                    <img
+                      src={image}
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-md"
+                    />
+                    <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                      {sortedByCurrentFirst.map((v, idx) => {
+                        const colorObj = typeof v.color === 'object' ? v.color : null;
+                        return (
+                          <div
+                            key={idx}
+                            className="w-4 h-4 rounded-full border"
                             style={{
-                              maxHeight: '100%',
-                              maxWidth: '100%',
-                              objectFit: 'contain',
-                              display: 'block',
+                              backgroundColor: colorObj?.code || '#ccc',
+                              borderColor: colorObj?._id === currentColorId ? 'black' : '#ccc',
                             }}
                           />
-                        </div>
-                      }
-                      style={{
-                        textAlign: 'center',
-                        height: 340,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <div
-                        style={{
-                          height: 48,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                          marginBottom: 8,
-                        }}
-                      >
-                        <Text style={{ fontWeight: 500 }}>
-                          {product.name} - {variant.color?.name}
-                        </Text>
-                      </div>
-                      <Text strong>{variant.price?.toLocaleString('vi-VN')}đ</Text>
-                    </Card>
+                        );
+                      })}
+                    </div>
+                    <div className="mt-3 pt-[9px]">
+                      <Text strong>{product.name}</Text>
+                    </div>
+                    <div className="mt-1 pt-[9px]">
+                      <Text style={{ color: 'black' }}>
+                        {variant.price?.toLocaleString('vi-VN')}đ
+                      </Text>
+                    </div>
+                    <div className="mt-1 pt-[6px] flex justify-center items-center gap-1 h-5">
+                      <Rate
+                        disabled
+                        allowHalf
+                        value={variant.averageRating || 0}
+                        style={{ fontSize: 14 }}
+                      />
+                    </div>
                   </Link>
                 </div>
               );
