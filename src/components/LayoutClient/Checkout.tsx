@@ -142,37 +142,6 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
-    const cart = localStorage.getItem('cart');
-    if (cart) {
-      localStorage.setItem('cart_backup', cart); // lưu lại bản sao
-      localStorage.removeItem('cart'); // xoá tạm thời
-    }
-
-    return () => {
-      // Khi rời khỏi trang mà chưa đặt hàng, khôi phục lại cart
-      const backup = localStorage.getItem('cart_backup');
-      if (backup) {
-        localStorage.setItem('cart', backup);
-        localStorage.removeItem('cart_backup');
-      }
-      const token = localStorage.getItem('token');
-      if (token) {
-        const ids = cartItemIdsRef.current;
-
-        ids.forEach((id) => {
-          axios
-            .delete(`http://localhost:3000/api/carts/${id}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-            .then(() => console.log(`Đã xoá cart item ${id}`))
-            .catch((err) => console.error(`Lỗi xoá cart item ${id}:`, err));
-        });
-      }
-    };
-  }, []);
-
-
-  useEffect(() => {
     const voucherId = localStorage.getItem('selected_voucher_id');
     if (voucherId) {
       axios
@@ -248,13 +217,14 @@ const Checkout = () => {
     if (!validate()) return;
 
     const payload = {
-      cart_id: cartData._id,
-      voucher_code: formData.voucher_code,
+      cart_id: cartData.cart_items?.[0]?.cart_id,
+      // voucher_code: formData.voucher_code,
       shipping_address: formData.shipping_address,
       full_name: formData.full_name,
       phone: formData.phone,
       payment_method: formData.payment_method,
     };
+
 
     try {
       const token = localStorage.getItem('token');
@@ -343,39 +313,26 @@ const Checkout = () => {
                 </Select>
               </div>
 
-              {/* ✅ Phương thức thanh toán đẹp hơn */}
               <div className="mb-4">
                 <Text strong className="block mb-2">Phương thức thanh toán</Text>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
                     { label: 'Thanh toán khi nhận hàng', value: 'cod', icon: '💰' },
                     { label: 'Chuyển khoản ngân hàng', value: 'bank', icon: '🏦' },
-                    { label: 'Thanh toán qua Momo', value: 'momo', icon: '📱' },
-                    {
-                      label: (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <img
-                            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwPynD27LbXlPsbofv1AX-5ZXDn_XMGo-1TA&s"
-                            alt="ZaloPay"
-                            style={{ width: 20, height: 20 }}
-                          />
-                          Thanh toán qua ZaloPay
-                        </span>
-                      ),
-                      value: 'ZALOPAY'
-                    }].map((method) => (
-                      <div
-                        key={method.value}
-                        onClick={() => handleChange('payment_method', method.value)}
-                        className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
-                          ? 'border-green-600 bg-green-50'
-                          : 'border-gray-300 hover:border-green-400'
-                          }`}
-                      >
-                        <div className="text-2xl mb-1">{method.icon}</div>
-                        <Text>{method.label}</Text>
-                      </div>
-                    ))}
+                    { label: 'Thanh toán qua ZaloPay', value: 'ZALOPAY', icon: '🟦' },
+                  ].map((method) => (
+                    <div
+                      key={method.value}
+                      onClick={() => handleChange('payment_method', method.value)}
+                      className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
+                        ? 'border-green-600 bg-green-50'
+                        : 'border-gray-300 hover:border-green-400'
+                        }`}
+                    >
+                      <div className="text-2xl mb-1">{method.icon}</div>
+                      <Text>{method.label}</Text>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -406,7 +363,7 @@ const Checkout = () => {
                       />
                       <div>
                         <Text strong>{item.variant_id.product_id.name}</Text>
-                        <div>Size: {item.size_id?.size || 'Không rõ'}</div>
+                        <div>Size: {item.variant_id.size.size || 'Không rõ'}</div>
                         {(() => {
                           const color = itemColors[item.variant_id.color._id];
                           console.log("Màu của sản phẩm là:", item.variant_id.color.name);
@@ -437,7 +394,7 @@ const Checkout = () => {
                       </div>
                       <div className="ml-auto">
                         <Text>
-                          {(item.variant_id.price * item.quantity).toLocaleString('vi-VN')} đ
+                          {(item.variant_id.price * item.quantity).toLocaleString()} $
                         </Text>
                       </div>
                     </div>
@@ -447,7 +404,7 @@ const Checkout = () => {
 
                   <div className="flex justify-between">
                     <Text>Tổng tiền:</Text>
-                    <Text>{total.toLocaleString('vi-VN')} đ</Text>
+                    <Text>{total.toLocaleString()} $</Text>
                   </div>
 
                   {formData.voucher_code && (
@@ -456,20 +413,20 @@ const Checkout = () => {
                       <Text className="text-red-600">
                         {formData.voucher_type === 'percentage'
                           ? `- ${formData.voucher_value}%`
-                          : `- ${formData.voucher_value?.toLocaleString('vi-VN')} đ`}
+                          : `- ${formData.voucher_value?.toLocaleString()} $`}
                       </Text>
                     </div>
                   )}
 
                   <div className="flex justify-between">
                     <Text>Phí vận chuyển:</Text>
-                    <Text>{shippingFee.toLocaleString('vi-VN')} đ</Text>
+                    <Text>{shippingFee.toLocaleString()} $</Text>
                   </div>
 
                   <div className="flex justify-between mt-2">
                     <Text strong className="text-lg">Tổng cộng:</Text>
                     <Text strong className="text-lg text-black">
-                      {finalTotal.toLocaleString('vi-VN')} đ
+                      {finalTotal.toLocaleString()} $
                     </Text>
                   </div>
                 </>
