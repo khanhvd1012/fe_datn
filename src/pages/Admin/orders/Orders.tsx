@@ -7,24 +7,31 @@ import {
   Button,
   Skeleton,
   Empty,
+  Modal,
 
 } from "antd";
+import React, { useState } from "react";
 import { useAdminOrders, useCancelOrder, useUpdateOrderStatus } from "../../../hooks/useOrder";
 import { useUsers } from "../../../hooks/useUser";
-
+import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import type { IOrder } from "../../../interface/order";
 import { useQueryClient } from "@tanstack/react-query";
-
+import dayjs from 'dayjs';
+import DrawerOrder from "../../../components/LayoutAdmin/drawer/DrawerOrder";
 const Orders = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
 
   const { data: orders, isLoading } = useAdminOrders();
   console.log("Orders data:", orders);
-  
+
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: updateStatus } = useUpdateOrderStatus();
   const { data: users } = useUsers();
+  const [drawerVisible, setDrawerVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [selectedCancelReason, setSelectedCancelReason] = useState('');
 
   const handleUpdateStatus = (id: string, newStatus: IOrder["status"]) => {
     updateStatus(
@@ -39,6 +46,17 @@ const Orders = () => {
         },
       }
     );
+  };
+
+  const showOrderDetails = (order: IOrder) => {
+    console.log('Chi tiết đơn hàng:');
+    setDrawerVisible(true);
+    setSelectedOrder(order); // chỉ cần ID nếu muốn
+  };
+
+  const showCancelReason = (reason: string) => {
+    setSelectedCancelReason(reason);
+    setCancelModalVisible(true);
   };
 
   const handleCancel = (id: string) => {
@@ -73,11 +91,18 @@ const Orders = () => {
       },
     },
     {
+      title: "Ngày đặt",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) => dayjs(date).format("HH:mm DD/MM/YYYY"),
+    },
+
+    {
       title: "Tổng gốc",
       dataIndex: "sub_total",
       key: "sub_total",
       render: (value: number) =>
-        value.toLocaleString("vn-VN", { style: "currency", currency: "VND" }),
+        value.toLocaleString("en-US", { style: "currency", currency: "USD" }),
     },
     {
       title: "Giảm giá",
@@ -85,9 +110,9 @@ const Orders = () => {
       key: "voucher_discount",
       render: (value: number) =>
         value
-          ? `- ${value.toLocaleString("vn-VN", {
+          ? `- ${value.toLocaleString("en-US", {
             style: "currency",
-            currency: "VND",
+            currency: "USD",
           })}`
           : "-",
     },
@@ -96,7 +121,7 @@ const Orders = () => {
       dataIndex: "total_price",
       key: "total_price",
       render: (value: number) =>
-        value.toLocaleString("vn-VN", { style: "currency", currency: "VND" }),
+        value.toLocaleString("en-US", { style: "currency", currency: "USD" }),
     },
     {
       title: "Phương thức",
@@ -178,20 +203,41 @@ const Orders = () => {
     {
       title: "Thao tác",
       key: "actions",
-      render: (_: any, record: IOrder) =>
-        record.status !== "canceled" &&
-        record.status !== "shipped" &&
-        record.status !== "delivered" && (
-          <Popconfirm
-            title="Bạn chắc chắn muốn hủy đơn hàng này?"
-            onConfirm={() => handleCancel(record._id!)}
-            okText="Hủy"
-            cancelText="Không"
-          >
-            <Button danger>Hủy</Button>
-          </Popconfirm>
-        ),
+      render: (_: any, record: IOrder) => (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {/* Nút xem chi tiết */}
+          <Button
+            type="primary"
+            icon={<EyeOutlined />}
+            onClick={() => showOrderDetails(record)}
+          />
+          {/* Nút hủy đơn hàng, chỉ hiển thị nếu đơn hàng chưa bị hủy hoặc giao xong */}
+          {record.status !== "canceled" &&
+            record.status !== "shipped" &&
+            record.status !== "delivered" && (
+              <Popconfirm
+                title="Bạn chắc chắn muốn hủy đơn hàng này?"
+                onConfirm={() => handleCancel(record._id!)}
+                okText="Hủy"
+                cancelText="Không"
+              >
+                <Button type="primary" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            )}
+        </div>
+      ),
     },
+    {
+      title: "Lý do hủy",
+      key: "cancelReason",
+      render: (_: any, record: IOrder) =>
+        record.status === "canceled" && record.cancel_reason ? (
+          <Button type="link" onClick={() => showCancelReason(record.cancel_reason!)}>
+            Xem lý do hủy
+          </Button>
+        ) : null,
+    }
+
   ];
 
   if (isLoading) return <Skeleton active />;
@@ -203,9 +249,24 @@ const Orders = () => {
       <Table
         rowKey="_id"
         columns={columns}
-        dataSource={orders}
+        // dataSource={orders}
+        dataSource={[...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
         pagination={{ pageSize: 10 }}
       />
+      <DrawerOrder
+        visible={drawerVisible}
+        order={selectedOrder}
+        onClose={() => setDrawerVisible(false)}
+      />
+      <Modal
+        title="lý do hủy đơn hàng"
+        open={cancelModalVisible}
+        onCancel={() => setCancelModalVisible(false)}
+        onOk={() => setCancelModalVisible(false)}
+        // okText="Đóng"
+      >
+        <p><strong>Nội dung:</strong>  {selectedCancelReason}</p>
+      </Modal>
     </div>
   );
 };
