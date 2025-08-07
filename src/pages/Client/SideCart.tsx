@@ -6,13 +6,11 @@ import { getColorById } from '../../service/colorAPI';
 
 const SideCart = ({ onClose }: { onClose: () => void }) => {
   const { mutate: updateCartItem } = useUpdateCartItem();
-
   const { data: cartData } = useCart();
   const cart = cartData?.cart_items || [];
+
   const [cartWithColors, setCartWithColors] = useState(cart);
   const { mutate: removeFromCart } = useRemoveFromCart();
-  console.log("🛒 Cart data:", cart);
-  // const [cart, setCart] = useState<any[]>([]);
   const [closing, setClosing] = useState(false);
   const [opening, setOpening] = useState(false);
   const location = useLocation();
@@ -23,18 +21,18 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
     0
   );
 
+  // Lấy màu từ API nếu thiếu thông tin color
   useEffect(() => {
     const fetchColors = async () => {
       try {
         const updatedCart = await Promise.all(
           cart.map(async (item) => {
             if (
-              item.variant_id?.color._id &&
-              typeof item.variant_id.color._id === 'string'
+              item.variant_id?.color &&
+              typeof item.variant_id.color === 'object' &&
+              item.variant_id.color._id
             ) {
-              console.log('Màu sắc:', item.variant_id.color);
               const color = await getColorById(item.variant_id.color._id);
-              console.log('Màu sắc:', color);
               return {
                 ...item,
                 variant_id: {
@@ -47,7 +45,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
           })
         );
         setCartWithColors(updatedCart);
-        console.log("Cart with colors:", updatedCart);
       } catch (err) {
         console.error("Lỗi lấy màu:", err);
       }
@@ -60,8 +57,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
   useEffect(() => {
     if (opening) handleClose();
   }, [location.pathname]);
-
-
 
   useEffect(() => {
     setTimeout(() => setOpening(true), 10);
@@ -87,8 +82,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-
 
   const handleClose = () => {
     setClosing(true);
@@ -119,85 +112,91 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
               Chưa có sản phẩm nào trong giỏ hàng.
             </div>
           ) : (
-            cartWithColors.map((item: any, idx: number) => (
-              <div className="flex gap-3 mb-4" key={idx}>
-                <img
-                  src={item.variant_id.image_url || '/no-image.png'}
-                  alt={item.variant_id.product_id.name}
-                  className="border w-20 h-20 object-cover"
-                  onError={(e) => (e.currentTarget.src = '/no-image.png')}
-                />
-                <div className="flex-1">
-                  <h3 className="text-xs font-semibold uppercase leading-snug">
-                    {item.variant_id.product_id.name}
-                  </h3>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {item.variant_id.color && typeof item.variant_id.color === 'object' && (
-                      <div className="flex items-center gap-1">
-                        Màu:
-                        <span
-                          className="w-3 h-3 border"
-                          style={{
-                            backgroundColor: item.variant_id.color?.code || 'transparent',
-                          }}
-                        />
-                        <span>{item.variant_id.color.name}</span>
-                      </div>
-                    )}
-                    <span>Size: {item.variant_id.size.size}</span>
-                  </div>
-                  <div className="flex items-center mt-2">
-                    <button
-                      className="w-7 h-7 border border-gray-400 text-lg"
-                      onClick={() =>
-                        updateCartItem({
-                          variant_id: item.variant_id._id,
-                          quantity: item.quantity - 1,
-                        })
-                      }
-                    >
-                      -
-                    </button>
-                    <input
-                      type="number"
-                      value={item.quantity}
-                      min={1}
-                      className="w-8 h-8 text-center border border-gray-400 text-sm mx-2"
-                      onChange={(e) => {
-                        const newQty = Number(e.target.value);
-                        if (newQty >= 1) {
+            cartWithColors.map((item: any, idx: number) => {
+              const variant = item.variant_id;
+              const product = variant.product_id;
+              const imageUrl = Array.isArray(variant.image_url) ? variant.image_url[0] : '/no-image.png';
+
+              return (
+                <div className="flex gap-3 mb-4" key={idx}>
+                  <img
+                    src={imageUrl || '/no-image.png'}
+                    alt={product?.name}
+                    className="border w-20 h-20 object-cover"
+                    onError={(e) => (e.currentTarget.src = '/no-image.png')}
+                  />
+                  <div className="flex-1">
+                    <h3 className="text-xs font-semibold uppercase leading-snug">
+                      {product?.name}
+                    </h3>
+                    <div className="text-xs text-gray-500 mt-1">
+                      {variant.color && typeof variant.color === 'object' && (
+                        <div className="flex items-center gap-1">
+                          Màu:
+                          <span
+                            className="w-3 h-3 border"
+                            style={{
+                              backgroundColor: variant.color.code || 'transparent',
+                            }}
+                          />
+                          <span>{variant.color.name}</span>
+                        </div>
+                      )}
+                      <span>Size: {variant.size?.size}</span>
+                    </div>
+                    <div className="flex items-center mt-2">
+                      <button
+                        className="w-7 h-7 border border-gray-400 text-lg"
+                        onClick={() =>
                           updateCartItem({
-                            variant_id: item.variant_id._id,
-                            quantity: newQty,
-                          });
+                            variant_id: variant._id,
+                            quantity: item.quantity - 1,
+                          })
                         }
-                      }}
-                    />
-                    <button
-                      className="w-7 h-7 border border-gray-400 text-lg"
-                      onClick={() =>
-                        updateCartItem({
-                          variant_id: item.variant_id._id,
-                          quantity: item.quantity + 1,
-                        })
-                      }
-                    >
-                      +
-                    </button>
-                    <span className="text-sm font-semibold ml-2">
-                      {(item.quantity * item.variant_id.price)?.toLocaleString('en-US')}$
-                    </span>
-                    <button
-                      className="ml-auto text-gray-400 hover:text-red-500"
-                      onClick={() => removeFromCart(item._id)}
-                      title="Xóa sản phẩm"
-                    >
-                      <CloseOutlined />
-                    </button>
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        value={item.quantity}
+                        min={1}
+                        className="w-8 h-8 text-center border border-gray-400 text-sm mx-2"
+                        onChange={(e) => {
+                          const newQty = Number(e.target.value);
+                          if (newQty >= 1) {
+                            updateCartItem({
+                              variant_id: variant._id,
+                              quantity: newQty,
+                            });
+                          }
+                        }}
+                      />
+                      <button
+                        className="w-7 h-7 border border-gray-400 text-lg"
+                        onClick={() =>
+                          updateCartItem({
+                            variant_id: variant._id,
+                            quantity: item.quantity + 1,
+                          })
+                        }
+                      >
+                        +
+                      </button>
+                      <span className="text-sm font-semibold ml-2">
+                        {(item.quantity * variant.price)?.toLocaleString('vi-VN')}đ 
+                      </span>
+                      <button
+                        className="ml-auto text-gray-400 hover:text-red-500"
+                        onClick={() => removeFromCart(item._id)}
+                        title="Xóa sản phẩm"
+                      >
+                        <CloseOutlined />
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
 
@@ -205,7 +204,7 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
 
         <div className="flex justify-between text-sm mb-4">
           <span>TỔNG TIỀN:</span>
-          <span>{total.toLocaleString('en-US')}$</span>
+          <span>{total.toLocaleString('vi-VN')}đ</span>
         </div>
 
         <div className="flex gap-2 mb-2">
@@ -218,7 +217,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
           <Link
             to="/checkout"
             className="bg-black text-white w-1/2 py-2 text-sm text-center flex items-center justify-center"
-          // onClick={addAllToCart}
           >
             THANH TOÁN
           </Link>

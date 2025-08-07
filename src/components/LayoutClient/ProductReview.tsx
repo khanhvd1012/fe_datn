@@ -47,11 +47,9 @@ const ProductReview = () => {
           const res = await axios.get(`http://localhost:3000/api/orders/${order._id}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          console.log("✅ res.data:", res.data);
           return res.data;
         })
       );
-      console.log("✅ productInfos:", deliveredOrderDetails);
       const productInfos: {
         orderId: string;
         orderItemId: string;

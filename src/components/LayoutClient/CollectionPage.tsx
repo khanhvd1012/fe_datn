@@ -1,10 +1,12 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Typography, Card, Spin, message, Rate } from 'antd';
+import { Typography, Spin, message, Rate } from 'antd';
 import axios from 'axios';
+import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useBrands } from '../../hooks/useBrands';
 import { useCategories } from '../../hooks/useCategories';
 import Breadcrumb from './Breadcrumb';
+import { useAddToCart } from '../../hooks/useCart';
 
 const { Title, Text } = Typography;
 
@@ -16,11 +18,11 @@ const slugify = (str: string) =>
     .replace(/\s+/g, '-')
     .replace(/[^a-z0-9-]/g, '');
 
-const CollectionPage: React.FC = () => {
+const CollectionPage = () => {
   const { slug } = useParams();
   const { data: brands = [] } = useBrands();
   const { data: categories = [] } = useCategories();
-
+  const { mutate: addToCart } = useAddToCart();
   const [products, setProducts] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -169,11 +171,25 @@ const CollectionPage: React.FC = () => {
                     state={{ variantId: variant._id }}
                     className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
                   >
-                    <img
-                      src={image}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-md"
-                    />
+                    <div className="relative">
+                      <img
+                        src={variant.image_url?.[0] || 'https://picsum.photos/200'}
+                        alt={product.name}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
+
+                      <div className="absolute top-2 right-2 z-10">
+                        <div
+                          onClick={(e) => {
+                            e.preventDefault();
+                            addToCart({ variant_id: variant._id!, quantity: 1 });
+                          }}
+                          className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
+                        >
+                          <ShoppingCartOutlined />
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
                       {sortedByCurrentFirst.map((v, idx) => {
                         const colorObj = typeof v.color === 'object' ? v.color : null;

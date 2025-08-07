@@ -1,11 +1,10 @@
-import React from 'react';
 import { Row, Col, Typography, Card } from 'antd';
 import { Link } from 'react-router-dom';
-import { useGetNews } from '../../hooks/useBlogs'; // đường dẫn tùy theo cấu trúc dự án
+import { useGetNews } from '../../hooks/useBlogs';
 
 const { Title, Text } = Typography;
 
-const LatestPosts: React.FC = () => {
+const LatestPosts = () => {
   const { data: posts = [], isLoading } = useGetNews();
 
   return (
@@ -41,47 +40,52 @@ const LatestPosts: React.FC = () => {
       </Title>
 
       <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          Xem thêm
-        </Text>
+        <Link to="/blog">
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Xem thêm
+          </Text>
+        </Link>
       </div>
 
       <Row gutter={[24, 24]} justify="center">
         {!isLoading &&
-          posts.map((post: any) => (
-            <Col xs={24} sm={24} md={12} lg={8} key={post._id}>
-              <Card
-                hoverable
-                cover={
-                  <Link to={`/blog/${post._id}`}>
-                    <img
-                      src={post.images?.[0] || 'https://via.placeholder.com/600x400?text=No+Image'}
-                      alt={post.title}
-                      style={{
-                        height: 300,
-                        width: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                  </Link>
-                }
-                style={{ textAlign: 'left' }}
-              >
-                <Text type="secondary" style={{ fontSize: 11 }}>
-                  {new Date(post.createdAt).toLocaleDateString('vi-VN')}
-                </Text>
-                <br />
-                <Text strong style={{ fontSize: 14, display: 'inline-block', marginTop: 4 }}>
-                  {post.title}
-                </Text>
-                <br />
-                <Text style={{ fontSize: 12, display: 'block', marginTop: 8, color: '#444' }}>
-                  {post.content?.slice(0, 100)}...
-                </Text>
-              </Card>
-            </Col>
-          ))}
+          [...posts]
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .map((post: any) => (
+              <Col xs={24} sm={24} md={12} lg={8} key={post._id}>
+                <Card
+                  hoverable
+                  cover={
+                    <Link to={`/blog/${post._id}`}>
+                      <img
+                        src={post.images?.[0] || 'https://via.placeholder.com/600x400?text=No+Image'}
+                        alt={post.title}
+                        style={{
+                          height: 300,
+                          width: '100%',
+                          objectFit: 'cover',
+                        }}
+                      />
+                    </Link>
+                  }
+                  style={{ textAlign: 'left' }}
+                >
+                  <Text type="secondary" style={{ fontSize: 11 }}>
+                    {new Date(post.createdAt).toLocaleDateString('vi-VN')}
+                  </Text>
+                  <br />
+                  <Text strong style={{ fontSize: 14, display: 'inline-block', marginTop: 4 }}>
+                    {post.title}
+                  </Text>
+                  <br />
+                  <Text style={{ fontSize: 12, display: 'block', marginTop: 8, color: '#444' }}>
+                    {post.content?.slice(0, 100)}...
+                  </Text>
+                </Card>
+              </Col>
+            ))}
       </Row>
+
     </div>
   );
 };

@@ -9,14 +9,12 @@ import Home from '../../pages/Client/Home';
 import About from '../../pages/Client/About';
 import Blog from '../../pages/Client/Blog';
 import Contact from '../../pages/Client/Contact';
-import Brand from '../../pages/Client/Brand';
 import Products from '../../pages/Client/Products';
 import Cart from '../../pages/Client/Cart';
 import ProductDetail from './ProductDetail';
 import Login from '../../pages/Auth/login';
 import Register from '../../pages/Auth/register';
 import Profile from '../../pages/Client/Profile';
-import Collection from '../../pages/Client/Collection';
 import Checkout from './Checkout';
 import CollectionPage from './CollectionPage';
 import CheckoutSuccess from './CheckoutSuccess';
@@ -53,7 +51,6 @@ const IndexClient = () => {
           <Route path="/" element={<Home />} />
           <Route path="/products" element={<Products />} />
           {/* <Route path="/collection" element={<Collection />} /> */}
-          <Route path="/brand" element={<Brand />} />
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/contact" element={<Contact />} />

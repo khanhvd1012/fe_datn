@@ -6,7 +6,6 @@ const API_URL = import.meta.env.VITE_API_URL;
 export const getSizes = async () => {
     try {
         const response = await axios.get(`${API_URL}/sizes`);
-        console.log("Fetched sizes:", response.data);
         return response.data
     } catch (error) {
         console.error("Error fetching sizes:", error);

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { Typography, Spin, message, Rate } from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
+import { useAddToCart } from '../../hooks/useCart';
+import { ShoppingCartOutlined } from '@ant-design/icons';
 
 const { Title, Text } = Typography;
 
@@ -10,6 +12,7 @@ const RelatedProducts = () => {
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const sliderRef = useRef<HTMLDivElement>(null);
+  const { mutate: addToCart } = useAddToCart();
 
   useEffect(() => {
     Promise.all([
@@ -113,12 +116,25 @@ const RelatedProducts = () => {
                   className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
                   state={{ variantId: variant._id }}
                 >
-                  <img
-                    src={
-                      variant.image_url?.[0] || 'https://picsum.photos/200'
-                    } alt={product.name}
-                    className="w-full h-48 object-cover rounded-md"
-                  />
+                  <div className="relative">
+                    <img
+                      src={variant.image_url?.[0] || 'https://picsum.photos/200'}
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-md"
+                    />
+
+                    <div className="absolute top-2 right-2 z-10">
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          addToCart({ variant_id: variant._id!, quantity: 1 });
+                        }}
+                        className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
+                      >
+                        <ShoppingCartOutlined />
+                      </div>
+                    </div>
+                  </div>
                   <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
                     {sortedByCurrentFirst.map((v, idx) => {
                       const colorObj = typeof v.color === 'object' ? v.color : null;

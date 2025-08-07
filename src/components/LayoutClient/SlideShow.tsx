@@ -1,7 +1,6 @@
-import React from 'react';
 import { Carousel, Spin } from 'antd';
 import styled from 'styled-components';
-import { useBanners } from '../../hooks/useBanner'; // hoặc đường dẫn tương ứng
+import { useBanners } from '../../hooks/useBanner';
 
 const SlideContainer = styled.div`
   width: 100%;
@@ -17,25 +16,27 @@ const SlideContainer = styled.div`
   .slick-next {
     width: 40px;
     height: 40px;
-    z-index: 1;
+    z-index: 2;
   }
 
   .slick-prev:before,
   .slick-next:before {
-    font-size: 20px;
-    color: #000;
+    font-size: 24px;
+    color: black;
+    opacity: 1;
   }
 `;
+
 
 const SlideImage = styled.img`
   width: 100%;
   height: 400px;
-  object-fit: cover; /* Hoặc contain tùy mục đích */
+  object-fit: cover; 
   object-position: center;
   display: block;
 `;
 
-const Slideshow: React.FC = () => {
+const Slideshow = () => {
   const { data: banners, isLoading } = useBanners();
 
   if (isLoading) {
@@ -51,7 +52,7 @@ const Slideshow: React.FC = () => {
 
   return (
     <SlideContainer>
-      <Carousel autoplay autoplaySpeed={3000} arrows>
+      <Carousel autoplay autoplaySpeed={2000}>
         {visibleBanners?.map((banner) => (
           <div key={banner._id}>
             <SlideImage src={banner.image} alt={banner.title} />

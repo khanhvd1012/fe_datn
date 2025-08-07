@@ -7,6 +7,6 @@ export interface IBlogs {
         _id: string;
         username: string;
     };
-    createdAt?: Date;
-    updatedAt?: Date;
+    createdAt: Date;
+    updatedAt: Date;
 }

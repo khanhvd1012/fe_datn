@@ -91,6 +91,16 @@ const StockHistory = () => {
       key: "note",
     },
     {
+      title: "Người cập nhật",
+      dataIndex: "updated_by",
+      key: "updated_by",
+      render: (updated_by: any) => {
+        if (!updated_by) return "Không rõ";
+        if (typeof updated_by === "string") return updated_by; 
+        return updated_by.username || "Không rõ";
+      },
+    },
+    {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",

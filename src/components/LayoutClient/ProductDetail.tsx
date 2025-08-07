@@ -12,7 +12,7 @@ import { useSizes } from '../../hooks/useSizes';
 import { useColors } from '../../hooks/useColors';
 import type { ISize } from '../../interface/size';
 import type { IReview } from '../../interface/review';
-import { addToCart as addToCartApi } from "../../service/cartAPI";
+import { useAddToCart } from '../../hooks/useCart';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -28,7 +28,10 @@ const ProductDetail = () => {
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
   const { data: sizes = [] } = useSizes();
   const { data: colors = [] } = useColors();
+  const [mainImageIndex, setMainImageIndex] = useState(0);
+  const { mutate: addToCartMutate, isPending } = useAddToCart();
   const { data: product, isLoading } = useProductBySlug(slug || '');
+
   const [reviews, setReviews] = useState<IReview[]>([]);
   const getColorInfo = (id: string) => {
     return colors.find((c: IColor) => c._id === id) || null;
@@ -77,6 +80,13 @@ const ProductDetail = () => {
   const selectedVariant = getSelectedVariant();
   const displayPrice = selectedVariant?.price;
   const brandName = typeof product?.brand === 'object' ? product.brand.name : '';
+  const imageList = selectedVariant?.image_url || [];
+  const currentMainImage = imageList[mainImageIndex] || '';
+
+  const handleMainImageClick = () => {
+    if (!imageList.length) return;
+    setMainImageIndex((prevIndex) => (prevIndex + 1) % imageList.length);
+  };
 
   // Validate tăng/giảm số lượng
   const handleIncrease = () => {
@@ -91,11 +101,12 @@ const ProductDetail = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
 
-  const addToCart = async() => {
+  const addToCart = () => {
     if (!token) {
       message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
       return;
     }
+
     if (!product || !selectedSize) {
       message.warning("Vui lòng chọn size!");
       return;
@@ -117,17 +128,17 @@ const ProductDetail = () => {
       return;
     }
 
-    try {
-      await addToCartApi({
+    addToCartMutate(
+      {
         variant_id: selectedVariant._id,
-        quantity,
-      });
-      message.success("Đã thêm vào giỏ hàng!");
-      console.log("🛒 Thêm vào giỏ hàng:", selectedVariant._id, quantity);
-    } catch (err) {
-      message.error("Thêm vào giỏ hàng thất bại!");
-      console.error(err);
-    }
+        quantity
+      },
+      {
+        onError: () => {
+          message.error("Thêm vào giỏ hàng thất bại!");
+        }
+      }
+    );
   };
 
   const handleToggleVouchers = () => {
@@ -182,15 +193,6 @@ const ProductDetail = () => {
   const avgRating = (
     reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
   ).toFixed(1);
-  //
-
-  const sizeIdsFromVariant =
-    Array.isArray(product?.variants) && selectedColor
-      ? product.variants
-        .filter((v: any) => v.color === selectedColor)
-        .map((v: any) => v.size)
-        .filter((val, idx, arr) => val && arr.indexOf(val) === idx)
-      : [];
 
   const availableColors = Array.isArray(product?.variants)
     ? product.variants.map((v: any) => v.color).filter((val, i, arr) => val && arr.indexOf(val) === i)
@@ -200,6 +202,11 @@ const ProductDetail = () => {
 
   if (isLoading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
   if (!product) return <div>Không tìm thấy sản phẩm</div>;
+
+  // Lấy tất cả size duy nhất từ các biến thể sản phẩm (bỏ lọc theo màu)
+  const allVariantSizes = Array.isArray(product?.variants)
+    ? [...new Set(product.variants.map((v: any) => v.size))]
+    : [];
 
   return (
     <>
@@ -214,15 +221,18 @@ const ProductDetail = () => {
                   key={idx}
                   src={img}
                   alt={`thumb-${idx}`}
-                  className={mainImage === img ? 'active' : ''}
-                  onClick={() => setMainImage(img)}
+                  className={currentMainImage === img ? 'active' : ''}
+                  onClick={() => setMainImageIndex(idx)}
                   style={{ objectFit: 'cover' }}
                 />
               ))}
             </div>
             <div className="main-image-vertical">
-              <img src={mainImage} alt={product.name}
+              <img
+                src={currentMainImage}
+                alt={product.name}
                 style={{ objectFit: 'cover' }}
+                onClick={handleMainImageClick}
               />
             </div>
           </div>
@@ -308,23 +318,22 @@ const ProductDetail = () => {
             <div className="size-section">
               <span className="label">Chọn size:</span>
               <div className="size-options">
-                {sizeIdsFromVariant.length > 0 ? (
-                  sizeIdsFromVariant.map((sizeId) => {
-                    return (
-                      <button
-                        key={sizeId}
-                        className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
-                        onClick={() => setSelectedSize(sizeId)}
-                      >
-                        {getSizeName(sizeId)}
-                      </button>
-                    );
-                  })
+                {allVariantSizes.length > 0 ? (
+                  allVariantSizes.map((sizeId) => (
+                    <button
+                      key={sizeId}
+                      className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
+                      onClick={() => setSelectedSize(sizeId)}
+                    >
+                      {getSizeName(sizeId)}
+                    </button>
+                  ))
                 ) : (
                   <p>Không có size phù hợp</p>
                 )}
               </div>
             </div>
+
             <div className="quantity-control">
               <span className="label">Số lượng:</span>
 
@@ -341,9 +350,6 @@ const ProductDetail = () => {
                 onClick={handleIncrease}
               />
             </div>
-            {/* Hiển thị số lượng trong kho cho biến thể đã chọn */}
-
-
 
             <p style={{ marginBottom: 5, color: currentStock === 0 ? 'red' : '#666' }}>
               {currentStock === 0

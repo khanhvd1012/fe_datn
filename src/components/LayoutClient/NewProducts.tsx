@@ -2,7 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Typography, Spin, message, Rate, Button } from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { LeftOutlined, RightOutlined, ShoppingCartOutlined } from '@ant-design/icons';
+import { useAddToCart } from '../../hooks/useCart';
 
 
 const { Title, Text } = Typography;
@@ -11,6 +12,7 @@ const NewProducts = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { mutate: addToCart } = useAddToCart();
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -144,12 +146,7 @@ const NewProducts = () => {
                 (p) => p._id === (variant.product_id?._id || variant.product_id)
               );
               if (!product) return null;
-
-              const image =
-                Array.isArray(variant.image_url) && variant.image_url.length > 0
-                  ? variant.image_url[0]
-                  : product.images?.[0] || 'https://via.placeholder.com/300x300?text=No+Image';
-
+              
               return (
                 <div
                   key={variant._id}
@@ -166,11 +163,26 @@ const NewProducts = () => {
                     className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                   >
+                    <div className="relative">
                     <img
-                      src={image}
+                      src={variant.image_url?.[0] || 'https://picsum.photos/200'}
                       alt={product.name}
                       className="w-full h-48 object-cover rounded-md"
                     />
+
+                    <div className="absolute top-2 right-2 z-10">
+                      <div
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          addToCart({ variant_id: variant._id!, quantity: 1 });
+                        }}
+                        className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
+                      >
+                        <ShoppingCartOutlined />
+                      </div>
+                    </div>
+                  </div>
                     <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
                       {sortedByCurrentFirst.map((v, idx) => {
                         const colorObj = typeof v.color === 'object' ? v.color : null;

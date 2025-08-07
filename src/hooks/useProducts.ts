@@ -55,6 +55,7 @@ export const useProductBySlug = (slug: string) => {
   return useQuery<IProduct>({
     queryKey: ['product', 'slug', slug],
     queryFn: () => getProductBySlug(slug),
-    enabled: !!slug, // Chỉ gọi khi slug tồn tại
+    enabled: !!slug, 
+    staleTime: 0,
   });
 };
