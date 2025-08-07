@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { CloseOutlined } from '@ant-design/icons';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
-
 import { useCart, useRemoveFromCart, useUpdateCartItem } from '../../hooks/useCart';
 import { getColorById } from '../../service/colorAPI';
 import { message, Button } from 'antd';
@@ -44,7 +43,7 @@ const Cart = () => {
         setCartWithColors(updatedCart);
         console.log("Cart with colors:", updatedCart);
       } catch (err) {
-        console.error("❌ Lỗi lấy màu:", err);
+        console.error("Lỗi lấy màu:", err);
       }
     };
 

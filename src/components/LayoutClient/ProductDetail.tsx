@@ -11,7 +11,10 @@ import type { IColor } from '../../interface/color';
 import { useSizes } from '../../hooks/useSizes';
 import { useColors } from '../../hooks/useColors';
 import type { ISize } from '../../interface/size';
+<<<<<<< HEAD
 import type { IReview } from '../../interface/review';
+=======
+>>>>>>> e1c766ebaf8fe6c4bec98551837c27855face717
 import { addToCart as addToCartApi } from "../../service/cartAPI";
 
 const ProductDetail = () => {
@@ -90,6 +93,7 @@ const ProductDetail = () => {
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
+
   const addToCart = async() => {
     if (!token) {
       message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
@@ -123,6 +127,23 @@ const ProductDetail = () => {
       });
       message.success("Đã thêm vào giỏ hàng!");
       console.log("Thêm vào giỏ hàng:", selectedVariant._id, quantity);
+    } catch (err) {
+      message.error("Thêm vào giỏ hàng thất bại!");
+      console.error(err);
+    }
+
+    if (!selectedVariant || !selectedVariant._id) {
+      message.warning("Vui lòng chọn phân loại sản phẩm!");
+      return;
+    }
+
+    try {
+      await addToCartApi({
+        variant_id: selectedVariant._id,
+        quantity,
+      });
+      message.success("Đã thêm vào giỏ hàng!");
+      console.log("🛒 Thêm vào giỏ hàng:", selectedVariant._id, quantity);
     } catch (err) {
       message.error("Thêm vào giỏ hàng thất bại!");
       console.error(err);
@@ -324,7 +345,11 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
-
+            {selectedVariant && (
+              <div style={{ margin: '8px 0', color: '#000000ff', fontWeight: 500 }}>
+                Số lượng trong kho: {selectedVariant.stock?.quantity ?? 0}
+              </div>
+            )}
             <div className="quantity-control">
               <span className="label">Số lượng:</span>
 
@@ -341,6 +366,9 @@ const ProductDetail = () => {
                 onClick={handleIncrease}
               />
             </div>
+            {/* Hiển thị số lượng trong kho cho biến thể đã chọn */}
+
+
 
             <p style={{ marginBottom: 5, color: currentStock === 0 ? 'red' : '#666' }}>
               {currentStock === 0
@@ -360,7 +388,14 @@ const ProductDetail = () => {
               </Button>
 
               <Link to="/checkout-access">
-                <Button type="primary" size="large" danger className="buy-now">
+                <Button
+                  type="primary"
+                  size="large"
+                  danger
+                  className="buy-now"
+                  disabled={selectedVariant?.stock?.quantity === 0}
+                  style={selectedVariant?.stock?.quantity === 0 ? { background: '#ccc', color: '#fff', border: 'none', cursor: 'not-allowed' } : {}}
+                >
                   Mua Ngay
                 </Button>
               </Link>
