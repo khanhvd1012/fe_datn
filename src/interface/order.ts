@@ -38,7 +38,7 @@ export interface IOrder {
   voucher_discount?: number;
   sub_total: number;
   total_price: number;
-  status: "pending" | "processing" | "shipped" | "delivered" | "canceled";
+  status: "pending" | "processing" | "shipped" | "delivered" | "canceled" | "returned";
   payment_method: string;
   cancel_reason?: string | null;
   cancelled_at?: string | null;
