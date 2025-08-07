@@ -46,7 +46,7 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
               <Descriptions.Item label="Mã người dùng" className="bg-gray-50">
                 {user?.user_id}
               </Descriptions.Item>
-              <Descriptions.Item label="Họ tên">
+              <Descriptions.Item label="Tên người dùng">
                 {user?.username}
               </Descriptions.Item>
               <Descriptions.Item label="Email" className="bg-gray-50">
@@ -87,7 +87,7 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
           <Divider />
 
           <div className="mb-4">
-            <h3 className="text-base font-medium mb-2">Thông tin cá nhân </h3>
+            <h3 className="text-base font-medium mb-2">Thông tin địa chỉ giao hàng</h3>
             {user?.shipping_addresses?.length ? (
               <Descriptions column={1} bordered size="small">
                 {user.shipping_addresses.map((addr, idx) => (

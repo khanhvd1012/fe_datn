@@ -1,31 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Card, Typography, Spin, message } from 'antd';
-import axios from 'axios';
+import React, { useEffect, useRef } from 'react';
+import { Typography, Spin, Rate } from 'antd';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { useTopSellingVariants } from '../../hooks/useVariants';
+import { getProducts } from '../../service/productAPI';
+import type { IVariant } from '../../interface/variant';
 
 const { Title, Text } = Typography;
 
 const BestSellingProducts: React.FC = () => {
-  const [products, setProducts] = useState<any[]>([]);
-  const [variants, setVariants] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const sliderRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    Promise.all([
-      axios.get('http://localhost:3000/api/products'),
-      axios.get('http://localhost:3000/api/variants')
-    ])
-      .then(([productsRes, variantsRes]) => {
-        setProducts(productsRes.data.data.products || []);
-        setVariants(variantsRes.data.data || []);
-        setLoading(false);
-      })
-      .catch(() => {
-        message.error('Không thể tải sản phẩm hoặc biến thể');
-        setLoading(false);
-      });
-  }, []);
+  const { data: variants = [], isLoading: loadingVariants } = useTopSellingVariants();
+  const { data: products = [], isLoading: loadingProducts } = useQuery({
+    queryKey: ['products'],
+    queryFn: getProducts,
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -43,9 +33,19 @@ const BestSellingProducts: React.FC = () => {
     return () => clearInterval(interval);
   }, [variants]);
 
+
+
+  if (loadingVariants || loadingProducts) {
+    return (
+      <div className="text-center py-10">
+        <Spin />
+      </div>
+    );
+  }
+
   return (
-    <div style={{ padding: '40px 20px' }}>
-      <Title level={2} style={{ textAlign: 'center', fontSize: '20px', marginBottom: 8 }}>
+    <div className="px-5 py-10">
+      <Title level={2} style={{ textAlign: 'center', fontSize: '20px', marginBottom: 10 }}>
         <span style={{ display: 'inline-block', paddingBottom: 4, position: 'relative' }}>
           Sản phẩm bán chạy
           <span
@@ -61,110 +61,86 @@ const BestSellingProducts: React.FC = () => {
         </span>
       </Title>
 
-      <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
-        <Text type="secondary" style={{ fontSize: 12 }}>
-          Tự động trượt qua sản phẩm
-        </Text>
-      </div>
+      <div
+        ref={sliderRef}
+        style={{ display: 'flex', overflowX: 'hidden', scrollBehavior: 'smooth' }}
+      >
+        {variants.map((variant: IVariant) => {
+          const product = products.find((p) =>
+            Array.isArray(p.variants) &&
+            p.variants.some((v: any) => typeof v === 'string' && v === variant._id)
+          );
+          if (!product) return null;
 
-      {loading ? (
-        <div style={{ textAlign: 'center' }}>
-          <Spin />
-        </div>
-      ) : (
-        <div
-          ref={sliderRef}
-          style={{
-            display: 'flex',
-            overflowX: 'hidden',
-            scrollBehavior: 'smooth',
-          }}
-        >
-          {variants.map((variant) => {
-            const product = products.find((p) =>
-              Array.isArray(p.variants) && p.variants.includes(variant._id)
-            );
-            if (!product) return null;
+          const currentColorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
 
-            const image =
-              Array.isArray(variant.image_url) && variant.image_url.length > 0
-                ? variant.image_url[0]
-                : product.images?.[0] || 'https://picsum.photos/200';
+          const sameProductVariants = variants.filter(
+            (v) => {
+              const pid = typeof v.product_id === 'object' ? v.product_id._id : v.product_id;
+              const cid = typeof v.color === 'object' ? v.color._id : v.color;
+              return pid === product._id && cid;
+            }
+          );
 
-            return (
-              <div
-                key={variant._id}
-                style={{
-                  flex: '0 0 10%',
-                  padding: '0 10px',
-                  minWidth: 250,
-                  marginBottom: 20
-                }}
-              >
-                <Link to={`/products/${product.slug}`} state={{ variantId: variant._id }}>
-                  <Card
-                    hoverable
-                    cover={
-                      <div
-                        style={{
-                          height: 200,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          overflow: 'hidden',
-                          borderTopLeftRadius: 8,
-                          borderTopRightRadius: 8,
-                        }}
-                      >
-                        <img
-                          alt={product.name}
-                          src={
-                            Array.isArray(variant.image_url) && variant.image_url.length > 0
-                              ? variant.image_url[0]
-                              : product.images?.[0] || 'https://picsum.photos/200'
-                          }
-                          style={{
-                            marginTop: 2,
-                            maxHeight: '100%',
-                            maxWidth: '100%',
-                            objectFit: 'contain',
-                            display: 'block',
-                          }}
-                        />
-                      </div>
-                    }
-                    style={{
-                      textAlign: 'center',
-                      height: 340,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
+          const sortedByCurrentFirst = [
+            ...sameProductVariants.filter((v) => {
+              const cid = typeof v.color === 'object' ? v.color._id : v.color;
+              return cid === currentColorId;
+            }),
+            ...sameProductVariants.filter((v) => {
+              const cid = typeof v.color === 'object' ? v.color._id : v.color;
+              return cid !== currentColorId;
+            }),
+          ];
+
+          return (
+            <Link
+              to={`/products/${product.slug}`}
+              key={variant._id}
+              className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
+              state={{ variantId: variant._id }}
+            >
+              <img
+                src={
+                  variant.image_url?.[0] || 'https://picsum.photos/200'
+                } alt={product.name}
+                className="w-full h-48 object-cover rounded-md"
+              />
+              <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                {sortedByCurrentFirst.map((v, idx) => {
+                  const colorObj = typeof v.color === 'object' ? v.color : null;
+                  return (
                     <div
+                      key={idx}
+                      className="w-4 h-4 rounded-full border"
                       style={{
-                        height: 48,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        marginBottom: 8,
+                        backgroundColor: colorObj?.code || '#ccc',
+                        borderColor: colorObj?._id === currentColorId ? 'black' : '#ccc',
                       }}
-                    >
-                      <Text style={{ fontWeight: 500 }}>
-                        {product.name} - {variant.color?.name}
-                      </Text>
-                    </div>
-
-                    <Text strong>{variant.price?.toLocaleString('en-US')}$</Text>
-                  </Card>
-                </Link>
+                    />
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-      )}
+              <div className="mt-3 pt-[9px]">
+                <Text strong>{product.name}</Text>
+              </div>
+              <div className="mt-1 pt-[9px]">
+                <Text style={{ color: 'black' }}>
+                  {variant.price?.toLocaleString('vi-VN')}đ
+                </Text>
+              </div>
+              <div className="mt-1 pt-[6px] flex justify-center items-center gap-1 h-5">
+                <Rate
+                  disabled
+                  allowHalf
+                  value={variant.averageRating || 0}
+                  style={{ fontSize: 14 }}
+                />
+              </div>
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 };

@@ -9,20 +9,27 @@ const EditStock = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
 
-  const { data: stock, isLoading } = useStocks(id!);
+  const { data: stock, isLoading } = useStocks();
   const { mutate, isPending: isUpdating } = useUpdateStock();
-
   const [form] = Form.useForm();
 
-  const selectedStock = stock?.find(stock => stock._id === id!);
+  const selectedStock = stock?.find(item => item._id === id);
 
   const handleSubmit = (values: { quantity: number; reason: string }) => {
     if (!id || !stock) return;
+
+    const selectedStock = stock.find(item => item._id === id);
+    if (!selectedStock) return;
 
     const quantity_change = values.quantity;
 
     if (quantity_change === 0) {
       messageApi.warning('Số lượng không thay đổi!');
+      return;
+    }
+
+    if (quantity_change < 0 && Math.abs(quantity_change) > selectedStock.quantity) {
+      messageApi.error('Không thể giảm quá số lượng hiện có!');
       return;
     }
 
@@ -43,23 +50,66 @@ const EditStock = () => {
     );
   };
 
-  if (isLoading) return <Skeleton active />;
+  if (isLoading || !selectedStock) return <Skeleton active />;
 
   return (
     <div className="max-w-md mx-auto p-4">
       {contextHolder}
       <h2 className="text-2xl font-bold mb-4">Cập nhật Số Lượng</h2>
+
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
-        <Form.Item label="Biến Thể">
-          <InputNumber style={{ width: '100%',color: 'black',fontWeight: 'bold'}} value={selectedStock?.product_variant_id?.product_id?.name} disabled />
+        <Form.Item label="Tên sản phẩm">
+          <Input
+            value={selectedStock.product_name}
+            disabled
+            style={{ color: 'black' }}
+          />
+        </Form.Item>
+
+        <Form.Item label="SKU">
+          <Input
+            value={selectedStock.sku}
+            disabled
+            style={{ color: 'black' }}
+          />
+        </Form.Item>
+
+        <Form.Item label="Màu sắc">
+          <Input
+            value={selectedStock.color}
+            disabled
+            style={{ color: 'black' }}
+          />
+        </Form.Item>
+
+        <Form.Item label="Kích cỡ">
+          <Input
+            value={selectedStock.size}
+            disabled
+            style={{ color: 'black' }}
+          />
         </Form.Item>
 
         <Form.Item
-          label="Số lượng mới"
+          label="Số lượng thay đổi"
           name="quantity"
           rules={[
-            { required: true, message: 'Vui lòng nhập số lượng!' },
-            { type: 'number', min: 0, message: 'Số lượng không được âm!' },
+            { required: true, message: 'Vui lòng nhập lượng thay đổi!' },
+            {
+              validator: (_, value) => {
+                if (value === undefined) return Promise.resolve();
+
+                if (value === 0) {
+                  return Promise.reject('Số lượng không thay đổi!');
+                }
+
+                if (value < 0 && Math.abs(value) > selectedStock.quantity) {
+                  return Promise.reject(`Không thể giảm quá ${selectedStock.quantity} sản phẩm hiện có!`);
+                }
+
+                return Promise.resolve();
+              },
+            },
           ]}
         >
           <InputNumber style={{ width: '100%' }} />
@@ -75,7 +125,7 @@ const EditStock = () => {
 
         <Form.Item>
           <div className="flex justify-end gap-4">
-            <Button onClick={() => navigate('/admin/stocks')}>Hủy</Button>
+            <Button onClick={() => navigate('/admin/stocks/stock')}>Hủy</Button>
             <Button type="primary" htmlType="submit" loading={isUpdating}>
               {isUpdating ? 'Đang cập nhật...' : 'Cập nhật'}
             </Button>

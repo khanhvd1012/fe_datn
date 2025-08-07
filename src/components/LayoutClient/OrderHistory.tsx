@@ -271,7 +271,7 @@ const OrderHistory = () => {
 
                       <div className="text-green-600 font-semibold">
                         Tổng tiền:{' '}
-                        {(order.total_price || 0).toLocaleString()}$
+                        {(order.total_price || 0).toLocaleString('vi-VN')}đ
                       </div>
                     </div>
 

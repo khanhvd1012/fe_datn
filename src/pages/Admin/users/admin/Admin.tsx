@@ -71,6 +71,15 @@ const Admin = () => {
       filterIcon: () => <FilterOutlined style={{ color: filters.username ? '#1890ff' : undefined }} />,
     },
     {
+      title: "Số điện thoại",
+      key: "phone",
+      render: (_: any, record: IUser) => {
+        const defaultAddress = record.shipping_addresses.find(addr => addr.is_default);
+        const phone = defaultAddress?.phone || record.shipping_addresses[0]?.phone || 'Chưa có số';
+        return <span>{phone}</span>;
+      },
+    },
+    {
       title: "Email",
       dataIndex: "email",
       key: "email",

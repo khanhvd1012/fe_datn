@@ -3,7 +3,6 @@ import { Button, Form, Input, message, Upload, Select } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAddCategory } from '../../../hooks/useCategories';
-import { useBrands } from '../../../hooks/useBrands';
 import { useState } from 'react';
 import type { UploadChangeParam, UploadFile } from 'antd/es/upload';
 
@@ -12,7 +11,6 @@ const CreateCategories = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
   const { mutate } = useAddCategory();
-  const { data: brands, isLoading } = useBrands();
   const [form] = Form.useForm();
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [fileList, setFileList] = useState<UploadFile[]>([]);
@@ -85,23 +83,6 @@ const CreateCategories = () => {
           ]}
         >
           <Input.TextArea rows={4} placeholder="Nhập mô tả danh mục" />
-        </Form.Item>
-
-        <Form.Item
-          label="Thương Hiệu"
-          name="brand"
-          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một thương hiệu!' }]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Chọn các thương hiệu"
-            options={brands?.map((brand) => ({
-              label: brand.name,
-              value: brand._id,
-            }))}
-            loading={isLoading}
-            allowClear
-          />
         </Form.Item>
 
         <Form.Item label="Ảnh">

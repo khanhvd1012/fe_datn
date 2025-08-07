@@ -281,7 +281,7 @@ const ProductReview = () => {
                   <Text>
                     Thông tin sản phẩm:{' '}
                     {variant
-                      ? `${variant.product_id?.name || ''} - Giá: ${variant.price?.toLocaleString()} $`
+                      ? `${variant.product_id?.name || ''} - Giá: ${variant.price?.toLocaleString('vi-VN')} đ`
                       : 'Đang tải...'}
                   </Text>
                   <br />

@@ -39,7 +39,7 @@ const CreateVariant = () => {
 
     const formData = new FormData();
     formData.append("product_id", values.product_id);
-    values.size.forEach((s: string) => formData.append("size[]", s));
+    formData.append("size", values.size);
     formData.append("color", values.color);
     formData.append("price", values.price);
     formData.append("import_price", values.import_price);
@@ -100,7 +100,7 @@ const CreateVariant = () => {
           name="size"
           rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
         >
-          <Select mode="multiple" placeholder="Chọn kích thước">
+          <Select placeholder="Chọn kích thước">
             {sizes?.map((size: any) => (
               <Select.Option key={size._id} value={size._id}>
                 {size.size}
@@ -179,12 +179,15 @@ const CreateVariant = () => {
         <Form.Item
           label="Số lượng nhập kho"
           name="initial_stock"
-          rules={[{
-            validator(_, value) {
-              if (value < 0) return Promise.reject('Số lượng không được âm!');
-              return Promise.resolve();
+          rules={[
+            { required: true, message: 'Vui lòng nhập số lượng!' },
+            {
+              validator(_, value) {
+                if (value < 0) return Promise.reject('Số lượng không được âm!');
+                return Promise.resolve();
+              }
             }
-          }]}
+          ]}
         >
           <InputNumber style={{ width: '100%' }} placeholder="Nhập số lượng" />
         </Form.Item>

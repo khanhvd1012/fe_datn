@@ -256,7 +256,7 @@ const OrderDetail = () => {
         {
             title: 'Giá',
             render: (_: any, record: any) => (
-                <>{(record.price || 0).toLocaleString()}$</>
+                <>{(record.price || 0).toLocaleString('vi-VN')}đ</>
             )
         }
     ];
@@ -314,7 +314,7 @@ const OrderDetail = () => {
                 <div className="flex justify-between mt-6">
                     <Text strong className="text-lg">Tổng thanh toán:</Text>
                     <Text strong className="text-lg text-green-600">
-                        {(order.total_price || 0).toLocaleString()}$
+                        {(order.total_price || 0).toLocaleString('vi-VN')}đ
                     </Text>
                 </div>
 

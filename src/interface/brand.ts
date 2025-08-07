@@ -4,7 +4,6 @@ export interface IBrand {
     description: string;
     logo_image: string;
     products?: string[]; 
-    category?: { _id: string; name: string }[];  
     createdAt?: Date;
     updatedAt?: Date;
 }

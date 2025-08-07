@@ -1,4 +1,4 @@
-import { Button, Empty, Input, message, Skeleton, Table } from "antd";
+import { Button, Empty, Input, message, Skeleton, Table, Tag } from "antd";
 import { Link } from "react-router-dom";
 import { EditOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import { useStocks } from "../../../hooks/useStock";
@@ -9,37 +9,43 @@ const Stock = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { data: stock, isLoading } = useStocks();
   const [filters, setFilters] = useState({
-    product_variant_id: '',
-    quantity: '',
+    sku: '',
+    product_name: '',
+    color: '',
+    size: '',
   });
 
-  const normalizeText = (value: any) =>
-    typeof value === 'string'
-      ? value.toLowerCase()
-      : value?.name?.toLowerCase?.() || '';
+  const normalize = (value: string | number | undefined | null) =>
+    typeof value === 'string' ? value.toLowerCase() : value?.toString().toLowerCase() || '';
 
-  const filteredData = stock?.filter((stocks: IStock) => {
+  const filteredData = stock?.filter((item: IStock) => {
     if (
-      filters.product_variant_id &&
-      !normalizeText(stocks.product_variant_id).includes(filters.product_variant_id.toLowerCase())
-    ) {
-      return false;
-    }
+      filters.sku &&
+      !normalize(item.sku).includes(filters.sku.toLowerCase())
+    ) return false;
 
     if (
-      filters.quantity &&
-      !normalizeText(stocks.quantity).includes(filters.quantity.toLowerCase())
-    ) {
-      return false;
-    }
+      filters.product_name &&
+      !normalize(item.product_name).includes(filters.product_name.toLowerCase())
+    ) return false;
+
+    if (
+      filters.color &&
+      !normalize(item.color).includes(filters.color.toLowerCase())
+    ) return false;
+
+    if (
+      filters.size &&
+      !normalize(item.size).includes(filters.size.toLowerCase())
+    ) return false;
 
     return true;
   });
 
-  const handleFilterChange = (value: string | number, type: string) => {
+  const handleFilterChange = (value: string, field: keyof typeof filters) => {
     setFilters(prev => ({
       ...prev,
-      [type]: value
+      [field]: value
     }));
   };
 
@@ -48,39 +54,75 @@ const Stock = () => {
 
   const columns = [
     {
-      title: "Biến thể",
-      dataIndex: "product_variant_id",
-      key: "product_variant_id",
+      title: "Sản phẩm",
+      dataIndex: "product_name",
+      key: "product_name",
       filterDropdown: () => (
-        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
-          <Input
-            placeholder="Tìm theo tên biến thể"
-            value={filters.product_variant_id}
-            onChange={(e) => handleFilterChange(e.target.value, 'product_variant_id')}
-            prefix={<SearchOutlined />}
-            allowClear
-          />
-        </div>
+        <Input
+          placeholder="Lọc theo tên sản phẩm"
+          value={filters.product_name}
+          onChange={(e) => handleFilterChange(e.target.value, 'product_name')}
+          prefix={<SearchOutlined />}
+          allowClear
+          style={{ padding: 8, borderRadius: 6 }}
+        />
       ),
-      filterIcon: () => <FilterOutlined style={{ color: filters.product_variant_id ? '#1890ff' : undefined }} />,
-      render: (variant: any) => variant?.product_id?.name || "Không rõ",
+      filterIcon: () => <FilterOutlined style={{ color: filters.product_name ? '#1890ff' : undefined }} />,
+    },
+    {
+      title: "SKU",
+      dataIndex: "sku",
+      key: "sku",
+      filterDropdown: () => (
+        <Input
+          placeholder="Lọc theo SKU"
+          value={filters.sku}
+          onChange={(e) => handleFilterChange(e.target.value, 'sku')}
+          prefix={<SearchOutlined />}
+          allowClear
+          style={{ padding: 8, borderRadius: 6 }}
+        />
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.sku ? '#1890ff' : undefined }} />,
+    },
+    {
+      title: "Màu sắc",
+      dataIndex: "color",
+      key: "color",
+      render: (color: string) => <Tag color="geekblue">{color}</Tag>,
+      filterDropdown: () => (
+        <Input
+          placeholder="Lọc theo màu"
+          value={filters.color}
+          onChange={(e) => handleFilterChange(e.target.value, 'color')}
+          prefix={<SearchOutlined />}
+          allowClear
+          style={{ padding: 8, borderRadius: 6 }}
+        />
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.color ? '#1890ff' : undefined }} />,
+    },
+    {
+      title: "Kích cỡ",
+      dataIndex: "size",
+      key: "size",
+      render: (size: string) => <Tag>{size}</Tag>,
+      filterDropdown: () => (
+        <Input
+          placeholder="Lọc theo size"
+          value={filters.size}
+          onChange={(e) => handleFilterChange(e.target.value, 'size')}
+          prefix={<SearchOutlined />}
+          allowClear
+          style={{ padding: 8, borderRadius: 6 }}
+        />
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.size ? '#1890ff' : undefined }} />,
     },
     {
       title: "Số lượng",
       dataIndex: "quantity",
       key: "quantity",
-      filterDropdown: () => (
-        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
-          <Input
-            placeholder="Tìm theo số lượng"
-            value={filters.quantity}
-            onChange={(e) => handleFilterChange(e.target.value, 'quantity')}
-            prefix={<SearchOutlined />}
-            allowClear
-          />
-        </div>
-      ),
-      filterIcon: () => <FilterOutlined style={{ color: filters.quantity ? '#1890ff' : undefined }} />,
     },
     {
       title: "Lần cập nhật cuối",
@@ -93,11 +135,9 @@ const Stock = () => {
       title: "Thao tác",
       key: "actions",
       render: (_: any, stock: IStock) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Link to={`/admin/stocks/stock/edit/${stock._id}`}>
-            <Button type="default" icon={<EditOutlined />} />
-          </Link>
-        </div>
+        <Link to={`/admin/stocks/stock/edit/${stock._id}`}>
+          <Button type="default" icon={<EditOutlined />} />
+        </Link>
       ),
     },
   ];
@@ -105,8 +145,6 @@ const Stock = () => {
   return (
     <div>
       {contextHolder}
-      <div style={{ marginBottom: 16 }}>
-      </div>
       <Table
         columns={columns}
         dataSource={filteredData}
@@ -116,7 +154,7 @@ const Stock = () => {
           pageSize: 10,
           showSizeChanger: true,
           showQuickJumper: true,
-          showTotal: (total) => `Tổng ${total} số lượng kho`,
+          showTotal: (total) => `Tổng ${total} sản phẩm trong kho`,
         }}
       />
     </div>

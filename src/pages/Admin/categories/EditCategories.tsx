@@ -14,7 +14,6 @@ const EditCategories = () => {
   const navigate = useNavigate();
   const { data: category, isLoading } = useCategory(id!);
   const { mutate, isPending: isUpdating } = useUpdateCategory();
-  const { data: brands } = useBrands();
 
   const [form] = Form.useForm();
 
@@ -130,23 +129,6 @@ const EditCategories = () => {
           ]}
         >
           <Input.TextArea rows={4} placeholder="Nhập mô tả danh mục" />
-        </Form.Item>
-
-        <Form.Item
-          label="Thương Hiệu"
-          name="brand"
-          rules={[{ required: true, message: 'Vui lòng chọn ít nhất một thương hiệu!' }]}
-        >
-          <Select
-            mode="multiple"
-            placeholder="Chọn các thương hiệu"
-            options={brands?.map((brand) => ({
-              label: brand.name,
-              value: brand._id,
-            }))}
-            loading={isLoading}
-            allowClear
-          />
         </Form.Item>
 
         <Form.Item label="Ảnh ">

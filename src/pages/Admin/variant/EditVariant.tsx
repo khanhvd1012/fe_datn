@@ -52,7 +52,9 @@ const EditVariant = () => {
     product_id: typeof variant.data.product_id === 'object' ? variant.data.product_id._id : variant.data.product_id,
     size: Array.isArray(variant.data.size)
       ? variant.data.size.map((s: any) => (typeof s === 'object' ? s._id : s))
-      : [],
+      : typeof variant.data.size === 'object'
+        ? [variant.data.size._id]
+        : [variant.data.size],
   } : {};
 
   const handleSubmit = (values: any) => {
@@ -60,30 +62,45 @@ const EditVariant = () => {
 
     const formData = new FormData();
     formData.append("product_id", values.product_id);
-    values.size.forEach((s: string) => formData.append("size[]", s));
+    formData.append("size", values.size);
     formData.append("color", values.color);
     formData.append("price", values.price);
     formData.append("import_price", values.import_price);
     formData.append("gender", values.gender);
     formData.append("status", values.status);
 
-    // Nếu có file mới upload thì append
-    imageFiles.forEach((file: File) => {
+    // Tách ảnh cũ (chỉ có url) và ảnh mới (có originFileObj)
+    const existingImageUrls = fileList
+      .filter(file => !file.originFileObj && file.url)
+      .map(file => file.url!);
+
+    const newImageFiles = fileList
+      .filter(file => file.originFileObj)
+      .map(file => file.originFileObj as File);
+
+    // Gửi ảnh mới
+    newImageFiles.forEach(file => {
       formData.append("images", file);
+    });
+
+    // Gửi URL ảnh cũ nếu backend hỗ trợ
+    existingImageUrls.forEach(url => {
+      formData.append("existingImages", url); // cần backend hỗ trợ
     });
 
     mutate(
       { id, variant: formData },
       {
         onSuccess: () => {
-          messageApi.success('Cập nhật biến thể thành công!');
-          queryClient.invalidateQueries({ queryKey: ['variants'] });
+          messageApi.success("Cập nhật biến thể thành công!");
+          queryClient.invalidateQueries({ queryKey: ["variants"] });
           setTimeout(() => {
             navigate("/admin/variants");
           }, 1000);
         },
         onError: (err: any) => {
-          const errorMessage = err?.response?.data?.message || 'Cập nhật biến thể thất bại!';
+          const errorMessage =
+            err?.response?.data?.message || "Cập nhật biến thể thất bại!";
           messageApi.error(errorMessage);
           console.error("Lỗi khi cập nhật:", err);
         },
@@ -111,7 +128,7 @@ const EditVariant = () => {
         </Form.Item>
 
         <Form.Item label="Kích thước" name="size" rules={[{ required: true }]}>
-          <Select mode="multiple" placeholder="Chọn kích thước">
+          <Select placeholder="Chọn kích thước">
             {sizes?.map((size: any) => (
               <Select.Option key={size._id} value={size._id}>{size.size}</Select.Option>
             ))}

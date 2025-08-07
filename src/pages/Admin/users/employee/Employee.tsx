@@ -13,7 +13,8 @@ const Employee = () => {
   const { data: user, isLoading } = useUsers();
   const [filters, setFilters] = useState({
     username: '',
-    email: ''
+    email: '',
+    phone: ''
   });
 
   const employees = user?.filter((u) => u.role === "employee") || [];
@@ -23,6 +24,11 @@ const Employee = () => {
       return false;
     }
     if (filters.email && !u.email.toLowerCase().includes(filters.email.toLowerCase())) {
+      return false;
+    }
+    const defaultAddress = u.shipping_addresses.find(addr => addr.is_default);
+    const phone = defaultAddress?.phone || u.shipping_addresses[0]?.phone || '';
+    if (filters.phone && !phone.includes(filters.phone)) {
       return false;
     }
     return true;
@@ -69,6 +75,27 @@ const Employee = () => {
         </div>
       ),
       filterIcon: () => <FilterOutlined style={{ color: filters.username ? '#1890ff' : undefined }} />,
+    },
+    {
+      title: "Số điện thoại",
+      key: "phone",
+      render: (_: any, record: IUser) => {
+        const defaultAddress = record.shipping_addresses.find(addr => addr.is_default);
+        const phone = defaultAddress?.phone || record.shipping_addresses[0]?.phone || 'Chưa có số';
+        return <span>{phone}</span>;
+      },
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm số điện thoại"
+            value={filters.phone}
+            onChange={(e) => handleFilterChange(e.target.value, 'phone')}
+            prefix={<SearchOutlined />}
+            allowClear
+          />
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.phone ? '#1890ff' : undefined }} />,
     },
     {
       title: "Email",

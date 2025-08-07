@@ -14,7 +14,6 @@ const Home = () => {
       <BrandBanner/>
       <NewProducts/>
       <LatestPosts/>
-      <SubscribeSection/>
     </div>
   );
 };

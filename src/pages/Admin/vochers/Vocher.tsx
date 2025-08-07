@@ -160,9 +160,9 @@ const Vouchers = () => {
             render: (value: number, record: IVoucher) =>
                 record.type === "percentage"
                     ? `${value}%`
-                    : value.toLocaleString("en-US", {
+                    : value.toLocaleString("vn-VN", {
                         style: "currency",
-                        currency: "USD",
+                        currency: "VND",
                     }),
         },
         {
@@ -183,9 +183,9 @@ const Vouchers = () => {
             filterIcon: () => <FilterOutlined style={{ color: filters.maxDiscount ? '#1890ff' : undefined }} />,
             render: (max: number | null) =>
                 max !== null
-                    ? max.toLocaleString("en-US", {
+                    ? max.toLocaleString("vn-VN", {
                         style: "currency",
-                        currency: "USD",
+                        currency: "VND",
                     })
                     : "Không giới hạn",
         },
@@ -206,7 +206,7 @@ const Vouchers = () => {
             ),
             filterIcon: () => <FilterOutlined style={{ color: filters.minOrderValue ? '#1890ff' : undefined }} />,
             render: (min: number) =>
-                min.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+                min.toLocaleString("vn-VN", { style: "currency", currency: "VND" }),
         },
         {
             title: "Thời gian",

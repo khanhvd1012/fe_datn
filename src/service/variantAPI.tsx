@@ -73,3 +73,25 @@ export const deleteVariant = async (id: string) => {
         throw error;
     }
 }
+
+// Biến thể bán chạy nhất
+export const getTopSellingVariants = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/variants/top-selling`);
+        return response.data.data;
+    } catch (error) {
+        console.error("Error fetching top-selling variants:", error);
+        throw error;
+    }
+};
+
+// Biến thể được đánh giá cao
+export const getTopRatedVariants = async () => {
+    try {
+        const response = await axios.get(`${API_URL}/variants/top-rated`);
+        return response.data.data;
+    } catch (error) {
+        console.error("Error fetching top-rated variants:", error);
+        throw error;
+    }
+};
