@@ -323,7 +323,6 @@ const ProductDetail = () => {
                     <button
                       key={sizeId}
                       className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
-                      onClick={() => setSelectedSize(sizeId)}
                     >
                       {getSizeName(sizeId)}
                     </button>

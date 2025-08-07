@@ -129,69 +129,73 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                     <h3 className="text-xs font-semibold uppercase leading-snug">
                       {product?.name}
                     </h3>
-                    <div className="text-xs text-gray-500 mt-1">
+                    <div className="text-xs text-gray-500 mt-1 space-y-1">
                       {variant.color && typeof variant.color === 'object' && (
                         <div className="flex items-center gap-1">
                           Màu:
                           <span
-                            className="w-3 h-3 border"
+                            className="w-3 h-3 border inline-block"
                             style={{
                               backgroundColor: variant.color.code || 'transparent',
                             }}
                           />
-                          <span>{variant.color.name}</span>
                         </div>
                       )}
-                      <span>Size: {variant.size?.size}</span>
-                    </div>
-                    <div className="flex items-center mt-2">
-                      <button
-                        className="w-7 h-7 border border-gray-400 text-lg"
-                        onClick={() =>
-                          updateCartItem({
-                            variant_id: variant._id,
-                            quantity: item.quantity - 1,
-                          })
-                        }
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        value={item.quantity}
-                        min={1}
-                        className="w-8 h-8 text-center border border-gray-400 text-sm mx-2"
-                        onChange={(e) => {
-                          const newQty = Number(e.target.value);
-                          if (newQty >= 1) {
-                            updateCartItem({
-                              variant_id: variant._id,
-                              quantity: newQty,
-                            });
-                          }
-                        }}
-                      />
-                      <button
-                        className="w-7 h-7 border border-gray-400 text-lg"
-                        onClick={() =>
-                          updateCartItem({
-                            variant_id: variant._id,
-                            quantity: item.quantity + 1,
-                          })
-                        }
-                      >
-                        +
-                      </button>
-                      <span className="text-sm font-semibold ml-2">
-                        {(item.quantity * variant.price)?.toLocaleString('vi-VN')}đ 
-                      </span>
-                      <button
-                        className="ml-auto text-gray-400 hover:text-red-500"
-                        onClick={() => removeFromCart(item._id)}
-                        title="Xóa sản phẩm"
-                      >
-                        <CloseOutlined />
-                      </button>
+
+                      <div className="flex items-center gap-x-20">
+                        <span>Size: {variant.size?.size}</span>
+
+                        <div className="flex items-center">
+                          <button
+                            className="w-6 h-6 border border-gray-400 text-sm"
+                            onClick={() =>
+                              updateCartItem({
+                                variant_id: variant._id,
+                                quantity: item.quantity - 1,
+                              })
+                            }
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            min={1}
+                            className="w-8 h-6 text-center border border-gray-400 text-sm mx-1 "
+                            onChange={(e) => {
+                              const newQty = Number(e.target.value);
+                              if (newQty >= 1) {
+                                updateCartItem({
+                                  variant_id: variant._id,
+                                  quantity: newQty,
+                                });
+                              }
+                            }}
+                          />
+                          <button
+                            className="w-6 h-6 border border-gray-400 text-sm"
+                            onClick={() =>
+                              updateCartItem({
+                                variant_id: variant._id,
+                                quantity: item.quantity + 1,
+                              })
+                            }
+                          >
+                            +
+                          </button>
+                          <button
+                            className="ml-10 text-red-400 hover:text-red-500"
+                            onClick={() => removeFromCart(item)}
+                            title="Xóa sản phẩm"
+                          >
+                            <CloseOutlined />
+                          </button>
+                        </div>
+                      </div>
+                      <div>
+                        Giá: <span className="font-semibold text-black">{(item.quantity * variant.price)?.toLocaleString('vi-VN')}đ</span>
+                      </div>
+
                     </div>
                   </div>
                 </div>

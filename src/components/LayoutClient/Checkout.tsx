@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import axios from 'axios';
 import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message } from 'antd';
@@ -8,7 +8,6 @@ const Checkout = () => {
   const { TextArea } = Input;
   const { Title, Text } = Typography;
   const navigate = useNavigate();
-
   const [cartData, setCartData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [sizeMap, setSizeMap] = useState<Record<string, number>>({});
@@ -365,8 +364,6 @@ const Checkout = () => {
                         <div>Size: {item.variant_id.size.size || 'Không rõ'}</div>
                         {(() => {
                           const color = itemColors[item.variant_id.color._id];
-                          console.log("Màu của sản phẩm là:", item.variant_id.color.name);
-                          console.log("Màu của sản phẩm là:", item.variant_id.color._id);
 
                           return color ? (
                             <div className="flex items-center mt-1 gap-2 text-sm">
@@ -380,7 +377,6 @@ const Checkout = () => {
                                   border: '1px solid #ccc',
                                 }}
                               />
-                              <span>{color.name}</span>
                             </div>
                           ) : (
                             <div className="text-sm text-gray-400">Đang tải màu...</div>

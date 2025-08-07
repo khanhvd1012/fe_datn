@@ -7,17 +7,7 @@ import { message } from 'antd';
 export const useCart = () => {
   return useQuery<ICart>({
     queryKey: ['cart'],
-    queryFn: getCart,
-    select: (data) => {
-      // Trường hợp backend trả về dữ liệu trống
-      return {
-        cart_items: data.cart_items ?? [],
-        returning_items: data.returning_items ?? [],
-        total: data.total ?? 0,
-        auto_restore_enabled: data.auto_restore_enabled ?? false,
-        new_notifications: data.new_notifications ?? []
-      };
-    }
+    queryFn: getCart
   });
 };
 

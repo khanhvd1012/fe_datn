@@ -25,6 +25,9 @@ import SearchBox from './SearchBox';
 import Collection from '../../pages/Client/Collection';
 import axios from 'axios';
 import NotificationPopup from './NotificationPopup.tsx';
+import type { ICartItem } from '../../interface/cart.ts';
+import { getCart } from '../../service/cartAPI.tsx';
+import { useCart } from '../../hooks/useCart.ts';
 
 const Header = () => {
   const token = localStorage.getItem('token');
@@ -39,6 +42,10 @@ const Header = () => {
   const collectionRef = useRef<HTMLDivElement>(null);
   const notificationRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+
+  const { data: cartData } = useCart();
+  const items = cartData?.cart_items || [];
+  const cartCount = cartData?.cart_items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
   const { data: user } = useQuery<IUser>({
     queryKey: ['profile'],
@@ -76,22 +83,22 @@ const Header = () => {
 
   const menuItems = token
     ? [
-        {
-          key: '0',
-          label: <span style={{ fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>,
-          disabled: true,
-        },
-        { key: '1', label: <NavLink to="/profile">Thông tin tài khoản</NavLink> },
-        { key: '2', label: <NavLink to="/order-history">Đơn hàng của bạn</NavLink> },
-        ...(userRole === 'admin' || userRole === 'employee'
-          ? [{ key: '3', label: <NavLink to="/admin">Trang quản trị</NavLink> }]
-          : []),
-        { key: '4', label: <span onClick={handleLogout}>Đăng xuất</span>, danger: true },
-      ]
+      {
+        key: '0',
+        label: <span style={{ fontWeight: 'bold' }}>{user?.username || 'Người dùng'}</span>,
+        disabled: true,
+      },
+      { key: '1', label: <NavLink to="/profile">Thông tin tài khoản</NavLink> },
+      { key: '2', label: <NavLink to="/order-history">Đơn hàng của bạn</NavLink> },
+      ...(userRole === 'admin' || userRole === 'employee'
+        ? [{ key: '3', label: <NavLink to="/admin">Trang quản trị</NavLink> }]
+        : []),
+      { key: '4', label: <span onClick={handleLogout}>Đăng xuất</span>, danger: true },
+    ]
     : [
-        { key: '1', label: <NavLink to="/login">Đăng nhập</NavLink> },
-        { key: '2', label: <NavLink to="/register">Đăng ký</NavLink> },
-      ];
+      { key: '1', label: <NavLink to="/login">Đăng nhập</NavLink> },
+      { key: '2', label: <NavLink to="/register">Đăng ký</NavLink> },
+    ];
 
   const menu = <Menu items={menuItems} />;
 
@@ -179,9 +186,31 @@ const Header = () => {
             <SearchOutlined />
           </Icon>
 
-          <Icon onClick={() => setShowCart(true)} style={{ cursor: 'pointer' }}>
+          <Icon onClick={() => setShowCart(true)} style={{ position: 'relative', cursor: 'pointer' }}>
             <ShoppingCartOutlined />
+            {cartCount > 0 && (
+              <span
+                style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-6px',
+                  background: 'red',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '14px',
+                  height: '14px',
+                  fontSize: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1,
+                }}
+              >
+                {cartCount > 9 ? '9+' : cartCount}
+              </span>
+            )}
           </Icon>
+
         </IconGroup>
 
         <HamburgerIcon onClick={toggleMenu} isOpen={isOpen}>
