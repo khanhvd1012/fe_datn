@@ -1,11 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Card, Typography, Spin, message } from 'antd';
+import { useEffect, useRef, useState } from 'react';
+import { Typography, Spin, message, Rate } from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
-const RelatedProducts: React.FC = () => {
+const RelatedProducts = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ const RelatedProducts: React.FC = () => {
 
   return (
     <div style={{ padding: '40px 20px' }}>
-      <Title level={2} style={{ textAlign: 'center', fontSize: '20px', marginBottom: 8 }}>
+      <Title level={2} style={{ textAlign: 'center', fontSize: '20px', marginBottom: 10 }}>
         <span style={{ display: 'inline-block', paddingBottom: 4, position: 'relative' }}>
           Sản phẩm liên quan
           <span
@@ -61,10 +61,6 @@ const RelatedProducts: React.FC = () => {
         </span>
       </Title>
 
-      <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
-        <Text type="secondary" style={{ fontSize: 12 }}>Tự động trượt qua sản phẩm</Text>
-      </div>
-
       {loading ? (
         <div style={{ textAlign: 'center' }}><Spin /></div>
       ) : variants.length === 0 ? (
@@ -79,18 +75,27 @@ const RelatedProducts: React.FC = () => {
           }}
         >
           {variants.map((variant) => {
-            const product = products.find((p) => p.variants.includes(variant._id));
+            if (!variant._id) return null;
+            const product = products.find((p) =>
+              Array.isArray(p.variants) && p.variants.includes(variant._id)
+            );
             if (!product) return null;
 
-            const displayImage =
-              Array.isArray(variant.image_url) && variant.image_url.length > 0
-                ? variant.image_url[0]
-                : product.images?.[0] || 'https://picsum.photos/200';
+            const currentColorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
 
-            const displayPrice =
-              typeof variant.price === 'number'
-                ? `${variant.price.toLocaleString('vi-VN')}đ`
-                : 'Giá đang cập nhật';
+            const sameProductVariants = variants.filter((v) => {
+              const pid = typeof v.product_id === 'object' ? v.product_id._id : v.product_id;
+              const cid = typeof v.color === 'object' ? v.color._id : v.color;
+              return pid === product._id && cid;
+            });
+
+            const sortedByCurrentFirst = sameProductVariants.sort((a, b) => {
+              const aColorId = typeof a.color === 'object' ? a.color._id : a.color;
+              const bColorId = typeof b.color === 'object' ? b.color._id : b.color;
+              if (aColorId === currentColorId) return -1;
+              if (bColorId === currentColorId) return 1;
+              return 0;
+            });
 
             return (
               <div
@@ -102,23 +107,49 @@ const RelatedProducts: React.FC = () => {
                   marginBottom: 20
                 }}
               >
-                <Link to={`/products/${product.slug}`} state={{ variantId: variant._id }} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                  <Card
-                    hoverable
-                    cover={
-                      <img
-                        alt={product.name}
-                        src={displayImage}
-                        style={{ objectFit: 'contain' }}
-                      />
-                    }
-                    style={{ textAlign: 'center' }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                      <Text style={{ fontWeight: 500 }}>{product.name} - {variant.color?.name}</Text>
-                    </div>
-                    <Text strong>{displayPrice}</Text>
-                  </Card>
+                <Link
+                  to={`/products/${product.slug}`}
+                  key={variant._id}
+                  className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
+                  state={{ variantId: variant._id }}
+                >
+                  <img
+                    src={
+                      variant.image_url?.[0] || 'https://picsum.photos/200'
+                    } alt={product.name}
+                    className="w-full h-48 object-cover rounded-md"
+                  />
+                  <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                    {sortedByCurrentFirst.map((v, idx) => {
+                      const colorObj = typeof v.color === 'object' ? v.color : null;
+                      return (
+                        <div
+                          key={idx}
+                          className="w-4 h-4 rounded-full border"
+                          style={{
+                            backgroundColor: colorObj?.code || '#ccc',
+                            borderColor: colorObj?._id === currentColorId ? 'black' : '#ccc',
+                          }}
+                        />
+                      );
+                    })}
+                  </div>
+                  <div className="mt-3 pt-[9px]">
+                    <Text strong>{product.name}</Text>
+                  </div>
+                  <div className="mt-1 pt-[9px]">
+                    <Text style={{ color: 'black' }}>
+                      {variant.price?.toLocaleString('vi-VN')}đ
+                    </Text>
+                  </div>
+                  <div className="mt-1 pt-[6px] flex justify-center items-center gap-1 h-5">
+                    <Rate
+                      disabled
+                      allowHalf
+                      value={variant.averageRating || 0}
+                      style={{ fontSize: 14 }}
+                    />
+                  </div>
                 </Link>
               </div>
             );

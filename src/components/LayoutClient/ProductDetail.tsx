@@ -11,10 +11,7 @@ import type { IColor } from '../../interface/color';
 import { useSizes } from '../../hooks/useSizes';
 import { useColors } from '../../hooks/useColors';
 import type { ISize } from '../../interface/size';
-<<<<<<< HEAD
 import type { IReview } from '../../interface/review';
-=======
->>>>>>> e1c766ebaf8fe6c4bec98551837c27855face717
 import { addToCart as addToCartApi } from "../../service/cartAPI";
 
 const ProductDetail = () => {
@@ -113,23 +110,6 @@ const ProductDetail = () => {
     if (selectedVariant && quantity > (selectedVariant.stock?.quantity ?? 0)) {
       message.warning(`Chỉ còn ${selectedVariant.stock?.quantity ?? 0} sản phẩm trong kho`);
       return;
-    }
-
-    if (!selectedVariant || !selectedVariant._id) {
-      message.warning("Vui lòng chọn phân loại sản phẩm!");
-      return;
-    }
-
-    try {
-      await addToCartApi({
-        variant_id: selectedVariant._id,
-        quantity,
-      });
-      message.success("Đã thêm vào giỏ hàng!");
-      console.log("Thêm vào giỏ hàng:", selectedVariant._id, quantity);
-    } catch (err) {
-      message.error("Thêm vào giỏ hàng thất bại!");
-      console.error(err);
     }
 
     if (!selectedVariant || !selectedVariant._id) {
@@ -345,11 +325,6 @@ const ProductDetail = () => {
                 )}
               </div>
             </div>
-            {selectedVariant && (
-              <div style={{ margin: '8px 0', color: '#000000ff', fontWeight: 500 }}>
-                Số lượng trong kho: {selectedVariant.stock?.quantity ?? 0}
-              </div>
-            )}
             <div className="quantity-control">
               <span className="label">Số lượng:</span>
 

@@ -131,20 +131,16 @@ const EditCategories = () => {
           <Input.TextArea rows={4} placeholder="Nhập mô tả danh mục" />
         </Form.Item>
 
-        <Form.Item label="Ảnh ">
+        <Form.Item label="Ảnh">
           <Upload
-            listType="picture"
-            fileList={fileList}
-            onChange={handleFileChange}
+            name="logo_image"
             beforeUpload={() => false}
+            onChange={handleFileChange}
             maxCount={1}
+            fileList={fileList}
+            listType="picture"
           >
-            {fileList.length < 1 && (
-              <div>
-                <UploadOutlined />
-                <div style={{ marginTop: 8 }}>Chọn ảnh</div>
-              </div>
-            )}
+            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
         </Form.Item>
 

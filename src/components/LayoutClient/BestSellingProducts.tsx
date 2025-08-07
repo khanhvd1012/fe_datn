@@ -17,22 +17,48 @@ const BestSellingProducts: React.FC = () => {
     queryFn: getProducts,
   });
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (sliderRef.current) {
-        const container = sliderRef.current;
-        const scrollAmount = container.offsetWidth;
-        if (container.scrollLeft + scrollAmount >= container.scrollWidth) {
-          container.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
+  const productMap = new Map<string, any>();
+  products.forEach((p) => {
+    p.variants?.forEach((v: any) => {
+      if (typeof v === 'string') {
+        productMap.set(v, p);
       }
-    }, 3000);
+    });
+  });
 
-    return () => clearInterval(interval);
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+
+    const startScroll = () => {
+      interval = setInterval(() => {
+        if (sliderRef.current) {
+          const container = sliderRef.current;
+          const scrollAmount = container.offsetWidth;
+          if (container.scrollLeft + scrollAmount >= container.scrollWidth) {
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+          } else {
+            container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+          }
+        }
+      }, 3000);
+    };
+
+    const container = sliderRef.current;
+    if (container) {
+      container.addEventListener('mouseenter', () => clearInterval(interval));
+      container.addEventListener('mouseleave', startScroll);
+    }
+
+    startScroll();
+
+    return () => {
+      clearInterval(interval);
+      if (container) {
+        container.removeEventListener('mouseenter', () => clearInterval(interval));
+        container.removeEventListener('mouseleave', startScroll);
+      }
+    };
   }, [variants]);
-
 
 
   if (loadingVariants || loadingProducts) {
@@ -66,10 +92,7 @@ const BestSellingProducts: React.FC = () => {
         style={{ display: 'flex', overflowX: 'hidden', scrollBehavior: 'smooth' }}
       >
         {variants.map((variant: IVariant) => {
-          const product = products.find((p) =>
-            Array.isArray(p.variants) &&
-            p.variants.some((v: any) => typeof v === 'string' && v === variant._id)
-          );
+          const product = productMap.get(variant._id ?? '');
           if (!product) return null;
 
           const currentColorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
@@ -82,16 +105,11 @@ const BestSellingProducts: React.FC = () => {
             }
           );
 
-          const sortedByCurrentFirst = [
-            ...sameProductVariants.filter((v) => {
-              const cid = typeof v.color === 'object' ? v.color._id : v.color;
-              return cid === currentColorId;
-            }),
-            ...sameProductVariants.filter((v) => {
-              const cid = typeof v.color === 'object' ? v.color._id : v.color;
-              return cid !== currentColorId;
-            }),
-          ];
+          const sortedByCurrentFirst = sameProductVariants.sort((a, b) => {
+            const aColorId = typeof a.color === 'object' ? a.color._id : a.color;
+            const bColorId = typeof b.color === 'object' ? b.color._id : b.color;
+            return aColorId === currentColorId ? -1 : bColorId === currentColorId ? 1 : 0;
+          });
 
           return (
             <Link
