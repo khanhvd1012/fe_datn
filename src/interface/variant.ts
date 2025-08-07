@@ -11,9 +11,9 @@ export interface IVariant {
     import_price: number;
     gender?: 'unisex' | 'male' | 'female';
     status?: 'inStock' | 'outOfStock';
-    totalSold?: number;        
-    averageRating?: number;      
-    reviewCount?: number;  
+    totalSold?: number;
+    averageRating?: number;
+    reviewCount?: number;
     createdAt?: Date;
     updatedAt?: Date;
 }

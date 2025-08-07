@@ -12,6 +12,7 @@ import { useSizes } from '../../hooks/useSizes';
 import { useColors } from '../../hooks/useColors';
 import type { ISize } from '../../interface/size';
 import type { IReview } from '../../interface/review';
+import { addToCart as addToCartApi } from "../../service/cartAPI";
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -89,7 +90,7 @@ const ProductDetail = () => {
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
-  const addToCart = () => {
+  const addToCart = async() => {
     if (!token) {
       message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
       return;
@@ -105,45 +106,28 @@ const ProductDetail = () => {
       return;
     }
 
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-
-    const existing = cart.find((item: any) =>
-      item._id === product._id &&
-      item.size === selectedSize &&
-      item.color?._id === colorInfo._id
-    );
-
     if (selectedVariant && quantity > (selectedVariant.stock?.quantity ?? 0)) {
       message.warning(`Chỉ còn ${selectedVariant.stock?.quantity ?? 0} sản phẩm trong kho`);
       return;
     }
 
-    if (existing) {
-      existing.quantity += quantity;
-      existing.voucher = selectedVoucherId || null;
-    } else {
-      cart.push({
-        _id: product._id,
-        name: product.name,
-        price: displayPrice,
-        size: selectedSize,
+    if (!selectedVariant || !selectedVariant._id) {
+      message.warning("Vui lòng chọn phân loại sản phẩm!");
+      return;
+    }
+
+    try {
+      await addToCartApi({
+        variant_id: selectedVariant._id,
         quantity,
-        voucher: selectedVoucherId || null,
-        color: {
-          _id: colorInfo._id,
-          name: colorInfo.name,
-          code: colorInfo.code,
-        },
       });
+      message.success("Đã thêm vào giỏ hàng!");
+      console.log("Thêm vào giỏ hàng:", selectedVariant._id, quantity);
+    } catch (err) {
+      message.error("Thêm vào giỏ hàng thất bại!");
+      console.error(err);
     }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-    if (selectedVoucherId) {
-      localStorage.setItem("selected_voucher_id", selectedVoucherId);
-    }
-    message.success("Đã thêm vào giỏ hàng!");
   };
-
 
   const handleToggleVouchers = () => {
     if (!showVouchers && vouchers.length === 0) {
