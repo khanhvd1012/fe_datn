@@ -135,19 +135,23 @@ const Orders = () => {
       key: "status",
       render: (status: IOrder["status"]) => {
         const colorMap = {
-          pending: "orange",
-          processing: "blue",
-          shipped: "purple",
-          delivered: "green",
-          canceled: "red",
+          pending: "orange",      // Đang chờ xác nhận
+          processing: "blue",     // Đang xử lý
+          shipped: "purple",      // Đã gửi hàng
+          delivered: "green",     // Đã giao hàng
+          canceled: "red",        // Đã huỷ
+          returned: "magenta",    // Đã trả hàng
         };
+
         const labelMap = {
           pending: "Chờ xử lý",
           processing: "Đang xử lý",
           shipped: "Đang giao",
           delivered: "Đã giao",
           canceled: "Đã hủy",
+          returned: "Đã trả hàng",
         };
+
         return <Tag color={colorMap[status]}>{labelMap[status]}</Tag>;
       },
     },
@@ -161,21 +165,29 @@ const Orders = () => {
           shipped: 2,
           delivered: 3,
           canceled: 4,
+          returned: 5,
         };
+
 
         const labelMap: Partial<Record<IOrder["status"], string>> = {
           pending: "Chờ xử lý",
           processing: "Đang xử lý",
           shipped: "Đang giao",
           delivered: "Đã giao",
+          // canceled: "Đã hủy",
+          returned: "Đã trả hàng",
         };
+
 
         const valueMap: Record<string, IOrder["status"]> = {
           "Chờ xử lý": "pending",
           "Đang xử lý": "processing",
           "Đang giao": "shipped",
           "Đã giao": "delivered",
+          // "Đã hủy": "canceled",
+          "Đã trả hàng": "returned",
         };
+
 
         const currentStatusIndex = statusOrder[order.status];
 
@@ -187,7 +199,7 @@ const Orders = () => {
               const statusEng = valueMap[label];
               handleUpdateStatus(order._id!, statusEng);
             }}
-            disabled={order.status === "delivered" || order.status === "canceled"}
+            disabled={order.status === "delivered" || order.status === "canceled" || order.status === "returned" }
           >
             {Object.entries(labelMap)
               .filter(([key]) => statusOrder[key as IOrder["status"]] > currentStatusIndex)
@@ -214,7 +226,8 @@ const Orders = () => {
           {/* Nút hủy đơn hàng, chỉ hiển thị nếu đơn hàng chưa bị hủy hoặc giao xong */}
           {record.status !== "canceled" &&
             record.status !== "shipped" &&
-            record.status !== "delivered" && (
+            record.status !== "delivered" &&
+             record.status !== "returned" && (
               <Popconfirm
                 title="Bạn chắc chắn muốn hủy đơn hàng này?"
                 onConfirm={() => handleCancel(record._id!)}
@@ -259,14 +272,21 @@ const Orders = () => {
         onClose={() => setDrawerVisible(false)}
       />
       <Modal
-        title="lý do hủy đơn hàng"
+        title="Lý do hủy đơn hàng"
         open={cancelModalVisible}
         onCancel={() => setCancelModalVisible(false)}
         onOk={() => setCancelModalVisible(false)}
-        // okText="Đóng"
+        okText="Đóng"
+        cancelButtonProps={{ style: { display: 'none' } }}
       >
-        <p><strong>Nội dung:</strong>  {selectedCancelReason}</p>
+        <div style={{ lineHeight: 1.6 }}>
+          <strong>Nội dung:</strong>
+          <div style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+            {selectedCancelReason}
+          </div>
+        </div>
       </Modal>
+
     </div>
   );
 };
