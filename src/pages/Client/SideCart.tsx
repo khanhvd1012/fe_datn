@@ -3,6 +3,7 @@ import { CloseOutlined } from '@ant-design/icons';
 import { Link, useLocation } from 'react-router-dom';
 import { useCart, useRemoveFromCart, useUpdateCartItem } from '../../hooks/useCart';
 import { getColorById } from '../../service/colorAPI';
+import { message } from 'antd';
 
 const SideCart = ({ onClose }: { onClose: () => void }) => {
   const { mutate: updateCartItem } = useUpdateCartItem();
@@ -148,12 +149,21 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                         <div className="flex items-center">
                           <button
                             className="w-6 h-6 border border-gray-400 text-sm"
-                            onClick={() =>
-                              updateCartItem({
-                                variant_id: variant._id,
-                                quantity: item.quantity - 1,
-                              })
-                            }
+                            onClick={() => {
+                              if (item.quantity == 1) {
+                                // removeFromCart(item);
+                                message.success("Đã xóa sản phẩm khỏi giỏ hàng!");
+                                updateCartItem({
+                                  variant_id: variant._id,
+                                  quantity: item.quantity - 1,
+                                });
+                              } else {
+                                updateCartItem({
+                                  variant_id: variant._id,
+                                  quantity: item.quantity - 1,
+                                });
+                              }
+                            }}
                           >
                             -
                           </button>
@@ -185,7 +195,9 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
                           </button>
                           <button
                             className="ml-10 text-red-400 hover:text-red-500"
-                            onClick={() => removeFromCart(item)}
+                            onClick={() => {
+                              removeFromCart(item);
+                            }}
                             title="Xóa sản phẩm"
                           >
                             <CloseOutlined />
@@ -219,11 +231,22 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
             XEM GIỎ HÀNG
           </Link>
           <Link
-            to="/checkout"
-            className="bg-black text-white w-1/2 py-2 text-sm text-center flex items-center justify-center"
-          >
-            THANH TOÁN
-          </Link>
+  to={cart.length === 0 ? "#" : "/checkout"}
+  onClick={(e) => {
+    if (cart.length === 0) {
+      e.preventDefault();
+      message.warning("Giỏ hàng trống, không thể thanh toán!");
+    }
+  }}
+  className={`w-1/2 py-2 text-sm text-center flex items-center justify-center transition-all
+    ${cart.length === 0
+      ? "bg-gray-400 text-white cursor-not-allowed"
+      : "bg-black text-white hover:bg-gray-800"
+    }`}
+>
+  THANH TOÁN
+</Link>
+
         </div>
 
         <button className="bg-blue-700 hover:bg-blue-800 text-white text-sm py-2 w-full">
