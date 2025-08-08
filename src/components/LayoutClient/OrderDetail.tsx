@@ -24,6 +24,7 @@ const statusColor: Record<string, string> = {
     shipped: 'purple',
     delivered: 'green',
     canceled: 'red',
+    returned: 'gray',
 };
 
 const OrderDetail = () => {
@@ -290,6 +291,7 @@ const OrderDetail = () => {
                             {order.status === 'shipped' && 'Đang giao'}
                             {order.status === 'delivered' && 'Đã giao'}
                             {order.status === 'canceled' && 'Đã hủy'}
+                            {order.status === 'returned' && 'Đã trả hàng'}
                         </Tag>
                     </Descriptions.Item>
                     <Descriptions.Item label="Người nhận">
