@@ -231,21 +231,21 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
             XEM GIỎ HÀNG
           </Link>
           <Link
-  to={cart.length === 0 ? "#" : "/checkout"}
-  onClick={(e) => {
-    if (cart.length === 0) {
-      e.preventDefault();
-      message.warning("Giỏ hàng trống, không thể thanh toán!");
-    }
-  }}
-  className={`w-1/2 py-2 text-sm text-center flex items-center justify-center transition-all
+            to={cart.length === 0 ? "#" : "/checkout"}
+            onClick={(e) => {
+              if (cart.length === 0) {
+                e.preventDefault();
+                message.warning("Giỏ hàng trống, không thể thanh toán!");
+              }
+            }}
+            className={`w-1/2 py-2 text-sm text-center flex items-center justify-center transition-all
     ${cart.length === 0
-      ? "bg-gray-400 text-white cursor-not-allowed"
-      : "bg-black text-white hover:bg-gray-800"
-    }`}
->
-  THANH TOÁN
-</Link>
+                ? "bg-gray-400 text-white cursor-not-allowed"
+                : "bg-black text-white hover:bg-gray-800"
+              }`}
+          >
+            THANH TOÁN
+          </Link>
 
         </div>
 

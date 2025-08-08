@@ -10,6 +10,8 @@ import {
   Modal,
 
 } from "antd";
+import { DatePicker, Input } from "antd";
+
 import React, { useState } from "react";
 import { useAdminOrders, useCancelOrder, useUpdateOrderStatus } from "../../../hooks/useOrder";
 import { useUsers } from "../../../hooks/useUser";
@@ -32,6 +34,41 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
   const [selectedCancelReason, setSelectedCancelReason] = useState('');
+  const [filters, setFilters] = useState({
+    user: "",
+    createdAt: "",
+    status: "",
+    orderCode: "",
+  });
+  const handleFilterChange = (value: string, key: keyof typeof filters) => {
+    setFilters({ ...filters, [key]: value });
+  };
+  const filteredOrders = orders?.filter((order) => {
+    const user = users?.find((u) => u._id === order.user_id);
+    const username = user?.username?.toLowerCase() || "";
+
+    if (filters.user && !username.includes(filters.user.toLowerCase())) {
+      return false;
+    }
+
+    if (
+      filters.createdAt &&
+      dayjs(order.createdAt).format("DD/MM/YYYY") !== filters.createdAt
+    ) {
+      return false;
+    }
+
+    if (filters.status && order.status !== filters.status) {
+      return false;
+    }
+    if (filters.orderCode && !order._id.toLowerCase().includes(filters.orderCode.toLowerCase())) {
+      return false;
+    }
+
+    return true;
+  });
+
+
 
   const handleUpdateStatus = (id: string, newStatus: IOrder["status"]) => {
     updateStatus(
@@ -79,12 +116,45 @@ const Orders = () => {
       title: "Mã đơn",
       dataIndex: "_id",
       key: "_id",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm mã đơn"
+            value={filters.orderCode}
+            onChange={(e) => handleFilterChange(e.target.value, "orderCode")}
+            prefix={<SearchOutlined />}
+            allowClear
+            style={{ width: 200 }}
+          />
+        </div>
+      ),
+      filterIcon: () => (
+        <FilterOutlined style={{ color: filters.orderCode ? "#1890ff" : undefined }} />
+      ),
       render: (id: string) => <Tag color="blue">#{id.slice(-6).toUpperCase()}</Tag>,
     },
+
     {
       title: "Người đặt",
       dataIndex: "user_id",
       key: "user_id",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm tên người dùng"
+            value={filters.user}
+            onChange={(e) => handleFilterChange(e.target.value, "user")}
+            prefix={<SearchOutlined />}
+            allowClear
+            style={{ width: "200px" }}
+          />
+        </div>
+      ),
+      filterIcon: () => (
+        <FilterOutlined
+          style={{ color: filters.user ? "#1890ff" : undefined }}
+        />
+      ),
       render: (userId: string) => {
         const user = users?.find((u) => u._id === userId);
         return user?.username || "Không rõ";
@@ -94,8 +164,24 @@ const Orders = () => {
       title: "Ngày đặt",
       dataIndex: "createdAt",
       key: "createdAt",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
+          <DatePicker
+            placeholder="Chọn ngày"
+            format="DD/MM/YYYY"
+            value={filters.createdAt ? dayjs(filters.createdAt, "DD/MM/YYYY") : null}
+            onChange={(_, dateString) => handleFilterChange(dateString, "createdAt")}
+            allowClear
+            style={{ width: "100%" }}
+          />
+        </div>
+      ),
+      filterIcon: () => (
+        <FilterOutlined style={{ color: filters.createdAt ? "#1890ff" : undefined }} />
+      ),
       render: (date: string) => dayjs(date).format("HH:mm DD/MM/YYYY"),
     },
+
 
     {
       title: "Tổng gốc",
@@ -133,14 +219,35 @@ const Orders = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
+          <Select
+            placeholder="Chọn trạng thái"
+            style={{ width: 160 }}
+            allowClear
+            value={filters.status || undefined}
+            onChange={(value) => handleFilterChange(value || "", "status")}
+          >
+            <Select.Option value="pending">Chờ xử lý</Select.Option>
+            <Select.Option value="processing">Đang xử lý</Select.Option>
+            <Select.Option value="shipped">Đang giao</Select.Option>
+            <Select.Option value="delivered">Đã giao</Select.Option>
+            <Select.Option value="canceled">Đã hủy</Select.Option>
+            <Select.Option value="returned">Đã trả hàng</Select.Option>
+          </Select>
+        </div>
+      ),
+      filterIcon: () => (
+        <FilterOutlined style={{ color: filters.status ? "#1890ff" : undefined }} />
+      ),
       render: (status: IOrder["status"]) => {
         const colorMap = {
-          pending: "orange",      // Đang chờ xác nhận
-          processing: "blue",     // Đang xử lý
-          shipped: "purple",      // Đã gửi hàng
-          delivered: "green",     // Đã giao hàng
-          canceled: "red",        // Đã huỷ
-          returned: "magenta",    // Đã trả hàng
+          pending: "orange",
+          processing: "blue",
+          shipped: "purple",
+          delivered: "green",
+          canceled: "red",
+          returned: "magenta",
         };
 
         const labelMap = {
@@ -199,7 +306,7 @@ const Orders = () => {
               const statusEng = valueMap[label];
               handleUpdateStatus(order._id!, statusEng);
             }}
-            disabled={order.status === "delivered" || order.status === "canceled" || order.status === "returned" }
+            disabled={order.status === "delivered" || order.status === "canceled" || order.status === "returned"}
           >
             {Object.entries(labelMap)
               .filter(([key]) => statusOrder[key as IOrder["status"]] > currentStatusIndex)
@@ -227,7 +334,7 @@ const Orders = () => {
           {record.status !== "canceled" &&
             record.status !== "shipped" &&
             record.status !== "delivered" &&
-             record.status !== "returned" && (
+            record.status !== "returned" && (
               <Popconfirm
                 title="Bạn chắc chắn muốn hủy đơn hàng này?"
                 onConfirm={() => handleCancel(record._id!)}
@@ -262,10 +369,10 @@ const Orders = () => {
       <Table
         rowKey="_id"
         columns={columns}
-        // dataSource={orders}
-        dataSource={[...orders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
+        dataSource={[...filteredOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
         pagination={{ pageSize: 10 }}
       />
+
       <DrawerOrder
         visible={drawerVisible}
         order={selectedOrder}
