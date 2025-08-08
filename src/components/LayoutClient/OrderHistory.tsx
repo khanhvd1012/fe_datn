@@ -25,6 +25,7 @@ const statusColor: Record<string, string> = {
   shipped: 'purple',
   delivered: 'green',
   canceled: 'red',
+  returned: 'gray',
 };
 
 const statusLabels: Record<string, string> = {
@@ -33,6 +34,7 @@ const statusLabels: Record<string, string> = {
   shipped: 'Đang giao',
   delivered: 'Đã giao',
   canceled: 'Đã hủy',
+  returned: 'Đã trả hàng',
 };
 
 const OrderHistory = () => {
@@ -262,7 +264,7 @@ const OrderHistory = () => {
 
                       <div className="text-green-600 font-semibold">
                         Tổng tiền:{' '}
-                        {(order.total_price || 0).toLocaleString('vi-VN')}đ
+                        {(order.total_price || 0).toLocaleString('en-US')}$
                       </div>
                     </div>
 
