@@ -31,14 +31,14 @@ const OrderDetail = () => {
     const navigate = useNavigate();
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
-    const [sizeMap, setSizeMap] = useState<Record<string, number>>({});
-    const [colorMap, setColorMap] = useState<Record<string, { name: string; code: string }>>({});
-    const [imageMap, setImageMap] = useState<Record<string, string>>({});
+    const [variantMap, setVariantMap] = useState<Record<string, any>>({});
     const [userShipping, setUserShipping] = useState<{
         full_name: string;
         phone: string;
         address: string;
     } | null>(null);
+    const [colorMap, setColorMap] = useState<Record<string, any>>({});
+
     const handleCancel = () => {
         let cancelReason = "";
 
@@ -76,7 +76,6 @@ const OrderDetail = () => {
                     );
 
                     message.success("Hủy đơn hàng thành công");
-                    // Reload lại chi tiết đơn:
                     window.location.reload();
                 } catch (error) {
                     console.error("Lỗi khi hủy đơn hàng:", error);
@@ -85,80 +84,49 @@ const OrderDetail = () => {
             },
         });
     };
-    const fetchSizes = async () => {
+
+    const fetchOrder = async () => {
         try {
-            const res = await axios.get('http://localhost:3000/api/sizes');
-            const map: Record<string, number> = {};
-            res.data.sizes.forEach((s: any) => {
-                map[s._id] = s.size;
+            const token = localStorage.getItem("token");
+            const res = await axios.get(`http://localhost:3000/api/orders/${id}`, {
+                headers: { Authorization: `Bearer ${token}` },
             });
-            setSizeMap(map);
+            setOrder(res.data);
         } catch (err) {
-            console.error('Không lấy được size', err);
+            console.error("Lỗi khi lấy chi tiết đơn hàng:", err);
+            message.error("Không thể tải chi tiết đơn hàng");
+        } finally {
+            setLoading(false);
         }
     };
 
-    const fetchVariantImages = async (items: any[]) => {
-        const newImageMap: Record<string, string> = {};
+    const fetchVariantDetails = async (items: any[]) => {
+        const map: Record<string, any> = {};
+
         for (const item of items) {
             const variantId = item.variant_id?._id || item.variant_id;
-            if (!variantId || newImageMap[variantId]) continue;
+            if (!variantId || map[variantId]) continue;
+
             try {
                 const res = await axios.get(`http://localhost:3000/api/variants/${variantId}`);
-                const img = res.data?.data?.image_url?.[0] || '';
-                newImageMap[variantId] = img;
+                map[variantId] = res.data?.data;
+                console.log(`Dữ liệu variant ${variantId}:`, map[variantId]);
             } catch (error) {
-                console.error("Không lấy được ảnh cho variant:", variantId, error);
-                newImageMap[variantId] = '';
+                console.error("Không lấy được thông tin biến thể:", variantId, error);
             }
         }
-        setImageMap((prev) => ({ ...prev, ...newImageMap }));
+
+
+        setVariantMap(map);
     };
 
     useEffect(() => {
-        const fetchColors = async () => {
-            try {
-                const res = await axios.get('http://localhost:3000/api/colors');
-                const map: Record<string, { name: string; code: string }> = {};
-                res.data.colors.forEach((color: any) => {
-                    map[color._id] = {
-                        name: color.name,
-                        code: color.code
-                    };
-                });
-                setColorMap(map);
-            } catch (err) {
-                console.error("Lỗi khi lấy danh sách màu:", err);
-            }
-        };
-
-        fetchColors();
-    }, []);
-
-    useEffect(() => {
-        const fetchOrder = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                const res = await axios.get(`http://localhost:3000/api/orders/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-
-                setOrder(res.data);
-            } catch (err) {
-                console.error("Lỗi khi lấy chi tiết đơn hàng:", err);
-                message.error("Không thể tải chi tiết đơn hàng");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchSizes();
         fetchOrder();
     }, [id]);
 
     useEffect(() => {
         if (order?.items?.length) {
-            fetchVariantImages(order.items);
+            fetchVariantDetails(order.items);
         }
     }, [order]);
 
@@ -199,12 +167,44 @@ const OrderDetail = () => {
         fetchUserProfileAndMatchAddress();
     }, [order]);
 
+    useEffect(() => {
+        const fetchColors = async () => {
+            const uniqueColorIds = Array.from(
+                new Set(Object.values(variantMap).map((v: any) => v?.color).filter(Boolean))
+            );
+
+            const newColorMap: Record<string, any> = {};
+
+            for (const colorId of uniqueColorIds) {
+                if (colorMap[colorId]) continue;
+
+                try {
+
+                    const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
+                    //  console.log('Color info:', res.data);
+                    newColorMap[colorId] = res.data;
+                } catch (err) {
+                    console.error("Không lấy được màu:", colorId, err);
+                }
+            }
+
+            setColorMap(prev => ({ ...prev, ...newColorMap }));
+        };
+
+        if (Object.keys(variantMap).length) {
+            fetchColors();
+        }
+    }, [variantMap]);
+
+
+
     const columns = [
         {
             title: 'Hình ảnh',
             render: (_: any, record: any) => {
                 const variantId = record.variant_id?._id || record.variant_id;
-                const imageUrl = imageMap[variantId];
+                const variant = variantMap[variantId];
+                const imageUrl = variant?.image_url?.[0];
                 return (
                     <Image
                         width={60}
@@ -223,13 +223,20 @@ const OrderDetail = () => {
         },
         {
             title: 'Size',
-            render: (_: any, record: any) =>
-                <>{sizeMap[record.variant_id?.size] || 'Không rõ'}</>,
+            render: (_: any, record: any) => {
+                const variantId = record.variant_id?._id || record.variant_id;
+                const variant = variantMap[variantId];
+                return <>{variant?.size?.size || 'Không rõ'}</>;
+            },
         },
         {
             title: 'Màu sắc',
             render: (_: any, record: any) => {
-                const color = colorMap[record.variant_id?.color];
+                const variantId = record.variant_id?._id || record.variant_id;
+                const variant = variantMap[variantId];
+                const colorId = variant?.color;
+                const color = colorMap[colorId];
+
                 if (!color) return <span>Không rõ</span>;
 
                 return (
@@ -239,12 +246,12 @@ const OrderDetail = () => {
                                 width: 16,
                                 height: 16,
                                 display: 'inline-block',
-                                backgroundColor: color.code || '#ccc',
+                                backgroundColor: color?.color.code || '#ccc',
                                 border: '1px solid #ccc',
                                 borderRadius: 4
                             }}
                         ></span>
-                        <span>{color.name}</span>
+                        <span>{color?.colorname}</span>
                     </div>
                 );
             }
@@ -277,12 +284,11 @@ const OrderDetail = () => {
                         {new Date(order.createdAt).toLocaleString('vi-VN')}
                     </Descriptions.Item>
                     <Descriptions.Item label="Trạng thái">
-
                         <Tag color={statusColor[order.status] || 'default'}>
                             {order.status === 'pending' && 'Chờ xác nhận'}
                             {order.status === 'processing' && 'Đã xác nhận'}
                             {order.status === 'shipped' && 'Đang giao'}
-                            {order.status === 'delivered    ' && 'Đã giao'}
+                            {order.status === 'delivered' && 'Đã giao'}
                             {order.status === 'canceled' && 'Đã hủy'}
                         </Tag>
                     </Descriptions.Item>
@@ -329,7 +335,6 @@ const OrderDetail = () => {
                         </Button>
                     )}
                 </div>
-
             </Card>
         </div>
     );

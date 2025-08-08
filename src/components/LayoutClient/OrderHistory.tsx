@@ -15,7 +15,7 @@ import {
   Tabs,
 } from 'antd';
 import Breadcrumb from './Breadcrumb';
-
+import { getVariantById } from '../../service/variantAPI';
 const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
@@ -131,28 +131,19 @@ const OrderHistory = () => {
 
             const itemsWithDetails = await Promise.all(
               (detailRes.data.items || []).map(async (item: any) => {
-                const sizeId = item.variant_id?.size;
-                const sizeName = sizeId
-                  ? await fetchSizeName(sizeId)
-                  : 'Không rõ';
 
                 const variantId = item.variant_id?._id;
-
-                const imageUrl = await axios
+                console.log('variantId:', variantId);
+                const variantData = await axios
                   .get(`http://localhost:3000/api/variants/${variantId}`)
-                  .then(
-                    (res) =>
-                      res.data?.data?.image_url?.[0] ?? 'Không có ảnh'
-                  )
+                  .then((res) => res.data?.data)
                   .catch((err) => {
-                    console.error(
-                      'Không lấy được ảnh cho variant:',
-                      variantId,
-                      err
-                    );
-                    return 'Không có ảnh';
+                    console.error('Không lấy được variant:', variantId, err);
+                    return null;
                   });
 
+                const imageUrl = variantData?.image_url?.[0] ?? 'Không có ảnh';
+                const sizeName = variantData?.size?.size ?? 'Không có size';
                 return {
                   ...item,
                   sizeName,
