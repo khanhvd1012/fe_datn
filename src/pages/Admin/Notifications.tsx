@@ -10,7 +10,7 @@ import {
   Empty,
   Tag,
 } from 'antd';
-import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { CheckCircleTwoTone, ExclamationCircleOutlined } from '@ant-design/icons';
 import {
   useDeleteAllReadNotifications,
   useDeleteNotification,
@@ -70,7 +70,7 @@ const Notifications = () => {
     <div>
       <Title level={3}>Thông báo cho Admin</Title>
       <Space style={{ marginBottom: 16 }}>
-        <Badge count={unreadCount} showZero>
+        <Badge count={unreadCount}>
           <Button onClick={handleMarkAllAsRead}>Đánh dấu tất cả đã đọc</Button>
         </Badge>
         <Popconfirm
@@ -89,14 +89,25 @@ const Notifications = () => {
         <List
           bordered
           dataSource={allData}
+          pagination={{
+            pageSize: 6,
+            showSizeChanger: false,
+            position: 'bottom',
+          }}
           renderItem={(item) => (
             <List.Item
               actions={[
-                !item.read && (
-                  <Button size="small" onClick={() => handleMarkAsRead(item._id)}>
-                    Đánh dấu đã đọc
-                  </Button>
-                ),
+                <Button
+                  size="small"
+                  onClick={() => handleMarkAsRead(item._id)}
+                  disabled={item.read}
+                >
+                  {item.read ? (
+                    <CheckCircleTwoTone twoToneColor="#52c41a" />
+                  ) : (
+                    'Đánh dấu đã đọc'
+                  )}
+                </Button>,
                 <Popconfirm
                   title="Bạn có chắc muốn xoá thông báo này?"
                   onConfirm={() => handleDelete(item._id)}

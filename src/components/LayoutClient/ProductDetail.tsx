@@ -31,7 +31,7 @@ const ProductDetail = () => {
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const { mutate: addToCartMutate, isPending } = useAddToCart();
   const { data: product, isLoading } = useProductBySlug(slug || '');
-
+  
   const [reviews, setReviews] = useState<IReview[]>([]);
   const getColorInfo = (id: string) => {
     return colors.find((c: IColor) => c._id === id) || null;
@@ -100,7 +100,7 @@ const ProductDetail = () => {
   const handleDecrease = () => {
     if (quantity > 1) setQuantity(q => q - 1);
   };
-
+  
   const addToCart = () => {
     if (!token) {
       message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
@@ -323,6 +323,7 @@ const ProductDetail = () => {
                     <button
                       key={sizeId}
                       className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
+                      onClick={() => setSelectedSize(sizeId)}
                     >
                       {getSizeName(sizeId)}
                     </button>

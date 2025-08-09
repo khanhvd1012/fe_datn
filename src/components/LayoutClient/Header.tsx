@@ -5,7 +5,7 @@ import {
   ShoppingCartOutlined,
   BellOutlined,
 } from '@ant-design/icons';
-import { Avatar, Dropdown, Menu, message } from 'antd';
+import { Avatar, Badge, Dropdown, List, Menu, message, Popover } from 'antd';
 import {
   HeaderTop,
   HeaderMain,
@@ -24,10 +24,11 @@ import type { IUser } from '../../interface/user';
 import SearchBox from './SearchBox';
 import Collection from '../../pages/Client/Collection';
 import axios from 'axios';
-import NotificationPopup from './NotificationPopup.tsx';
-import type { ICartItem } from '../../interface/cart.ts';
-import { getCart } from '../../service/cartAPI.tsx';
 import { useCart } from '../../hooks/useCart.ts';
+import { useMarkNotificationAsRead, useNotifications } from '../../hooks/useNotification.ts';
+import dayjs from 'dayjs';
+import Text from 'antd/es/typography/Text';
+import type { IProduct } from '../../interface/order.ts';
 
 const Header = () => {
   const token = localStorage.getItem('token');
@@ -37,11 +38,11 @@ const Header = () => {
   const [showCart, setShowCart] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [showCollectionMenu, setShowCollectionMenu] = useState(false);
-  const [products, setProducts] = useState([]);
-  const [showNotification, setShowNotification] = useState(false);
+  const [products, setProducts] = useState<IProduct[]>([]);
   const collectionRef = useRef<HTMLDivElement>(null);
-  const notificationRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
+  const { data: notis } = useNotifications();
+  const { mutate: markAsRead } = useMarkNotificationAsRead();
 
   const { data: cartData } = useCart();
   const items = cartData?.cart_items || [];
@@ -53,6 +54,50 @@ const Header = () => {
     enabled: !!token,
     retry: false,
   });
+
+  const allNotis = [...(notis || [])]
+    .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
+    .slice(0, 5);
+
+  const unreadCount = allNotis.filter((n) => !n.read).length;
+
+  const [visible, setVisible] = useState(false);
+
+  const handleNotificationClick = (id: string, read: boolean) => {
+    if (!read) markAsRead(id);
+    setVisible(false);
+    navigate('/notifications');
+  };
+
+  const notificationContent = (
+    <div style={{ width: 320, maxHeight: 320, overflowY: 'auto' }}>
+      {allNotis.length === 0 ? (
+        <div style={{ padding: 16 }}>Không có thông báo</div>
+      ) : (
+        <List
+          dataSource={allNotis}
+          renderItem={(item) => (
+            <List.Item
+              style={{ cursor: 'pointer', backgroundColor: item.read ? '#fff' : '#f6f6f6' }}
+              onClick={() => handleNotificationClick(item._id, item.read)}
+            >
+              <List.Item.Meta
+                title={<Text strong>{item.title}</Text>}
+                description={
+                  <>
+                    <div>{item.message}</div>
+                    <div style={{ fontSize: 12, color: '#999' }}>
+                      {dayjs(item.createdAt).format('HH:mm DD/MM/YYYY')}
+                    </div>
+                  </>
+                }
+              />
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
 
   useEffect(() => {
     axios.get('http://localhost:3000/api/products')
@@ -115,26 +160,6 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        notificationRef.current &&
-        !notificationRef.current.contains(event.target as Node)
-      ) {
-        setShowNotification(false);
-      }
-    };
-
-    const handleScroll = () => setShowNotification(false);
-
-    document.addEventListener('mousedown', handleClickOutside);
-    window.addEventListener('scroll', handleScroll);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
   const handleOpenSearch = useCallback(() => setShowSearch(true), []);
   const handleCloseSearch = useCallback(() => setShowSearch(false), []);
 
@@ -178,9 +203,17 @@ const Header = () => {
               )}
             </div>
           </Dropdown>
-          <Icon onClick={() => setShowNotification(true)} style={{ cursor: 'pointer' }}>
-            <BellOutlined />
-          </Icon>
+          <Popover
+            content={notificationContent}
+            trigger="click"
+            placement="bottomRight"
+            open={visible}
+            onOpenChange={(open) => setVisible(open)}
+          >
+            <Badge count={unreadCount} offset={[-4, 4]} style={{ cursor: 'pointer' }}>
+              <BellOutlined />
+            </Badge>
+          </Popover>
 
           <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer' }}>
             <SearchOutlined />
@@ -224,12 +257,6 @@ const Header = () => {
         <div ref={collectionRef}>
           <Collection onClose={() => setShowCollectionMenu(false)} />
         </div>
-      )}
-      {showNotification && (
-        <NotificationPopup
-          onClose={() => setShowNotification(false)}
-          wrapperRef={notificationRef}
-        />
       )}
     </>
   );

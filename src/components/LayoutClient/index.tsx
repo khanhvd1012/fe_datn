@@ -23,6 +23,7 @@ import OrderDetail from './OrderDetail';
 import ProductReview from './ProductReview';
 import BlogDetail from '../../pages/Client/BlogDetail';
 import CheckoutFailed from './CheckoutFailed';
+import NotificationPopup from './NotificationPopup';
 
 
 const IndexClient = () => {
@@ -69,7 +70,7 @@ const IndexClient = () => {
           <Route path="/OrderDetail/:id" element={<OrderDetail />} />
           <Route path="/ProductReview" element={<ProductReview />} />
           <Route path="/blog/:id" element={<BlogDetail />} />
-
+          <Route path="/notifications" element={<NotificationPopup />} />
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
