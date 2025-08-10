@@ -210,8 +210,19 @@ const Header = () => {
             open={visible}
             onOpenChange={(open) => setVisible(open)}
           >
-            <Badge count={unreadCount} offset={[-4, 4]} style={{ cursor: 'pointer' }}>
-              <BellOutlined />
+            <Badge count={unreadCount} offset={[6, 0]} size="small">
+              <span
+                style={{
+                  fontSize: 20, // kích thước icon
+                  lineHeight: '20px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                <BellOutlined />
+              </span>
             </Badge>
           </Popover>
 

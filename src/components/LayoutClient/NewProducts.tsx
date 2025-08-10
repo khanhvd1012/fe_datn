@@ -4,6 +4,8 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { LeftOutlined, RightOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import { useAddToCart } from '../../hooks/useCart';
+import { useReviews } from '../../hooks/useReview';
+import type { IReview } from '../../interface/review';
 
 
 const { Title, Text } = Typography;
@@ -13,6 +15,7 @@ const NewProducts = () => {
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const { mutate: addToCart } = useAddToCart();
+  const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const sliderRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,6 +34,19 @@ const NewProducts = () => {
         setLoading(false);
       });
   }, []);
+
+  const getAverageRatingForVariant = (variantId: string, reviews: IReview[]) => {
+      const relatedReviews = reviews.filter(r => {
+        const variant = r.order_item?.variant_id;
+        const variantIdInReview = typeof variant === 'string' ? variant : variant?._id;
+        return variantIdInReview === variantId;
+      });
+  
+      if (relatedReviews.length === 0) return 0;
+  
+      const total = relatedReviews.reduce((sum, r) => sum + r.rating, 0);
+      return total / relatedReviews.length;
+    };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -52,6 +68,14 @@ const NewProducts = () => {
     const dateB = new Date(b.createdAt).getTime();
     return dateB - dateA;
   });
+
+  if (loadingReviews) {
+    return (
+      <div className="text-center py-10">
+        <Spin />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '40px 20px' }}>
@@ -145,8 +169,11 @@ const NewProducts = () => {
               const product = products.find(
                 (p) => p._id === (variant.product_id?._id || variant.product_id)
               );
+
+              const rating = getAverageRatingForVariant(variant._id!, reviews);
+
               if (!product) return null;
-              
+
               return (
                 <div
                   key={variant._id}
@@ -164,25 +191,25 @@ const NewProducts = () => {
                     onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                   >
                     <div className="relative">
-                    <img
-                      src={variant.image_url?.[0] || 'https://picsum.photos/200'}
-                      alt={product.name}
-                      className="w-full h-48 object-cover rounded-md"
-                    />
+                      <img
+                        src={variant.image_url?.[0] || 'https://picsum.photos/200'}
+                        alt={product.name}
+                        className="w-full h-48 object-cover rounded-md"
+                      />
 
-                    <div className="absolute top-2 right-2 z-10">
-                      <div
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          addToCart({ variant_id: variant._id!, quantity: 1 });
-                        }}
-                        className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
-                      >
-                        <ShoppingCartOutlined />
+                      <div className="absolute top-2 right-2 z-10">
+                        <div
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            addToCart({ variant_id: variant._id!, quantity: 1 });
+                          }}
+                          className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
+                        >
+                          <ShoppingCartOutlined />
+                        </div>
                       </div>
                     </div>
-                  </div>
                     <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
                       {sortedByCurrentFirst.map((v, idx) => {
                         const colorObj = typeof v.color === 'object' ? v.color : null;
@@ -216,7 +243,7 @@ const NewProducts = () => {
                       <Rate
                         disabled
                         allowHalf
-                        value={variant.averageRating || 0}
+                        value={rating}
                         style={{ fontSize: 14 }}
                       />
                     </div>

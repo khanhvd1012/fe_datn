@@ -7,6 +7,8 @@ import { useBrands } from '../../hooks/useBrands';
 import { useCategories } from '../../hooks/useCategories';
 import Breadcrumb from './Breadcrumb';
 import { useAddToCart } from '../../hooks/useCart';
+import { useReviews } from '../../hooks/useReview';
+import type { IReview } from '../../interface/review';
 
 const { Title, Text } = Typography;
 
@@ -27,7 +29,7 @@ const CollectionPage = () => {
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const sliderRef = useRef<HTMLDivElement>(null);
-
+  const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const matchedBrand = brands.find((b: any) => slugify(b.name) === slug);
   const matchedCategory = categories.find((c: any) => slugify(c.name) === slug);
   const filterField = matchedBrand ? 'brand' : matchedCategory ? 'category' : null;
@@ -83,7 +85,26 @@ const CollectionPage = () => {
     return () => clearInterval(interval);
   }, [variants]);
 
+  const getAverageRatingForVariant = (variantId: string, reviews: IReview[]) => {
+      const relatedReviews = reviews.filter(r => {
+        const variant = r.order_item?.variant_id;
+        const variantIdInReview = typeof variant === 'string' ? variant : variant?._id;
+        return variantIdInReview === variantId;
+      });
 
+      if (relatedReviews.length === 0) return 0;
+
+      const total = relatedReviews.reduce((sum, r) => sum + r.rating, 0);
+      return total / relatedReviews.length;
+    };
+
+  if (loadingReviews) {
+    return (
+      <div className="text-center py-10">
+        <Spin />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -151,10 +172,7 @@ const CollectionPage = () => {
                 }),
               ];
 
-              const image =
-                Array.isArray(variant.image_url) && variant.image_url.length > 0
-                  ? variant.image_url[0]
-                  : product.images?.[0] || 'https://picsum.photos/200';
+              const rating = getAverageRatingForVariant(variant._id!, reviews);
 
               return (
                 <div
@@ -217,7 +235,7 @@ const CollectionPage = () => {
                       <Rate
                         disabled
                         allowHalf
-                        value={variant.averageRating || 0}
+                        value={rating}
                         style={{ fontSize: 14 }}
                       />
                     </div>

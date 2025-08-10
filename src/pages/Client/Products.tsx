@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Typography, Button, Dropdown, Select, Spin, Pagination, Rate } from 'antd';
+import { Typography, Button, Dropdown, Select, Spin, Pagination, Rate, message } from 'antd';
 import { FilterOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import FilterContent from '../../components/LayoutClient/FilterContent';
 import { useVariants, useTopSellingVariants, useTopRatedVariants } from '../../hooks/useVariants';
 import type { IVariant } from '../../interface/variant';
 import { useAddToCart } from '../../hooks/useCart';
+import { useReviews } from '../../hooks/useReview';
+import type { IReview } from '../../interface/review';
 
 const { Title, Text } = Typography;
 
@@ -21,7 +23,7 @@ interface FilterValues {
 
 const Products = () => {
   const [sortOption, setSortOption] = useState('default');
-
+  const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const [filters, setFilters] = useState<FilterValues>({
     price: [0, 500000000],
     brands: [],
@@ -40,15 +42,25 @@ const Products = () => {
     enabled: sortOption === 'top-selling',
   });
 
+
   const { data: topRated = [], isLoading: loadingTopRated } = useTopRatedVariants({
     enabled: sortOption === 'top-rated',
   });
 
+
   const loading = loadingAll || loadingTopSelling || loadingTopRated;
 
   const rawVariants = (() => {
-    if (sortOption === 'top-selling') return topSelling;
-    if (sortOption === 'top-rated') return topRated;
+    if (sortOption === 'top-selling') {
+      return topSelling
+        .map(item => allVariants.find(v => v._id === item.variant_id))
+        .filter(Boolean) as IVariant[];
+    }
+    if (sortOption === 'top-rated') {
+      return topRated
+        .map(item => allVariants.find(v => v._id === item.variant_id))
+        .filter(Boolean) as IVariant[];
+    }
     return allVariants;
   })();
 
@@ -85,8 +97,6 @@ const Products = () => {
   });
 
   const filteredVariants = sortedVariants.filter((variant: IVariant) => {
-    if (sortOption === 'top-selling' || sortOption === 'top-rated') return true;
-
     const priceMatch = variant.price >= filters.price[0] && variant.price <= filters.price[1];
 
     const colorId = typeof variant.color === 'string' ? variant.color : variant.color._id;
@@ -107,6 +117,12 @@ const Products = () => {
     return priceMatch && colorMatch && sizeMatch && brandMatch && categoryMatch && genderMatch;
   });
 
+  useEffect(() => {
+    if (!loading && filteredVariants.length === 0) {
+      message.warning('Không có sản phẩm phù hợp với bộ lọc');
+    }
+  }, [filteredVariants, loading]);
+
   const variantsByProduct: { [key: string]: IVariant[] } = {};
 
   filteredVariants.forEach(variant => {
@@ -124,9 +140,30 @@ const Products = () => {
     variantsByProduct[productId].push(variant);
   });
 
+  const getAverageRatingForVariant = (variantId: string, reviews: IReview[]) => {
+    const relatedReviews = reviews.filter(r => {
+      const variant = r.order_item?.variant_id;
+      const variantIdInReview = typeof variant === 'string' ? variant : variant?._id;
+      return variantIdInReview === variantId;
+    });
+
+    if (relatedReviews.length === 0) return 0;
+
+    const total = relatedReviews.reduce((sum, r) => sum + r.rating, 0);
+    return total / relatedReviews.length;
+  };
+
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
   const paginatedVariants = filteredVariants.slice(startIndex, endIndex);
+
+  if (loadingReviews) {
+    return (
+      <div className="text-center py-10">
+        <Spin />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -183,8 +220,6 @@ const Products = () => {
               paginatedVariants.map(variant => {
                 const product = typeof variant.product_id === 'object' ? variant.product_id : null;
                 const productId = product?._id;
-                const image =
-                  variant.image_url?.[0] || 'https://via.placeholder.com/300x300?text=No+Image';
                 const currentColorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
 
                 // Các biến thể cùng sản phẩm
@@ -201,6 +236,8 @@ const Products = () => {
                     return colorId !== currentColorId;
                   }),
                 ];
+
+                const rating = getAverageRatingForVariant(variant._id!, reviews);
 
                 return product ? (
                   <Link
@@ -260,7 +297,7 @@ const Products = () => {
                       <Rate
                         disabled
                         allowHalf
-                        defaultValue={variant.averageRating || 0}
+                        defaultValue={rating}
                         style={{ fontSize: 14 }}
                       />
                     </div>

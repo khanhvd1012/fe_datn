@@ -1,7 +1,9 @@
+import type { IOrderItem } from "./order";
+
 export interface IReview {
   _id?: string;
   user_id: string | { _id: string; username: string; email: string };
-  order_item: string;
+  order_item: IOrderItem;
   product_id: string | { _id: string; name: string };
   product_variant_id?: string;
   rating: number;
