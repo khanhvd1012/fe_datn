@@ -1,5 +1,4 @@
 
-export default Contact;
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';

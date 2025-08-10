@@ -199,3 +199,4 @@ const errorStyle: React.CSSProperties = {
   marginBottom: '10px',
   fontFamily: '"Quicksand", sans-serif'
 };
+export default Contact;
