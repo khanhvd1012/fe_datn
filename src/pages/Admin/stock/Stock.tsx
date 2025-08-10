@@ -145,6 +145,18 @@ const Stock = () => {
   return (
     <div>
       {contextHolder}
+      
+      <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
+        <Input
+          placeholder="Tìm kiếm nhanh theo SKU"
+          value={filters.sku}
+          onChange={(e) => handleFilterChange(e.target.value, 'sku')}
+          prefix={<SearchOutlined />}
+          allowClear
+          style={{ width: 300 }}
+          onPressEnter={e => handleFilterChange(e.currentTarget.value, 'sku')}
+        />
+      </div>
       <Table
         columns={columns}
         dataSource={filteredData}
