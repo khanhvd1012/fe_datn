@@ -2,6 +2,9 @@ import { useMutation } from "@tanstack/react-query";
 import { login, register } from "../service/authAPI";
 import { message } from "antd";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import type { IUser } from "../interface/user";
+import { getProfile } from "../service/userAPI";
 
 // Hook đăng ký
 export const useRegister = () => {
@@ -37,13 +40,9 @@ export const useLogin = () => {
         localStorage.setItem("token", data.token);
         localStorage.setItem("role", data.user.role || "user");
         localStorage.setItem("userName", data.user.username || "User");
-        console.log("Đã lưu vào localStorage:", {
-          token: localStorage.getItem("token"),
-          role: localStorage.getItem("role"),
-          userName: localStorage.getItem("userName"),
-        });
+        localStorage.setItem("user", JSON.stringify(data.user));
         message.success("Đăng nhập thành công!");
-        navigate("/"); // 👉 điều hướng sau khi login thành công
+        navigate("/"); 
       } else {
         message.error("Thiếu thông tin token hoặc user.");
       }
@@ -53,4 +52,37 @@ export const useLogin = () => {
       message.error(error?.response?.data?.message || "Đăng nhập thất bại!");
     },
   });
+};
+
+export const useAuth = (): { user: IUser | null; loading: boolean } => {
+  const [user, setUser] = useState<IUser | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const userData = await getProfile();
+        setUser(userData);
+        localStorage.setItem("user", JSON.stringify(userData)); 
+      } catch (error) {
+        console.error("Lấy profile lỗi:", error);
+        setUser(null);
+        localStorage.removeItem("user");
+        localStorage.removeItem("token");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  return { user, loading };
 };

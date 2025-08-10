@@ -1,66 +1,101 @@
-// Gallery.tsx
-import React from 'react';
-import styled from 'styled-components';
+import { Carousel, Rate, Typography, Spin } from 'antd';
+import { useReviews } from '../../hooks/useReview';
 
-const Section = styled.section`
-  padding: 40px 20px;
-  text-align: center;
-`;
+const { Text, Title } = Typography;
 
-const Title = styled.h2`
-  font-size: 20px; /* nhỏ hơn */
-  margin-bottom: 16px;
-  font-weight: 600;
-  position: relative;
-  display: inline-block;
-  text-align: center;
-  
+const Gallery = () => {
+  const { data: reviews, isLoading, isError } = useReviews();
 
-  &::after {
-    content: "";
-    position: absolute;
-    bottom: -6px;
-    left: 25%;
-    width: 50%;
-    height: 2px;
-    background-color: #000;
-  }
-`;
+  if (isLoading) return <Spin tip="Đang tải đánh giá..." />;
+  if (isError) return <div>Đã có lỗi xảy ra khi tải đánh giá</div>;
 
-const ImageGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-top: 32px;
-`;
+  const filteredReviews = (reviews || [])
+    .filter(r => r.rating > 4)
+    .sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime();
+      const dateB = new Date(b.createdAt || 0).getTime();
+      return dateB - dateA;
+    })
+    .slice(0, 3);
 
-const GridImage = styled.img`
-  width: 100%;
-  height: auto;
-  object-fit: cover;
-  border-radius: 6px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-`;
-
-const Gallery: React.FC = () => {
-  const images = [
-    'https://img.lovepik.com/png/20231111/nike-clipart-cartoon-nike-logo-graphic-vector-cartoon-illustration-of_559741_wh1200.png',
-    'https://img.lovepik.com/png/20231120/nike-air-dunk-high-orange-shoe-vector-illustration-clipart-nike_642233_wh1200.png',
-    'https://png.pngtree.com/png-vector/20241217/ourlarge/pngtree-nike-mens-gymnastics-shoes-png-image_14788807.png',
-    'https://img.lovepik.com/png/20231117/cartoon-illustration-of-a-nike-air-max-shoe-vector-clipart_613988_wh1200.png',
-    'https://img.lovepik.com/png/20231120/nike-air-force-90-mid-retro-vector-design-illustration-vektor_642190_wh300.png',
-    'https://img.lovepik.com/element/45007/8123.png_300.png',
-  ];
+  if (filteredReviews.length === 0)
+    return <Text>Không có bình luận nào phù hợp</Text>;
 
   return (
-    <Section>
-      <Title>Khách hàng và SneakerTrend</Title>
-      <ImageGrid>
-        {images.map((src, index) => (
-          <GridImage key={index} src={src} alt={`Gallery image ${index + 1}`} />
-        ))}
-      </ImageGrid>
-    </Section>
+    <>
+      <Title level={2} style={{ textAlign: 'center', fontSize: '20px', marginBottom: 20 }}>
+        <span style={{ display: 'inline-block', paddingBottom: 4, position: 'relative' }}>
+          Khách hàng và SneakerTrend
+          <span
+            style={{
+              position: 'absolute',
+              left: '25%',
+              bottom: 0,
+              width: '50%',
+              borderBottom: '2px solid black',
+              transform: 'translateY(100%)',
+            }}
+          />
+        </span>
+      </Title>
+      <div
+        style={{
+          width: '100%', // full width màn hình
+          height: 400,
+          backgroundImage:
+            'url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          display: 'flex',
+          justifyContent: 'center', // căn giữa ngang
+          alignItems: 'center', // căn giữa dọc
+          padding: 20,
+        }}
+      >
+        <div
+          style={{
+            backgroundColor: 'rgba(255,255,255,0.85)',
+            borderRadius: 8,
+            maxWidth: 600,
+            width: '100%',  
+            padding: 20,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          }}
+        >
+          <Carousel autoplay>
+            {filteredReviews.map((review) => (
+              <div
+                key={review._id}
+                style={{
+                  height: 250,
+                  padding: '0 20px',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    textAlign: 'center',
+                  }}
+                >
+                  <Title level={4} style={{ marginBottom: 8 }}>
+                    {typeof review.user_id === 'object' ? review.user_id.username : review.user_id}
+                  </Title>
+                  <Rate disabled defaultValue={review.rating} style={{ marginBottom: 12 }} />
+                  <p style={{ fontSize: 16, lineHeight: 1.5, maxWidth: '80%' }}>{review.comment}</p>
+                </div>
+              </div>
+            ))}
+          </Carousel>
+        </div>
+
+
+      </div>
+    </>
   );
 };
 

@@ -9,7 +9,7 @@ export const getProductReviews = async (product_id: string): Promise<IReview[]> 
     const response = await axios.get(`${API_URL}/reviews/${product_id}`);
     return response.data.reviews;
   } catch (error) {
-    console.error("❌ Error fetching product reviews:", error);
+    console.error("Error fetching product reviews:", error);
     throw error;
   }
 };
@@ -17,8 +17,7 @@ export const getProductReviews = async (product_id: string): Promise<IReview[]> 
 // Lấy toàn bộ đánh giá (Admin)
 export const getAllReviews = async (): Promise<IReview[]> => {
   try {
-    // const token = localStorage.getItem("token");
-    console.log("🔑 Token lấy từ localStorage:", token);
+    const token = localStorage.getItem("token");
     const response = await axios.get(`${API_URL}/reviews`, {
       headers: {
         Authorization: `Bearer ${token}`,
@@ -26,7 +25,7 @@ export const getAllReviews = async (): Promise<IReview[]> => {
     });
     return response.data.reviews;
   } catch (error) {
-    console.error("❌ Error fetching all reviews:", error);
+    console.error("Error fetching all reviews:", error);
     throw error;
   }
 };
@@ -39,7 +38,7 @@ export const createReview = async (
     const response = await axios.post(`${API_URL}/reviews`, review);
     return response.data.review;
   } catch (error) {
-    console.error("❌ Error creating review:", error);
+    console.error("Error creating review:", error);
     throw error;
   }
 };
@@ -53,7 +52,7 @@ export const updateReview = async (
     const response = await axios.put(`${API_URL}/reviews/${id}`, review);
     return response.data.review;
   } catch (error) {
-    console.error("❌ Error updating review:", error);
+    console.error("Error updating review:", error);
     throw error;
   }
 };
@@ -64,7 +63,7 @@ export const deleteReview = async (id: string) => {
     const response = await axios.delete(`${API_URL}/reviews/${id}`);
     return response.data;
   } catch (error) {
-    console.error("❌ Error deleting review:", error);
+    console.error("Error deleting review:", error);
     throw error;
   }
 };
@@ -84,7 +83,7 @@ export const replyToReview = async (id: string, reply: string) => {
     );
     return response.data.review;
   } catch (error) {
-    console.error("❌ Error replying to review:", error);
+    console.error("Error replying to review:", error);
     throw error;
   }
 };

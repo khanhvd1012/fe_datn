@@ -305,7 +305,6 @@ const Checkout = () => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
                     { label: 'Thanh toán khi nhận hàng', value: 'cod', icon: '💰' },
-                    { label: 'Chuyển khoản ngân hàng', value: 'bank', icon: '🏦' },                    
                     {
                       label: (
                         <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
