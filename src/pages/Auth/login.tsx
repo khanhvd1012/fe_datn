@@ -1,3 +1,5 @@
+
+export default Contact;
 import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import axios from 'axios';
@@ -17,6 +19,8 @@ const Login: React.FC = () => {
         localStorage.setItem('token', res.data.token);
         localStorage.setItem('role', res.data.user.role || 'user');
         localStorage.setItem('userName', res.data.user.username || 'User');
+        // Lưu toàn bộ thông tin user vào localStorage
+        localStorage.setItem('user', JSON.stringify(res.data.user));
         message.success('Đăng nhập thành công!');
         navigate('/');
       } else {
@@ -147,4 +151,4 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
 };
 
-export default Login;
+export default Login; 

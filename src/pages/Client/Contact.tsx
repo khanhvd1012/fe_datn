@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { message } from 'antd';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
@@ -11,9 +11,53 @@ const Contact = () => {
     handleSubmit,
     reset,
     formState: { errors }
-  } = useForm<IContact>();
+  } = useForm<IContact>({
+    defaultValues: {
+      username: '',
+      email: '',
+      phone: '',
+      address: '',
+      message: ''
+    }
+  });
 
   const { mutate, isPending } = useCreateContact();
+
+  // Tự động điền thông tin nếu đã đăng nhập
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    const userName = localStorage.getItem('userName');
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        // Lấy địa chỉ và số điện thoại mặc định nếu có
+        let address = '';
+        let phone = user.phone || '';
+        if (Array.isArray(user.shipping_addresses)) {
+          const defaultAddr = user.shipping_addresses.find((addr: any) => addr.is_default);
+          address = defaultAddr ? defaultAddr.address : (user.shipping_addresses[0]?.address || '');
+          phone = defaultAddr ? defaultAddr.phone : (user.shipping_addresses[0]?.phone || user.phone || '');
+        } else {
+          address = user.address || '';
+        }
+        reset({
+          username: user.username || '',
+          email: user.email || '',
+          phone: phone,
+          address: address,
+          message: ''
+        });
+      } catch (e) {}
+    } else if (userName) {
+      reset({
+        username: userName,
+        email: '',
+        phone: '',
+        address: '',
+        message: ''
+      });
+    }
+  }, [reset]);
 
   const onSubmit = (data: IContact) => {
     mutate(data, {
@@ -155,5 +199,3 @@ const errorStyle: React.CSSProperties = {
   marginBottom: '10px',
   fontFamily: '"Quicksand", sans-serif'
 };
-
-export default Contact;
