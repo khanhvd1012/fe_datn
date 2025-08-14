@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Typography, Button, Dropdown, Select, Spin, Pagination, Rate, message } from 'antd';
 import { FilterOutlined, ShoppingCartOutlined } from '@ant-design/icons';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
@@ -23,14 +23,18 @@ interface FilterValues {
 
 const Products = () => {
   const [sortOption, setSortOption] = useState('default');
+  const location = useLocation();
+  const locationState = location.state as { productId?: string };
+  const productIdFromSearch = locationState?.productId;
   const { data: reviews = [], isLoading: loadingReviews } = useReviews();
+  const initialFilters = (location.state as Partial<FilterValues>) || {};
   const [filters, setFilters] = useState<FilterValues>({
-    price: [0, 500000000],
-    brands: [],
-    categories: [],
-    colors: [],
-    sizes: [],
-    gender: [],
+    price: initialFilters.price || [0, 10000000],
+    brands: initialFilters.brands || [],
+    categories: initialFilters.categories || [],
+    colors: initialFilters.colors || [],
+    sizes: initialFilters.sizes || [],
+    gender: initialFilters.gender || [],
   });
   const { mutate: addToCart } = useAddToCart();
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,24 +45,24 @@ const Products = () => {
   const { data: topSelling = [], isLoading: loadingTopSelling } = useTopSellingVariants({
     enabled: sortOption === 'top-selling',
   });
-
+  console.log('topSelling', topSelling);
 
   const { data: topRated = [], isLoading: loadingTopRated } = useTopRatedVariants({
     enabled: sortOption === 'top-rated',
   });
-
+  console.log('topRated', topRated);
 
   const loading = loadingAll || loadingTopSelling || loadingTopRated;
 
   const rawVariants = (() => {
     if (sortOption === 'top-selling') {
       return topSelling
-        .map(item => allVariants.find(v => v._id === item.variant_id))
+        .map(item => allVariants.find(v => v._id === item._id)) // dùng _id trực tiếp
         .filter(Boolean) as IVariant[];
     }
     if (sortOption === 'top-rated') {
       return topRated
-        .map(item => allVariants.find(v => v._id === item.variant_id))
+        .map(item => allVariants.find(v => v._id === item._id))
         .filter(Boolean) as IVariant[];
     }
     return allVariants;
@@ -117,6 +121,22 @@ const Products = () => {
     return priceMatch && colorMatch && sizeMatch && brandMatch && categoryMatch && genderMatch;
   });
 
+  const filteredVariantsByProduct = productIdFromSearch
+    ? filteredVariants.filter(
+      v => (typeof v.product_id === 'object' ? v.product_id._id : v.product_id) === productIdFromSearch
+    )
+    : filteredVariants;
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (tab === "top-selling") {
+      setSortOption("top-selling");
+    } else if (tab === "newest") {
+      setSortOption("newest");
+    }
+  }, [location.search]);
+
   useEffect(() => {
     if (!loading && filteredVariants.length === 0) {
       message.warning('Không có sản phẩm phù hợp với bộ lọc');
@@ -124,8 +144,7 @@ const Products = () => {
   }, [filteredVariants, loading]);
 
   const variantsByProduct: { [key: string]: IVariant[] } = {};
-
-  filteredVariants.forEach(variant => {
+  filteredVariantsByProduct.forEach(variant => {
     const productId =
       typeof variant.product_id === 'object'
         ? variant.product_id._id
@@ -155,7 +174,7 @@ const Products = () => {
 
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedVariants = filteredVariants.slice(startIndex, endIndex);
+  const paginatedVariants = filteredVariantsByProduct.slice(startIndex, endIndex);
 
   if (loadingReviews) {
     return (

@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Typography, Spin, message, Rate } from 'antd';
+import { Spin, message, Rate, Pagination } from 'antd';
 import axios from 'axios';
 import { ShoppingCartOutlined } from '@ant-design/icons';
 import { useBrands } from '../../hooks/useBrands';
@@ -9,8 +9,8 @@ import Breadcrumb from './Breadcrumb';
 import { useAddToCart } from '../../hooks/useCart';
 import { useReviews } from '../../hooks/useReview';
 import type { IReview } from '../../interface/review';
-
-const { Title, Text } = Typography;
+import Title from 'antd/es/typography/Title';
+import Text from 'antd/es/typography/Text';
 
 const slugify = (str: string) =>
   str
@@ -28,8 +28,12 @@ const CollectionPage = () => {
   const [products, setProducts] = useState<any[]>([]);
   const [variants, setVariants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const sliderRef = useRef<HTMLDivElement>(null);
   const { data: reviews = [], isLoading: loadingReviews } = useReviews();
+
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 20;
+
   const matchedBrand = brands.find((b: any) => slugify(b.name) === slug);
   const matchedCategory = categories.find((c: any) => slugify(c.name) === slug);
   const filterField = matchedBrand ? 'brand' : matchedCategory ? 'category' : null;
@@ -69,34 +73,17 @@ const CollectionPage = () => {
       });
   }, [filterField, filterValue]);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (sliderRef.current) {
-        const container = sliderRef.current;
-        const scrollAmount = container.offsetWidth;
-        if (container.scrollLeft + scrollAmount >= container.scrollWidth) {
-          container.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
-      }
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [variants]);
-
   const getAverageRatingForVariant = (variantId: string, reviews: IReview[]) => {
-      const relatedReviews = reviews.filter(r => {
-        const variant = r.order_item?.variant_id;
-        const variantIdInReview = typeof variant === 'string' ? variant : variant?._id;
-        return variantIdInReview === variantId;
-      });
+    const relatedReviews = reviews.filter(r => {
+      const variant = r.order_item?.variant_id;
+      const variantIdInReview = typeof variant === 'string' ? variant : variant?._id;
+      return variantIdInReview === variantId;
+    });
 
-      if (relatedReviews.length === 0) return 0;
-
-      const total = relatedReviews.reduce((sum, r) => sum + r.rating, 0);
-      return total / relatedReviews.length;
-    };
+    if (relatedReviews.length === 0) return 0;
+    const total = relatedReviews.reduce((sum, r) => sum + r.rating, 0);
+    return total / relatedReviews.length;
+  };
 
   if (loadingReviews) {
     return (
@@ -105,6 +92,10 @@ const CollectionPage = () => {
       </div>
     );
   }
+
+  // Dữ liệu phân trang
+  const startIndex = (currentPage - 1) * pageSize;
+  const currentVariants = variants.slice(startIndex, startIndex + pageSize);
 
   return (
     <>
@@ -130,6 +121,20 @@ const CollectionPage = () => {
           </span>
         </Title>
 
+        <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
+          <Link
+            to="/products"
+            state={{
+              brands: matchedBrand ? [matchedBrand._id] : [],
+              categories: matchedCategory ? [matchedCategory._id] : []
+            }}
+          >
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              Xem thêm
+            </Text>
+          </Link>
+        </div>
+
         {loading ? (
           <div style={{ textAlign: 'center' }}>
             <Spin />
@@ -140,11 +145,10 @@ const CollectionPage = () => {
           </div>
         ) : (
           <div
-            ref={sliderRef}
             style={{
-              display: 'flex',
-              overflowX: 'hidden',
-              scrollBehavior: 'smooth',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+              gap: '20px',
             }}
           >
             {variants.map((variant) => {
@@ -226,7 +230,7 @@ const CollectionPage = () => {
                     <div className="mt-3 pt-[9px]">
                       <Text strong>{product.name}</Text>
                     </div>
-                    <div className="mt-1 pt-[9px]">
+                    <div className="mt-1 pt-[4px]">
                       <Text style={{ color: 'black' }}>
                         {variant.price?.toLocaleString('vi-VN')}đ
                       </Text>
@@ -245,6 +249,20 @@ const CollectionPage = () => {
             })}
           </div>
         )}
+      </div>
+      <div style={{
+        marginTop: 20,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 50
+      }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={variants.length}
+          onChange={(page) => setCurrentPage(page)}
+        />
       </div>
     </>
   );

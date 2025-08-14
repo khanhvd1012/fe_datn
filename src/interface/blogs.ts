@@ -7,6 +7,7 @@ export interface IBlogs {
         _id: string;
         username: string;
     };
+    excerpt?: string; // Thêm field này
     createdAt: Date;
     updatedAt: Date;
 }

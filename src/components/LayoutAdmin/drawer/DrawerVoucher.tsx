@@ -34,21 +34,21 @@ const DrawerVoucher = ({ visible, voucher, onClose, loading }: DrawerVoucherProp
                                 {voucher
                                     ? voucher.type === 'percentage'
                                         ? `${voucher.value}%`
-                                        : voucher.value.toLocaleString('en-US', { style: 'currency', currency: 'USD' })
+                                        : voucher.value.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })
                                     : '---'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Giảm tối đa">
                                 {voucher?.maxDiscount !== null
-                                    ? voucher?.maxDiscount.toLocaleString('en-US', {
+                                    ? voucher?.maxDiscount.toLocaleString('vi-VN', {
                                         style: 'currency',
-                                        currency: 'USD',
+                                        currency: 'VND',
                                     })
                                     : 'Không giới hạn'}
                             </Descriptions.Item>
                             <Descriptions.Item label="Đơn tối thiểu" className="bg-gray-50">
-                                {voucher?.minOrderValue.toLocaleString('en-US', {
+                                {voucher?.minOrderValue.toLocaleString('vi-VN', {
                                     style: 'currency',
-                                    currency: 'USD',
+                                    currency: 'VND',
                                 })}
                             </Descriptions.Item>
                             <Descriptions.Item label="Số lượng">

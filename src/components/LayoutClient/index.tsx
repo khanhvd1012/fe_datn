@@ -1,10 +1,8 @@
 import { Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
-
 import Header from './Header';
 import Footer from './Footer';
 import Slideshow from './SlideShow';
 import Gallery from './Gallery';
-
 import Home from '../../pages/Client/Home';
 import About from '../../pages/Client/About';
 import Blog from '../../pages/Client/Blog';
@@ -24,6 +22,7 @@ import ProductReview from './ProductReview';
 import BlogDetail from '../../pages/Client/BlogDetail';
 import CheckoutFailed from './CheckoutFailed';
 import NotificationPopup from './NotificationPopup';
+import BackToTop from './BackToTop';
 
 
 const IndexClient = () => {
@@ -78,6 +77,7 @@ const IndexClient = () => {
 
       <Gallery />
       <Footer />
+      <BackToTop />
     </div>
   );
 };

@@ -109,7 +109,9 @@ const Blog = () => {
                             <Text type="secondary">
                               Người viết: {post.author?.username} / {dayjs(post.createdAt).format('DD/MM/YYYY')}
                             </Text>
-                            <p style={{ marginTop: 8 }}>{post.content.slice(0, 150)}...</p>
+                            <p style={{ marginTop: 8, whiteSpace: 'pre-line' }}>
+                              {post.content.slice(0, 150)}...
+                            </p>
                           </Col>
                         </Row>
                       </Card>

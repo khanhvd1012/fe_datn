@@ -31,7 +31,11 @@ const ProductDetail = () => {
   const [mainImageIndex, setMainImageIndex] = useState(0);
   const { mutate: addToCartMutate, isPending } = useAddToCart();
   const { data: product, isLoading } = useProductBySlug(slug || '');
-  
+  const [inputQuantity, setInputQuantity] = useState('1');
+  const [showDescription, setShowDescription] = useState(false);
+
+  const handleToggleDescription = () => setShowDescription(prev => !prev);
+
   const [reviews, setReviews] = useState<IReview[]>([]);
   const getColorInfo = (id: string) => {
     return colors.find((c: IColor) => c._id === id) || null;
@@ -54,12 +58,11 @@ const ProductDetail = () => {
     }
   }, [product, variantIdFromState]);
 
-
   useEffect(() => {
     if (!selectedColor || !product?.variants) return;
     const variant = product.variants.find((v: any) => v.color === selectedColor);
     if (variant) {
-      setSelectedSize(variant.size || null);
+      setSelectedSize(variant.size);
       setMainImage(Array.isArray(variant.image_url) ? variant.image_url[0] : '');
     }
     setQuantity(1);
@@ -79,7 +82,6 @@ const ProductDetail = () => {
 
   const selectedVariant = getSelectedVariant();
   const displayPrice = selectedVariant?.price;
-  const brandName = typeof product?.brand === 'object' ? product.brand.name : '';
   const imageList = selectedVariant?.image_url || [];
   const currentMainImage = imageList[mainImageIndex] || '';
 
@@ -88,19 +90,24 @@ const ProductDetail = () => {
     setMainImageIndex((prevIndex) => (prevIndex + 1) % imageList.length);
   };
 
-  // Validate tăng/giảm số lượng
   const handleIncrease = () => {
-    if (quantity < currentStock) {
-      setQuantity(q => q + 1);
+    const q = parseInt(inputQuantity, 10) || 0;
+    if (q < currentStock) {
+      setQuantity(q + 1);
+      setInputQuantity((q + 1).toString());
     } else {
       message.warning(`Chỉ còn ${currentStock} sản phẩm trong kho`);
     }
   };
 
   const handleDecrease = () => {
-    if (quantity > 1) setQuantity(q => q - 1);
+    const q = parseInt(inputQuantity, 10) || 0;
+    if (q > 1) {
+      setQuantity(q - 1);
+      setInputQuantity((q - 1).toString());
+    }
   };
-  
+
   const addToCart = () => {
     if (!token) {
       message.warning("Vui lòng đăng nhập để thêm vào giỏ hàng!");
@@ -189,7 +196,6 @@ const ProductDetail = () => {
     return acc;
   }, {} as Record<number, number>);
 
-
   const avgRating = (
     reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
   ).toFixed(1);
@@ -239,26 +245,14 @@ const ProductDetail = () => {
 
           {/* Thông tin sản phẩm */}
           <div className="product-info">
-
             <h2 className="product-name">{product.name}</h2>
 
             {selectedVariant && (
               <>
                 {selectedVariant.gender && (
-                  <div style={{ marginBottom: 2, color: '#bbb', fontWeight: 300 }}>
-                    SKU: {selectedVariant.sku || 'Không có SKU'}
-                  </div>
-                )}
-              </>
-            )}
-
-            {brandName && <div className="brand-name">Thương hiệu: {brandName}</div>}
-
-            {selectedVariant && (
-              <>
-                {selectedVariant.gender && (
                   <div style={{ marginBottom: 2 }}>
-                    Giới tính: <strong>
+                    Giới tính:
+                    <strong style={{ marginLeft: 4 }}>
                       {selectedVariant.gender === 'unisex' ? 'Unisex' : selectedVariant.gender === 'male' ? 'Nam' : 'Nữ'}
                     </strong>
                   </div>
@@ -334,40 +328,49 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <div className="quantity-control">
-              <span className="label">Số lượng:</span>
-
-              <Button
-                icon={<MinusOutlined />}
-                onClick={handleDecrease}
-                disabled={quantity <= 1}
-              />
-
-              <span>{quantity}</span>
-
-              <Button
-                icon={<PlusOutlined />}
-                onClick={handleIncrease}
-              />
-            </div>
-
-            <p style={{ marginBottom: 5, color: currentStock === 0 ? 'red' : '#666' }}>
+            <p style={{ color: currentStock === 0 ? 'red' : '#666' }}>
               {currentStock === 0
                 ? 'Hết hàng'
                 : `Còn lại trong kho: ${currentStock} sản phẩm`}
             </p>
 
-            <div className="action-buttons">
+            <div className="purchase-section">
+              <div className="quantity-control">
+                <Button
+                  size="small"
+                  icon={<MinusOutlined />}
+                  onClick={handleDecrease}
+                  disabled={parseInt(inputQuantity, 10) <= 1}
+                />
+                <input
+                  value={inputQuantity}
+                  onChange={(e) => setInputQuantity(e.target.value)}
+                  onBlur={() => {
+                    let val = parseInt(inputQuantity, 10);
+                    if (isNaN(val) || val < 1) val = 1;
+                    if (val > currentStock) val = currentStock;
+                    setQuantity(val);
+                    setInputQuantity(val.toString());
+                  }}
+                />
+                <Button
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={handleIncrease}
+                />
+              </div>
+
               <Button
                 type="default"
-                size="large"
                 className="add-cart"
                 onClick={addToCart}
                 disabled={currentStock === 0}
               >
                 THÊM VÀO GIỎ
               </Button>
+            </div>
 
+            <div className="action-buttons">
               <Link to="/checkout-access">
                 <Button
                   type="primary"
@@ -375,46 +378,58 @@ const ProductDetail = () => {
                   danger
                   className="buy-now"
                   disabled={selectedVariant?.stock?.quantity === 0}
-                  style={selectedVariant?.stock?.quantity === 0 ? { background: '#ccc', color: '#fff', border: 'none', cursor: 'not-allowed' } : {}}
+                  style={selectedVariant?.stock?.quantity === 0 ? { color: '#fff', border: 'none', cursor: 'not-allowed' } : {}}
                 >
                   Mua Ngay
                 </Button>
               </Link>
             </div>
 
-            <Button type="primary" block className="voucher-btn" onClick={handleToggleVouchers} icon={showVouchers ? <UpOutlined /> : <DownOutlined />}>
-              {showVouchers ? 'ĐÓNG DANH SÁCH GIẢM GIÁ' : 'CLICK NHẬN MÃ GIẢM GIÁ NGAY'}
+            <Button
+              type="default"
+              block
+              className="dropdown-btn"
+              onClick={handleToggleDescription}
+            >
+              <span>XEM MÔ TẢ SẢN PHẨM</span>
+              {showDescription ? <UpOutlined /> : <DownOutlined />}
+            </Button>
+
+            {showDescription && (
+              <div className="product-description">
+                <p style={{ whiteSpace: 'pre-line' }}>{product.description}</p>
+              </div>
+
+            )}
+
+            <Button
+              type="default"
+              block
+              className="dropdown-btn"
+              onClick={handleToggleVouchers}
+            >
+              <span>MÃ GIẢM GIÁ</span>
+              {showVouchers ? <UpOutlined /> : <DownOutlined />}
             </Button>
 
             {showVouchers && (
               <div className="voucher-list">
-                <h2>Mã giảm giá đang hoạt động:</h2>
                 {vouchers.length === 0 ? (
                   <p>Không có mã giảm giá nào</p>
                 ) : (
                   <ul>
-                    {vouchers.map((voucher) => {
+                    {vouchers.map(voucher => {
                       const end = new Date(voucher.endDate);
                       const now = new Date();
                       const diffMs = end.getTime() - now.getTime();
                       const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
                       const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
                       const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
-                      const timeLeft = diffMs <= 0
-                        ? "Đã hết hạn"
-                        : `${diffDays} ngày ${diffHours} giờ ${diffMinutes} phút`;
-
+                      const timeLeft = diffMs <= 0 ? "Đã hết hạn" : `${diffDays} ngày ${diffHours} giờ ${diffMinutes} phút`;
                       const isSelected = selectedVoucherId === voucher._id;
 
                       return (
-                        <li
-                          key={voucher._id}
-                          onClick={() => handleApplyVoucher(voucher)}
-                          style={{
-                            listStyle: 'none',
-                            marginBottom: '12px',
-                            cursor: 'pointer',
-                          }}
+                        <li key={voucher._id} onClick={() => handleApplyVoucher(voucher)}
                         >
                           <Card
                             size="small"
@@ -422,23 +437,19 @@ const ProductDetail = () => {
                             hoverable
                             bodyStyle={{ padding: '12px' }}
                             style={{
-                              border: isSelected ? '2px solid #1677ff' : undefined,
                               borderRadius: '10px',
                               boxShadow: isSelected ? '0 0 0 2px #91caff' : undefined,
                               backgroundColor: '#FF3300',
                             }}
                           >
                             <Row justify="space-between" align="middle" wrap={false}>
-                              {/* Thông tin bên trái */}
                               <Col flex="auto" style={{ color: '#FFFFFF' }}>
-                                <strong style={{ fontSize: '16px' }}>{voucher.code}</strong><br />
-                                <small>
-                                  Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString('vi-VN')}đ</strong>
-                                </small><br />
-                                <small style={{ color: '#660000' }}>Còn lại: {timeLeft}</small>
+                                <strong>{voucher.code}</strong>
+                                <br />
+                                <small>Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString('vi-VN')}đ</strong></small>
+                                <br />
+                                <small>Còn lại: {timeLeft}</small>
                               </Col>
-
-                              {/* Giảm giá bên phải */}
                               <Col>
                                 <div style={{
                                   backgroundColor: voucher.type === 'percentage' ? '#f6ffed' : '#fff1f0',
@@ -452,9 +463,7 @@ const ProductDetail = () => {
                                   textAlign: 'center',
                                   whiteSpace: 'nowrap',
                                 }}>
-                                  {voucher.type === 'percentage'
-                                    ? `-${voucher.value}%`
-                                    : `-${voucher.value.toLocaleString('vi-VN')}đ`}
+                                  {voucher.type === 'percentage' ? `-${voucher.value}%` : `-${voucher.value.toLocaleString('vi-VN')}đ`}
                                 </div>
                               </Col>
                             </Row>
@@ -466,11 +475,8 @@ const ProductDetail = () => {
                 )}
               </div>
             )}
+
           </div>
-        </div>
-        <div className="product-description">
-          <h3><u>Mô tả sản phẩm</u></h3>
-          <p>{product.description}</p>
         </div>
         {/* reviews */}
         <div
@@ -483,6 +489,7 @@ const ProductDetail = () => {
             borderRadius: '8px',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
             marginBottom: 40,
+            marginTop: 40,
           }}
         >
           {/* Tổng điểm trung bình */}

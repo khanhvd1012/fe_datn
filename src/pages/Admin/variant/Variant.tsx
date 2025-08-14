@@ -24,7 +24,6 @@ const Variant = () => {
     priceMax: '',
     importPriceMin: '',
     importPriceMax: '',
-    status: '',
   });
 
   const normalizeText = (value: any) =>
@@ -71,13 +70,6 @@ const Variant = () => {
     if (
       (filters.importPriceMin && Number(variant.import_price) < Number(filters.importPriceMin)) ||
       (filters.importPriceMax && Number(variant.import_price) > Number(filters.importPriceMax))
-    ) {
-      return false;
-    }
-
-    if (
-      filters.status &&
-      variant.status?.toLowerCase() !== filters.status.toLowerCase()
     ) {
       return false;
     }
@@ -293,27 +285,6 @@ const Variant = () => {
         ) : (
           <Tag color="default">Không có ảnh</Tag>
         ),
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      filterDropdown: () => (
-        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
-          <Select
-            style={{ width: '200px' }}
-            placeholder="Chọn trạng thái"
-            allowClear
-            value={filters.status}
-            onChange={(value) => handleFilterChange(value || '', 'status')}
-          >
-            <Select.Option value="inStock">Còn hàng</Select.Option>
-            <Select.Option value="outOfStock">Hết hàng</Select.Option>
-          </Select>
-        </div>
-      ),
-      filterIcon: () => <FilterOutlined style={{ color: filters.status ? '#1890ff' : undefined }} />,
-      render: (status: string) => status === 'inStock' ? <Tag color="success">Còn hàng</Tag> : <Tag color="red">Hết hàng</Tag>,
     },
     {
       title: "Thao tác",

@@ -44,7 +44,6 @@ const CreateVariant = () => {
     formData.append("price", values.price);
     formData.append("import_price", values.import_price);
     formData.append("gender", values.gender);
-    formData.append("status", values.status);
     formData.append("initial_stock", values.initial_stock);
 
     imageFiles.forEach((file: File) => {
@@ -190,17 +189,6 @@ const CreateVariant = () => {
           ]}
         >
           <InputNumber style={{ width: '100%' }} placeholder="Nhập số lượng" />
-        </Form.Item>
-
-        <Form.Item
-          label="Trạng thái"
-          name="status"
-          rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
-        >
-          <Select>
-            <Select.Option value="inStock">Còn hàng</Select.Option>
-            <Select.Option value="outOfStock">Hết hàng</Select.Option>
-          </Select>
         </Form.Item>
 
         <Form.Item>

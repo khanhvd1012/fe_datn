@@ -96,14 +96,16 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
             <Slider
                 range
                 min={0}
-                max={500000000}
+                max={10000000}
                 step={10}
                 value={priceFilters}
                 onChange={(value) => {
                     if (Array.isArray(value)) {
-                        setPriceFilters([value[0], value[1]]);
+                        // Giữ nguyên giá trị min (bên trái), chỉ cho phép thay đổi max (bên phải)
+                        setPriceFilters([priceFilters[0], value[1]]);
                     }
-                }} tipFormatter={(value) => `${value?.toLocaleString('vi-VN')}đ`}
+                }}
+                tipFormatter={(value) => `${value?.toLocaleString('vi-VN')}đ`}
             />
             <div>  Khoảng giá: {priceFilters[0].toLocaleString('vi-VN')}đ - {priceFilters[1].toLocaleString('vi-VN')}đ</div>
 

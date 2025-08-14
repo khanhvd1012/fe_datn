@@ -59,10 +59,10 @@ const DrawerVariant = ({ visible, variant, onClose, loading }: DrawerVariantProp
                   : variant?.size?.size || '---'}
               </Descriptions.Item>
               <Descriptions.Item label="Giá bán" className="bg-gray-50">
-                {variant?.price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                {variant?.price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
               </Descriptions.Item>
               <Descriptions.Item label="Giá nhập">
-                {variant?.import_price?.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+                {variant?.import_price?.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
               </Descriptions.Item>
               <Descriptions.Item label="Hình ảnh" className="bg-gray-50">
                 {variant?.image_url && variant.image_url.length > 0 ? (
@@ -84,13 +84,6 @@ const DrawerVariant = ({ visible, variant, onClose, loading }: DrawerVariantProp
                   </div>
                 ) : (
                   '---'
-                )}
-              </Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
-                {variant?.status === 'inStock' ? (
-                  <Tag color="success">Còn hàng</Tag>
-                ) : (
-                  <Tag color="red">Hết hàng</Tag>
                 )}
               </Descriptions.Item>
             </Descriptions>

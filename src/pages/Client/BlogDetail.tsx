@@ -1,6 +1,5 @@
-import React from 'react';
 import { useParams } from 'react-router-dom';
-import { Typography, Spin, Row, Col } from 'antd';
+import { Typography, Spin } from 'antd';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import { useGetNewsById } from '../../hooks/useBlogs';
 import dayjs from 'dayjs';
@@ -17,33 +16,39 @@ const BlogDetail = () => {
   return (
     <>
       <Breadcrumb current={blog.title ? `Tin tức / ${blog.title}` : 'Tin tức'} />
-      <div style={{ padding: '24px', fontFamily: "'Quicksand', sans-serif" }}>
-        <Row gutter={32} align="middle">
-          {/* Hình ảnh */}
-          <Col xs={24} md={12}>
-            <img
-              src={blog.images?.[0]}
-              alt={blog.title}
-              style={{
-                width: '100%',
-                borderRadius: '8px',
-                maxHeight: 400,
-                objectFit: 'cover',
-              }}
-            />
-          </Col>
+      <div style={{ padding: '24px', fontFamily: "'Quicksand', sans-serif", maxWidth: 1000, margin: 'auto' }}>
+        {/* Tiêu đề + thông tin */}
+        <Title level={2} style={{ marginBottom: 8 }}>{blog.title}</Title>
+        <Text type="secondary">
+          Người viết: {blog.author?.username} / {dayjs(blog.createdAt).format('DD/MM/YYYY')}
+        </Text>
 
-          {/* Nội dung */}
-          <Col xs={24} md={12}>
-            <Title level={2}>{blog.title}</Title>
-            <Text type="secondary">
-              Người viết: {blog.author?.username} / {dayjs(blog.createdAt).format('DD/MM/YYYY')}
-            </Text>
-            <Paragraph style={{ fontSize: '16px', lineHeight: 1.8, marginTop: 16 }}>
-              {blog.content}
-            </Paragraph>
-          </Col>
-        </Row>
+        {/* Hình ảnh */}
+        {blog.images?.length > 0 && (
+          <div style={{ marginTop: 16, marginBottom: 24 }}>
+            {blog.images.map((img: string, index: number) => (
+              <img
+                key={index}
+                src={img}
+                alt={`${blog.title} - ${index + 1}`}
+                style={{
+                  width: '100%',
+                  borderRadius: '8px',
+                  marginBottom: 16,
+                  maxHeight: 500,
+                  objectFit: 'cover',
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Nội dung blog */}
+        <Paragraph
+          style={{ fontSize: '16px', lineHeight: 1.8, whiteSpace: 'pre-line' }}
+        >
+          {blog.content}
+        </Paragraph>
       </div>
     </>
   );

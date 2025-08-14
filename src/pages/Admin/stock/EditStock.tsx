@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button, Form, Input, InputNumber, message, Skeleton } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStocks, useUpdateStock } from '../../../hooks/useStock';
+import { useEffect } from 'react';
 
 const EditStock = () => {
   const { id } = useParams();
@@ -21,7 +22,7 @@ const EditStock = () => {
     const selectedStock = stock.find(item => item._id === id);
     if (!selectedStock) return;
 
-    const quantity_change = values.quantity;
+    const quantity_change = values.quantity - selectedStock.quantity;
 
     if (quantity_change === 0) {
       messageApi.warning('Số lượng không thay đổi!');
@@ -49,6 +50,15 @@ const EditStock = () => {
       }
     );
   };
+
+  useEffect(() => {
+    if (selectedStock) {
+      form.setFieldsValue({
+        quantity: selectedStock.quantity,
+      });
+    }
+  }, [selectedStock, form]);
+
 
   if (isLoading || !selectedStock) return <Skeleton active />;
 

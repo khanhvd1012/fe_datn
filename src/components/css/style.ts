@@ -9,9 +9,31 @@ export const HeaderTop = styled.div`
   background-color: #4267b2;
   color: white;
   font-size: 11px;
-  text-align: center;
   padding: 6px 0px;
+  overflow: hidden;
+  white-space: nowrap;
+  position: relative;
+
+  & > span {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scrollLoop 30s linear infinite;
+  }
+
+  & > span:nth-child(2) {
+    animation-delay: 15s; /* trễ nửa thời gian */
+  }
+
+  @keyframes scrollLoop {
+    0% {
+      transform: translateX(100%);
+    }
+    100% {
+      transform: translateX(-100%);
+    }
+  }
 `;
+
 
 export const HeaderMain = styled.div`
   display: flex;

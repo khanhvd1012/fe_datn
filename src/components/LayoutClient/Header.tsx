@@ -16,7 +16,7 @@ import {
   Icon,
   HamburgerIcon,
 } from '../css/style';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import SideCart from '../../pages/Client/SideCart';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getProfile } from '../../service/authAPI';
@@ -166,13 +166,16 @@ const Header = () => {
   return (
     <>
       <HeaderTop>
-        MIỄN PHÍ VẬN CHUYỂN VỚI ĐƠN HÀNG NỘI THÀNH &gt; 300K - ĐỔI TRẢ TRONG 30 NGÀY - ĐẢM BẢO CHẤT LƯỢNG
+        <span>🚚 MIỄN PHÍ VẬN CHUYỂN NỘI THÀNH CHO ĐƠN &gt; 300K - ĐỔI TRẢ TRONG 30 NGÀY - CAM KẾT 100% CHÍNH HÃNG</span>
+        <span>🎉 KHUYẾN MÃI LỚN MỪNG KHAI TRƯƠNG - GIẢM GIÁ LÊN ĐẾN 50% - SỐ LƯỢNG CÓ HẠN</span>
       </HeaderTop>
 
       <HeaderMain>
-        <Logo>
-          SNEAKER<span>TREND</span>
-        </Logo>
+        <Link to={`/`}>
+          <Logo>
+            SNEAKER<span>TREND</span>
+          </Logo>
+        </Link>
 
         <NavMenu isOpen={isOpen}>
           <NavItem onClick={toggleMenu}><NavLink to="/">TRANG CHỦ</NavLink></NavItem>

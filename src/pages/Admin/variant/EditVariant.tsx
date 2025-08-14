@@ -67,7 +67,6 @@ const EditVariant = () => {
     formData.append("price", values.price);
     formData.append("import_price", values.import_price);
     formData.append("gender", values.gender);
-    formData.append("status", values.status);
 
     // Tách ảnh cũ (chỉ có url) và ảnh mới (có originFileObj)
     const existingImageUrls = fileList
@@ -183,13 +182,6 @@ const EditVariant = () => {
           >
             <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
           </Upload>
-        </Form.Item>
-
-        <Form.Item label="Trạng thái" name="status" rules={[{ required: true }]}>
-          <Select>
-            <Select.Option value="inStock">Còn hàng</Select.Option>
-            <Select.Option value="outOfStock">Hết hàng</Select.Option>
-          </Select>
         </Form.Item>
 
         <Form.Item>

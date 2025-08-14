@@ -1,0 +1,43 @@
+/* Tablet & Mobile */
+@media (max-width: 768px) {
+  /* Bọc toàn bộ trang */
+  .products-wrapper {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Bộ lọc */
+  .products-sidebar {
+    width: 100%;
+    order: 2;
+  }
+
+  /* Danh sách sản phẩm */
+  .products-grid {
+    width: 100%;
+    order: 1;
+  }
+
+  /* Ant Design card full width */
+  .ant-card {
+    width: 100% !important;
+  }
+
+  /* Căn giữa phân trang */
+  .product-pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+  }
+}
+
+/* Mobile nhỏ */
+@media (max-width: 480px) {
+  .ant-card-meta-title {
+    font-size: 14px !important;
+  }
+
+  .ant-card-meta-description {
+    font-size: 12px !important;
+  }
+}
