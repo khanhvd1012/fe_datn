@@ -494,10 +494,15 @@ const ProductDetail = () => {
         >
           {/* Tổng điểm trung bình */}
           <div style={{ textAlign: 'center', minWidth: '150px' }}>
-            <h1 style={{ fontSize: '48px', margin: '0 0 10px', color: '#1890ff' }}>{avgRating}</h1>
-            <Rate allowHalf disabled value={Number(avgRating)} />
-            <div style={{ marginTop: 8, color: '#555' }}>{totalReviews} đánh giá</div>
+            <h1 style={{ fontSize: '48px', margin: '0 0 10px', color: '#1890ff' }}>
+              {isNaN(avgRating) ? 0 : avgRating}
+            </h1>
+            <Rate allowHalf disabled value={isNaN(avgRating) ? 0 : Number(avgRating)} />
+            <div style={{ marginTop: 8, color: '#555' }}>
+              {totalReviews} đánh giá
+            </div>
           </div>
+
 
           {/* Thanh phần trăm theo số sao */}
           <div style={{ flex: 1 }}>
