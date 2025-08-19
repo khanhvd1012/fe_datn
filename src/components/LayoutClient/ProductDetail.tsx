@@ -571,6 +571,7 @@ const ProductDetail = () => {
             </div>
           </div>
 
+
           {/* Thanh phần trăm theo số sao */}
           <div style={{ flex: 1 }}>
             {[5, 4, 3, 2, 1].map((star) => {
