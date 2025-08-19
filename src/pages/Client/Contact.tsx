@@ -35,10 +35,24 @@ const Contact = () => {
   }
 
   const onSubmit = (data: IContact) => {
+    if (user) {
+      const defaultAddr = user.shipping_addresses?.find(addr => addr.is_default);
+
+      // Nếu profile chưa có phone hoặc address
+      if (!defaultAddr?.phone || !defaultAddr?.address) {
+        message.warning(
+          "Bạn chưa có số điện thoại hoặc địa chỉ trong hồ sơ. Vui lòng cập nhật thông tin cá nhân để gửi liên hệ."
+        );
+        return;
+      }
+    }
+
+    // Nếu pass kiểm tra → gửi contact
     mutate(data, {
       onSuccess: () => {
         message.success("Gửi liên hệ thành công!");
         reset();
+        // Cập nhật lại form
         if (user) {
           setValue("username", user.username || "");
           setValue("email", user.email || "");
@@ -52,7 +66,7 @@ const Contact = () => {
       },
     });
   };
-
+  
   return (
     <>
       <Breadcrumb current="Liên hệ" />

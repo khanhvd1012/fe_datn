@@ -1,13 +1,17 @@
-import { Empty, Input, message, Skeleton, Table } from "antd";
+import { Button, Empty, Input, message, Popconfirm, Skeleton, Table } from "antd";
 import { useState } from "react";
-import { FilterOutlined, SearchOutlined } from "@ant-design/icons";
+import { DeleteOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import type { IContact } from "../../../interface/contact";
-import { useGetAllContacts } from "../../../hooks/useContact";
+import { useDeleteContact, useGetAllContacts } from "../../../hooks/useContact";
+import dayjs from "dayjs";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Contacts = () => {
+  const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const { data, isLoading } = useGetAllContacts();
-  
+  const { mutate } = useDeleteContact();
+
   const [filters, setFilters] = useState({ name: '', email: '', phone: '' });
 
   const filteredData = data?.filter((contact: IContact) => {
@@ -18,6 +22,21 @@ const Contacts = () => {
     return nameMatch && emailMatch && phoneMatch;
   });
 
+  const handleDelete = async (id: string) => {
+    try {
+      mutate(id, {
+        onSuccess: () => {
+          messageApi.success("Xóa liên hệ thành công");
+          queryClient.invalidateQueries({
+            queryKey: ["contacts"],
+          });
+        },
+        onError: () => messageApi.error("Lỗi khi xóa liên hệ"),
+      });
+    } catch (error) {
+      console.error("Lỗi khi xóa liên hệ:", error);
+    }
+  };
 
   const handleFilterChange = (value: string, type: string) => {
     setFilters(prev => ({ ...prev, [type]: value }));
@@ -88,7 +107,30 @@ const Contacts = () => {
       dataIndex: "message",
       key: "message",
     },
-    
+    {
+      title: "Ngày gửi",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string | undefined) =>
+        date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "-", // format ngày giờ
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_: any, color: IContact) => (
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Popconfirm
+            title="Xóa liên hệ"
+            description="Bạn có chắc chắn muốn xóa liên hệ này?"
+            onConfirm={() => handleDelete(color._id!)}
+            okText="Đồng ý"
+            cancelText="Hủy"
+          >
+            <Button type="primary" danger icon={<DeleteOutlined />} />
+          </Popconfirm>
+        </div>
+      ),
+    },
   ];
 
   return (

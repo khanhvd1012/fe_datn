@@ -7,5 +7,4 @@ export interface IContact {
   message: string;
   userId?: string; 
   createdAt?: Date; 
-  updatedAt?: Date;
 }

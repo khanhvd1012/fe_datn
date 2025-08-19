@@ -22,8 +22,6 @@ const Variant = () => {
     gender: '',
     priceMin: '',
     priceMax: '',
-    importPriceMin: '',
-    importPriceMax: '',
   });
 
   const normalizeText = (value: any) =>
@@ -63,13 +61,6 @@ const Variant = () => {
     if (
       (filters.priceMin && Number(variant.price) < Number(filters.priceMin)) ||
       (filters.priceMax && Number(variant.price) > Number(filters.priceMax))
-    ) {
-      return false;
-    }
-
-    if (
-      (filters.importPriceMin && Number(variant.import_price) < Number(filters.importPriceMin)) ||
-      (filters.importPriceMax && Number(variant.import_price) > Number(filters.importPriceMax))
     ) {
       return false;
     }
@@ -244,29 +235,6 @@ const Variant = () => {
       render: (price: number) => price?.toLocaleString('vn-VN', { style: 'currency', currency: 'VND' }),
     },
     {
-      title: "Giá nhập",
-      dataIndex: "import_price",
-      key: "import_price",
-      filterDropdown: () => (
-        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6, width: 220 }}>
-          <InputNumber
-            placeholder="Giá nhập min"
-            value={filters.importPriceMin}
-            onChange={(e) => handleFilterChange(e ?? '', 'importPriceMin')}
-            style={{ width: '100%', marginRight: 8 }}
-          />
-          <InputNumber
-            placeholder="Giá nhập max"
-            value={filters.importPriceMax}
-            onChange={(e) => handleFilterChange(e ?? '', 'importPriceMax')}
-            style={{ width: '100%', marginTop: 8 }}
-          />
-        </div>
-      ),
-      filterIcon: () => <FilterOutlined style={{ color: filters.importPriceMin || filters.importPriceMax ? '#1890ff' : undefined }} />,
-      render: (price: number) => price?.toLocaleString('vn-VN', { style: 'currency', currency: 'VND' }),
-    },
-    {
       title: "Hình ảnh",
       dataIndex: "image_url",
       key: "image_url",
@@ -285,6 +253,12 @@ const Variant = () => {
         ) : (
           <Tag color="default">Không có ảnh</Tag>
         ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status: string) => status === 'inStock' ? <Tag color="success">Còn hàng</Tag> : <Tag color="red">Hết hàng</Tag>,
     },
     {
       title: "Thao tác",

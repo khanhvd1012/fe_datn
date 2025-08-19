@@ -13,6 +13,7 @@ import { useColors } from '../../hooks/useColors';
 import type { ISize } from '../../interface/size';
 import type { IReview } from '../../interface/review';
 import { useAddToCart } from '../../hooks/useCart';
+import type { IVariant } from '../../interface/product';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -46,41 +47,91 @@ const ProductDetail = () => {
     return found ? found.size : id;
   };
 
-  useEffect(() => {
-    if (!product || !variantIdFromState) return;
-
-    const targetVariant = product.variants.find((v: any) => v._id === variantIdFromState);
-    if (targetVariant) {
-      setSelectedColor(targetVariant.color || null);
-      setSelectedSize(targetVariant.size || null);
-      setMainImage(Array.isArray(targetVariant.image_url) ? targetVariant.image_url[0] : '');
-      fetchProductReviews();
-    }
-  }, [product, variantIdFromState]);
-
-  useEffect(() => {
-    if (!selectedColor || !product?.variants) return;
-    const variant = product.variants.find((v: any) => v.color === selectedColor);
-    if (variant) {
-      setSelectedSize(variant.size);
-      setMainImage(Array.isArray(variant.image_url) ? variant.image_url[0] : '');
-    }
-    setQuantity(1);
-  }, [selectedColor, product]);
-
-  const getSelectedVariant = () => {
-    if (!product?.variants || !selectedSize || !selectedColor) return null;
-    return product.variants.find((variant: any) => {
-      const colorId = typeof variant.color === 'string' ? variant.color : variant.color._id;
-      const matchColor = colorId === selectedColor;
-      const matchSize = Array.isArray(variant.size)
-        ? variant.size.includes(selectedSize)
-        : variant.size === selectedSize;
-      return matchColor && matchSize;
-    });
+  // Lấy tất cả color khả dụng dựa trên size
+  const getAvailableColors = (size?: string) => {
+    if (!product?.variants) return [];
+    const variants = size
+      ? product.variants.filter(v => Array.isArray(v.size) ? v.size.includes(size) : v.size === size)
+      : product.variants;
+    return [...new Set(variants.map(v => (typeof v.color === 'string' ? v.color : v.color._id)))];
   };
 
-  const selectedVariant = getSelectedVariant();
+  // Lấy tất cả size khả dụng dựa trên color
+  const getAvailableSizes = (color?: string) => {
+    if (!product?.variants) return [];
+    const variants = color
+      ? product.variants.filter(v => (typeof v.color === 'string' ? v.color : v.color._id) === color)
+      : product.variants;
+    return [...new Set(variants.flatMap(v => Array.isArray(v.size) ? v.size : [v.size]))];
+  };
+
+  const handleSelectColor = (colorId: string) => {
+    setSelectedColor(colorId);
+
+    const availableSizesForColor = getAvailableSizes(colorId);
+    if (!availableSizesForColor.includes(selectedSize || '')) {
+      setSelectedSize(availableSizesForColor[0] || null);
+    }
+
+    setQuantity(1);
+    setMainImageIndex(0);
+  };
+
+  const handleSelectSize = (size: string) => {
+    setSelectedSize(size);
+
+    const availableColorsForSize = getAvailableColors(size);
+    if (!availableColorsForSize.includes(selectedColor || '')) {
+      setSelectedColor(availableColorsForSize[0] || null);
+    }
+
+    setQuantity(1);
+    setMainImageIndex(0);
+  };
+
+
+  const availableSizes = getAvailableSizes(selectedColor || undefined);
+  const availableColors = getAvailableColors(selectedSize || undefined);
+
+  useEffect(() => {
+    if (!product) return;
+
+    // Lấy variant mặc định: dùng variantIdFromState nếu có, nếu không lấy variant đầu tiên
+    const defaultVariant =
+      product.variants.find(v => v._id === variantIdFromState) ||
+      product.variants[0];
+
+    if (defaultVariant) {
+      // Lấy colorId dạng string
+      const colorId =
+        typeof defaultVariant.color === 'string'
+          ? defaultVariant.color
+          : defaultVariant.color._id;
+
+      // Lấy sizeId dạng string
+      const sizeId =
+        typeof defaultVariant.size === 'string'
+          ? defaultVariant.size
+          : defaultVariant.size._id;
+
+      setSelectedColor(colorId || null);
+      setSelectedSize(sizeId || null);
+      setMainImage(Array.isArray(defaultVariant.image_url) ? defaultVariant.image_url[0] : '');
+    }
+
+    fetchProductReviews();
+  }, [product, variantIdFromState]);
+
+  const selectedVariant = product?.variants.find((variant: IVariant) => {
+    const colorId = typeof variant.color === 'string' ? variant.color : variant.color._id;
+    const sizeId = typeof variant.size === 'string' ? variant.size : variant.size._id;
+
+    const matchColor = colorId === selectedColor;
+    const matchSize = sizeId === selectedSize;
+
+    return matchColor && matchSize;
+  }) || null;
+
   const displayPrice = selectedVariant?.price;
   const imageList = selectedVariant?.image_url || [];
   const currentMainImage = imageList[mainImageIndex] || '';
@@ -200,10 +251,6 @@ const ProductDetail = () => {
     reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
   ).toFixed(1);
 
-  const availableColors = Array.isArray(product?.variants)
-    ? product.variants.map((v: any) => v.color).filter((val, i, arr) => val && arr.indexOf(val) === i)
-    : [];
-
   const currentStock = selectedVariant?.stock?.quantity ?? 0;
 
   if (isLoading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
@@ -211,7 +258,7 @@ const ProductDetail = () => {
 
   // Lấy tất cả size duy nhất từ các biến thể sản phẩm (bỏ lọc theo màu)
   const allVariantSizes = Array.isArray(product?.variants)
-    ? [...new Set(product.variants.map((v: any) => v.size))]
+    ? [...new Set(product.variants.flatMap((v: any) => Array.isArray(v.size) ? v.size : [v.size]))]
     : [];
 
   return (
@@ -282,25 +329,31 @@ const ProductDetail = () => {
                 >
                   {availableColors.map((colorId: string) => {
                     const color = getColorInfo(colorId);
-                    if (!color) return null; // Bỏ qua nếu không tìm thấy màu
+                    if (!color) return null;
+
+                    // Kiểm tra color này có size khả dụng không
+                    const sizesForColor = getAvailableSizes(colorId);
+                    const disabled = sizesForColor.length === 0;
 
                     return (
                       <button
                         key={colorId}
                         className={`color-btn ${selectedColor === colorId ? 'active' : ''}`}
-                        onClick={() => setSelectedColor(colorId)}
+                        onClick={() => !disabled && handleSelectColor(colorId)}
                         style={{
                           width: 32,
                           height: 32,
                           borderRadius: 4,
                           border: selectedColor === colorId ? '2px solid #1890ff' : '1px solid #ccc',
                           backgroundColor: color.code,
-                          cursor: 'pointer',
+                          cursor: disabled ? 'not-allowed' : 'pointer',
                           marginRight: 8,
                           padding: 0,
                           outline: 'none',
+                          opacity: disabled ? 0.4 : 1,
                         }}
                         title={color.name}
+                        disabled={disabled}
                       />
                     );
                   })}
@@ -311,17 +364,32 @@ const ProductDetail = () => {
             {/* Chọn size */}
             <div className="size-section">
               <span className="label">Chọn size:</span>
-              <div className="size-options">
+              <div className="size-options" style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
                 {allVariantSizes.length > 0 ? (
-                  allVariantSizes.map((sizeId) => (
-                    <button
-                      key={sizeId}
-                      className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
-                      onClick={() => setSelectedSize(sizeId)}
-                    >
-                      {getSizeName(sizeId)}
-                    </button>
-                  ))
+                  allVariantSizes.map((sizeId) => {
+                    // Kiểm tra size này có color khả dụng không
+                    const colorsForSize = getAvailableColors(sizeId);
+                    const disabled = colorsForSize.length === 0;
+
+                    return (
+                      <button
+                        key={sizeId}
+                        className={`size-btn ${selectedSize === sizeId ? 'active' : ''}`}
+                        onClick={() => !disabled && handleSelectSize(sizeId)}
+                        style={{
+                          padding: '6px 12px',
+                          borderRadius: 4,
+                          border: selectedSize === sizeId ? '2px solid #1890ff' : '1px solid #ccc',
+                          backgroundColor: '#fff',
+                          cursor: disabled ? 'not-allowed' : 'pointer',
+                          opacity: disabled ? 0.4 : 1,
+                        }}
+                        disabled={disabled}
+                      >
+                        {getSizeName(sizeId)}
+                      </button>
+                    );
+                  })
                 ) : (
                   <p>Không có size phù hợp</p>
                 )}
@@ -494,9 +562,13 @@ const ProductDetail = () => {
         >
           {/* Tổng điểm trung bình */}
           <div style={{ textAlign: 'center', minWidth: '150px' }}>
-            <h1 style={{ fontSize: '48px', margin: '0 0 10px', color: '#1890ff' }}>{avgRating}</h1>
-            <Rate allowHalf disabled value={Number(avgRating)} />
-            <div style={{ marginTop: 8, color: '#555' }}>{totalReviews} đánh giá</div>
+            <h1 style={{ fontSize: '48px', margin: '0 0 10px', color: '#1890ff' }}>
+              {isNaN(avgRating) ? 0 : avgRating}
+            </h1>
+            <Rate allowHalf disabled value={isNaN(avgRating) ? 0 : Number(avgRating)} />
+            <div style={{ marginTop: 8, color: '#555' }}>
+              {totalReviews} đánh giá
+            </div>
           </div>
 
           {/* Thanh phần trăm theo số sao */}

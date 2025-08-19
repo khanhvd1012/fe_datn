@@ -23,6 +23,8 @@ import BlogDetail from '../../pages/Client/BlogDetail';
 import CheckoutFailed from './CheckoutFailed';
 import NotificationPopup from './NotificationPopup';
 import BackToTop from './BackToTop';
+import ForgotPassword from '../../pages/Auth/ForgotPassword';
+import ResetPassword from '../../pages/Auth/ResetPassword';
 
 
 const IndexClient = () => {
@@ -58,6 +60,8 @@ const IndexClient = () => {
           {/* Auth pages - không slideshow */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/products/:slug" element={<ProductDetail />} />

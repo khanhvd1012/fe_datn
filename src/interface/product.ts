@@ -1,8 +1,8 @@
 export interface IVariant {
   _id?: string;
   sku: string;
-  color: string;
-  size: string;
+  color: string | { _id: string; name: string; code: string };
+  size: string | { _id: string; size: string };
   gender: string;
   price: number;
   image_url: string[];
@@ -19,6 +19,6 @@ export interface IProduct {
   description?: string;
   brand: string | { _id: string; name: string };
   category: string | { _id: string; name: string };
-  slug: string; 
+  slug: string;
   variants: IVariant[];
 }

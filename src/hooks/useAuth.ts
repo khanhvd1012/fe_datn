@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
-import { login, register } from "../service/authAPI";
+import { changePassword, forgotPassword, login, loginWithGoogle, register, requestLoginOTP, resetPassword, verifyLoginOTP } from "../service/authAPI";
 import { message } from "antd";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -42,7 +42,7 @@ export const useLogin = () => {
         localStorage.setItem("userName", data.user.username || "User");
         localStorage.setItem("user", JSON.stringify(data.user));
         message.success("Đăng nhập thành công!");
-        navigate("/"); 
+        navigate("/");
       } else {
         message.error("Thiếu thông tin token hoặc user.");
       }
@@ -50,6 +50,108 @@ export const useLogin = () => {
     onError: (error: any) => {
       console.error("❌ Đăng nhập lỗi:", error);
       message.error(error?.response?.data?.message || "Đăng nhập thất bại!");
+    },
+  });
+};
+
+export const useGoogleLogin = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: loginWithGoogle,
+    onSuccess: (data) => {
+      if (data.token && data.user) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("role", data.user.role || "user");
+        localStorage.setItem("userName", data.user.username || "User");
+        localStorage.setItem("user", JSON.stringify(data.user));
+        message.success("Đăng nhập Google thành công!");
+        navigate("/");
+      } else {
+        message.error("Thiếu token hoặc user.");
+      }
+    },
+    onError: (error: any) => {
+      console.error("Google Login lỗi:", error);
+      message.error(error?.message || "Đăng nhập Google thất bại!");
+    },
+  });
+};
+
+export const useRequestLoginOTP = () => {
+  return useMutation({
+    mutationFn: requestLoginOTP,
+    onSuccess: () => { message.success("OTP đã được gửi về email.") },
+    onError: (error: any) => {
+      message.error(error?.response?.data?.message || "Không gửi được OTP.");
+    },
+  });
+};
+
+export const useVerifyLoginOTP = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: ({ email, otp }: { email: string; otp: string }) =>
+      verifyLoginOTP(email, otp),
+    onSuccess: (data) => {
+      if (data.token && data.user) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        message.success("Đăng nhập OTP thành công!");
+        navigate("/");
+      } else {
+        message.error("Thiếu token hoặc user.");
+      }
+    },
+    onError: (error: any) => {
+      message.error(error?.response?.data?.message || "OTP không hợp lệ.");
+    },
+  });
+};
+
+// Hook quên mật khẩu
+export const useForgotPassword = () => {
+  return useMutation({
+    mutationFn: forgotPassword,
+    onSuccess: () => {
+      message.success("Đã gửi OTP đặt lại mật khẩu qua email.");
+    },
+    onError: (error: any) => {
+      message.error(error?.response?.data?.message || "Không gửi được OTP.");
+    },
+  });
+};
+
+// Hook reset mật khẩu
+export const useResetPassword = () => {
+  const navigate = useNavigate();
+
+  return useMutation({
+    mutationFn: resetPassword,
+    onSuccess: () => {
+      message.success("Đặt lại mật khẩu thành công!");
+      navigate("/login");
+    },
+    onError: (error: any) => {
+      message.error(error?.response?.data?.message || "Đặt lại mật khẩu thất bại.");
+    },
+  });
+};
+
+// Hook đổi mật khẩu
+export const useChangePassword = () => {
+  return useMutation<
+    { message: string }, // type data trả về
+    any,                // type error
+    { oldPassword: string; newPassword: string } // variables
+  >({
+    mutationFn: changePassword,
+    onSuccess: (data) => {
+      message.success(data.message || "Đổi mật khẩu thành công!");
+    },
+    onError: (error: any) => {
+      message.error(error?.response?.data?.message || "Đổi mật khẩu thất bại!");
     },
   });
 };
@@ -70,7 +172,7 @@ export const useAuth = (): { user: IUser | null; loading: boolean } => {
       try {
         const userData = await getProfile();
         setUser(userData);
-        localStorage.setItem("user", JSON.stringify(userData)); 
+        localStorage.setItem("user", JSON.stringify(userData));
       } catch (error) {
         console.error("Lấy profile lỗi:", error);
         setUser(null);
