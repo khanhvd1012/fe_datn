@@ -286,8 +286,8 @@ const Checkout = () => {
     // Nếu là buyNowItem thì payload khác
     const payload = buyNowItem
       ? {
-        product_id: buyNowItem.product_id,
-        variant_id: buyNowItem.variant_id,
+        size: buyNowItem.size,
+        variant_id: buyNowItem.variant.data._id,
         quantity: buyNowItem.quantity,
         shipping_address: formData.shipping_address,
         full_name: formData.full_name,
