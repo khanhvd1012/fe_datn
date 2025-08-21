@@ -146,13 +146,7 @@ export const useChangePassword = () => {
     any,                // type error
     { oldPassword: string; newPassword: string } // variables
   >({
-    mutationFn: changePassword,
-    onSuccess: (data) => {
-      message.success(data.message || "Đổi mật khẩu thành công!");
-    },
-    onError: (error: any) => {
-      message.error(error?.response?.data?.message || "Đổi mật khẩu thất bại!");
-    },
+    mutationFn: changePassword
   });
 };
 
@@ -187,4 +181,11 @@ export const useAuth = (): { user: IUser | null; loading: boolean } => {
   }, []);
 
   return { user, loading };
+};
+
+export const useRole = (): "admin" | "employee" | "user" => {
+  const { user, loading } = useAuth();
+
+  if (loading) return "user"; 
+  return (user?.role as "admin" | "employee" | "user");
 };

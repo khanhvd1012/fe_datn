@@ -6,6 +6,7 @@ import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlin
 import type { ICategory } from '../../../interface/category';
 import { useCategories, useDeleteCategory } from '../../../hooks/useCategories';
 import DrawerCategory from '../../../components/LayoutAdmin/drawer/DrawerCategory';
+import { useRole } from '../../../hooks/useAuth';
 
 const Categories = () => {
   const queryClient = useQueryClient();
@@ -15,6 +16,7 @@ const Categories = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteCategory();
   const { data, isLoading } = useCategories();
+  const role = useRole();
 
   const [filters, setFilters] = useState({ name: '' });
 
@@ -107,18 +109,22 @@ const Categories = () => {
             icon={<EyeOutlined />}
             onClick={() => showCategoryDetails(category)}
           />
-          <Link to={`/admin/categories/edit/${category._id}`}>
-            <Button type="default" icon={<EditOutlined />} />
-          </Link>
-          <Popconfirm
-            title="Xóa danh mục"
-            description="Bạn có chắc chắn muốn xóa danh mục này?"
-            onConfirm={() => handleDelete(category._id!)}
-            okText="Đồng ý"
-            cancelText="Hủy"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {role === "admin" && (
+            <Link to={`/admin/categories/edit/${category._id}`}>
+              <Button type="default" icon={<EditOutlined />} />
+            </Link>
+          )}
+          {role === "admin" && (
+            <Popconfirm
+              title="Xóa danh mục"
+              description="Bạn có chắc chắn muốn xóa danh mục này?"
+              onConfirm={() => handleDelete(category._id!)}
+              okText="Đồng ý"
+              cancelText="Hủy"
+            >
+              <Button type="primary" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
         </div>
       ),
     },
@@ -127,12 +133,13 @@ const Categories = () => {
   return (
     <div>
       {contextHolder}
-      <div style={{ marginBottom: 16 }}>
-        <Link to="/admin/categories/create">
-          <Button type="primary">Thêm danh mục</Button>
-        </Link>
-      </div>
-
+      {role === "admin" && (
+        <div style={{ marginBottom: 16 }}>
+          <Link to="/admin/categories/create">
+            <Button type="primary">Thêm danh mục</Button>
+          </Link>
+        </div>
+      )}
       <Table
         columns={columns}
         dataSource={filteredData}

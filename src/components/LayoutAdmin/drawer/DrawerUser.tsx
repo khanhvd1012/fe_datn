@@ -1,6 +1,7 @@
 import { Descriptions, Divider, Drawer, Empty, message, Select, Skeleton } from "antd";
 import type { IUser } from "../../../interface/user";
 import { useChangeUserRole } from "../../../hooks/useRole";
+import { useRole } from "../../../hooks/useAuth";
 
 interface DrawerUserProps {
   visible: boolean;
@@ -11,7 +12,7 @@ interface DrawerUserProps {
 
 const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
   const { mutate: changeUserRole, isPending } = useChangeUserRole();
-
+  const role = useRole()
   const handleRoleChange = (newRole: string) => {
     if (!user) return;
 
@@ -107,19 +108,21 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
               <p>Không có địa chỉ nào</p>
             )}
           </div>
-          <Descriptions.Item label="Vai trò">
-            <Select
-              value={user?.role}
-              onChange={handleRoleChange}
-              style={{ width: 200 }}
-              loading={isPending}
-              options={[
-                { label: "Khách hàng", value: "user" },
-                { label: "Nhân viên", value: "employee" },
-              ]}
-            />
-          </Descriptions.Item>
-
+          
+          {role === "admin" && (
+            <Descriptions.Item label="Vai trò">
+              <Select
+                value={user?.role}
+                onChange={handleRoleChange}
+                style={{ width: 200 }}
+                loading={isPending}
+                options={[
+                  { label: "Khách hàng", value: "user" },
+                  { label: "Nhân viên", value: "employee" },
+                ]}
+              />
+            </Descriptions.Item>
+          )}
 
           <Divider />
 

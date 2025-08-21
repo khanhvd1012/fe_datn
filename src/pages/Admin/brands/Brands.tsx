@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { IBrand } from '../../../interface/brand';
 import { useBrands, useDeleteBrand } from '../../../hooks/useBrands';
 import DrawerBrand from '../../../components/LayoutAdmin/drawer/DrawerBrand';
+import { useRole } from '../../../hooks/useAuth';
 
 const Brands = () => {
   const queryClient = useQueryClient();
@@ -16,6 +17,7 @@ const Brands = () => {
   const { mutate } = useDeleteBrand();
   const { data, isLoading } = useBrands();
   const [filters, setFilters] = useState({ name: '' });
+  const role = useRole()
 
   const handleFilterChange = (value: string, type: 'name') => {
     setFilters(prev => ({
@@ -112,18 +114,22 @@ const Brands = () => {
             icon={<EyeOutlined />}
             onClick={() => showBrandDetails(brand)}
           />
-          <Link to={`/admin/brands/edit/${brand._id}`}>
-            <Button type="default" icon={<EditOutlined />} />
-          </Link>
-          <Popconfirm
-            title="Xóa Thương Hiệu"
-            description="Bạn có chắc chắn muốn xóa thương hiệu này?"
-            onConfirm={() => handleDelete(brand._id!)}
-            okText="Có"
-            cancelText="Không"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {role === "admin" && (
+            <Link to={`/admin/brands/edit/${brand._id}`}>
+              <Button type="default" icon={<EditOutlined />} />
+            </Link>
+          )}
+          {role === "admin" && (
+            <Popconfirm
+              title="Xóa Thương Hiệu"
+              description="Bạn có chắc chắn muốn xóa thương hiệu này?"
+              onConfirm={() => handleDelete(brand._id!)}
+              okText="Có"
+              cancelText="Không"
+            >
+              <Button type="primary" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
         </div>
       ),
     },
@@ -132,12 +138,13 @@ const Brands = () => {
   return (
     <div>
       {contextHolder}
-      <div style={{ marginBottom: 16 }}>
-        <Link to="/admin/brands/create">
-          <Button type="primary">Thêm Thương Hiệu</Button>
-        </Link>
-      </div>
-
+      {role === "admin" && (
+        <div style={{ marginBottom: 16 }}>
+          <Link to="/admin/brands/create">
+            <Button type="primary">Thêm Thương Hiệu</Button>
+          </Link>
+        </div>
+      )}
       <Table
         columns={columns}
         dataSource={filteredData}

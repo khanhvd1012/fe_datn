@@ -1,10 +1,10 @@
 // Import các icon và components cần thiết từ antd và react-router-dom
 import { DashboardOutlined, ShoppingOutlined, AppstoreOutlined, TagsOutlined, UserOutlined, ShoppingCartOutlined, CommentOutlined, HomeOutlined, EditOutlined, PlusOutlined, BgColorsOutlined, GiftOutlined, SkinOutlined, HistoryOutlined, BarChartOutlined, TeamOutlined, CrownOutlined, IdcardOutlined, UsergroupAddOutlined, StockOutlined, PictureOutlined } from '@ant-design/icons';
 import Sider from 'antd/es/layout/Sider'
-import { Breadcrumb, Layout, Menu, theme } from 'antd'
+import { Breadcrumb, Layout, Menu, message, theme } from 'antd'
 import { Content } from 'antd/es/layout/layout'
-import { useState } from 'react';
-import { Link, Navigate, Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react';
+import { Link, Navigate, Routes, Route, useLocation, useNavigate, Outlet } from 'react-router-dom'
 
 // Import các components trang admin
 import DashBoard from '../../pages/Admin/DashBoard';
@@ -53,12 +53,36 @@ import Contacts from '../../pages/Admin/contact/Contacts';
 import EditBlog from '../../pages/Admin/blog/EditBlog';
 import EditBanner from '../../pages/Admin/banners/EditBanner';
 import Notifications from '../../pages/Admin/Notifications';
+import { useRole } from '../../hooks/useAuth';
+
+interface PrivateRouteProps {
+    allowedRoles: string[];
+}
+let hasWarnedGlobal = false;
 
 // Component chính quản lý layout của trang admin
 const IndexAdmin = () => {
     const [collapsed, setCollapsed] = useState(false);
     const location = useLocation();
+    const role = useRole()
 
+    const PrivateRoute = ({ allowedRoles }: PrivateRouteProps) => {
+        const navigate = useNavigate();
+        const hasWarnedRef = useRef(hasWarnedGlobal);
+
+        useEffect(() => {
+            if (role && !allowedRoles.includes(role) && !hasWarnedRef.current) {
+                hasWarnedRef.current = true;
+                hasWarnedGlobal = true; // đảm bảo toàn cục chỉ warn 1 lần
+                message.warning("Bạn không có quyền truy cập trang này!");
+                setTimeout(() => {
+                    navigate(-1); // quay lại trang trước
+                }, 1000);
+            }
+        }, [role, allowedRoles, navigate]);
+
+        return allowedRoles.includes(role) ? <Outlet /> : null;
+    };
     // Tạo breadcrumb items dựa trên đường dẫn hiện tại
     const getBreadcrumbItems = () => {
         const pathSnippets = location.pathname.split('/').filter(i => i && i !== 'admin');
@@ -196,12 +220,15 @@ const IndexAdmin = () => {
                             {
                                 key: "5", label: <Link to="/admin/users">Users</Link>, icon: <TeamOutlined />,
                                 children: [
-                                    { key: '6', label: <Link to="/admin/users/admin_users">Admin</Link>, icon: <UserOutlined /> },
-                                    { key: '7', label: <Link to="/admin/users/employees">Employee</Link>, icon: <IdcardOutlined /> },
+                                    ...(role === "admin"
+                                        ? [
+                                            { key: '6', label: <Link to="/admin/users/admin_users">Admin</Link>, icon: <UserOutlined /> },
+                                            { key: '7', label: <Link to="/admin/users/employees">Employee</Link>, icon: <IdcardOutlined /> },
+                                        ] : []),
                                     { key: '8', label: <Link to="/admin/users/customers">Customer</Link>, icon: <UsergroupAddOutlined /> },
                                 ],
                             },
-                              // Quản lý banner
+                            // Quản lý banner
                             { key: "banners", label: <Link to="/admin/banners">Banners</Link>, icon: <PictureOutlined /> },
                             // Quản lý blog
                             { key: "blogs", label: <Link to="/admin/blogs">Blogs</Link>, icon: <EditOutlined /> },
@@ -246,59 +273,64 @@ const IndexAdmin = () => {
                                 {/* Routes quản lý sản phẩm */}
                                 <Route path="products">
                                     <Route path='' element={<Products />} />
-                                    <Route path="create" element={<CreateProducts />} />
-                                    <Route path="edit/:id" element={<EditProducts />} />
+                                    <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                                        <Route path="create" element={<CreateProducts />} />
+                                        <Route path="edit/:id" element={<EditProducts />} />
+                                    </Route>
                                 </Route>
 
                                 {/* Routes quản lý danh mục */}
                                 <Route path="categories">
                                     <Route path='' element={<Categories />} />
-                                    <Route path="create" element={<CreateCategories />} />
-                                    <Route path="edit/:id" element={<EditCategories />} />
+                                    <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                                        <Route path="create" element={<CreateCategories />} />
+                                        <Route path="edit/:id" element={<EditCategories />} />
+                                    </Route>
                                 </Route>
 
                                 {/* Routes quản lý thương hiệu */}
                                 <Route path="brands">
                                     <Route path="" element={<Brands />} />
-                                    <Route path="create" element={<CreateBrand />} />
-                                    <Route path="edit/:id" element={<EditBrand />} />
+                                    <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                                        <Route path="create" element={<CreateBrand />} />
+                                        <Route path="edit/:id" element={<EditBrand />} />
+                                    </Route>
                                 </Route>
 
                                 {/* Routes quản lý size */}
                                 <Route path="sizes">
                                     <Route path="" element={<Sizes />} />
-                                    <Route path="add" element={<CreateSize />} />
-                                    <Route path="edit/:id" element={<EditSize />} />
+                                    <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                                        <Route path="add" element={<CreateSize />} />
+                                        <Route path="edit/:id" element={<EditSize />} />
+                                    </Route>
                                 </Route>
 
                                 {/* Routes quản lý màu sắc */}
                                 <Route path="colors">
                                     <Route path="" element={<Colors />} />
-                                    <Route path="add" element={<CreateColor />} />
-                                    <Route path="edit/:id" element={<EditColor />} />
+                                    <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                                        <Route path="add" element={<CreateColor />} />
+                                        <Route path="edit/:id" element={<EditColor />} />
+                                    </Route>
                                 </Route>
 
                                 {/* Routes quản lý variant */}
                                 <Route path="variants">
                                     <Route path='' element={<Variant />} />
-                                    <Route path="create" element={<CreateVariant />} />
-                                    <Route path="edit/:id" element={<EditVariant />} />
+                                    <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                                        <Route path="create" element={<CreateVariant />} />
+                                        <Route path="edit/:id" element={<EditVariant />} />
+                                    </Route>
                                 </Route>
 
                                 {/* Routes quản lý người dùng */}
                                 <Route path="users">
-                                    {/* Quản lý admin */}
-                                    <Route path="admin_users">
-                                        <Route path="" element={<Admin />} />
+                                    <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                                        <Route path="admin_users" element={<Admin />} />
+                                        <Route path="employees" element={<Employee />} />
                                     </Route>
-                                    {/* Quản lý nhân viên */}
-                                    <Route path="employees">
-                                        <Route path="" element={<Employee />} />
-                                    </Route>
-                                    {/* Quản lý khách hàng */}
-                                    <Route path="customers">
-                                        <Route path="" element={<Customers />} />
-                                    </Route>
+                                    <Route path="customers" element={<Customers />} />
                                 </Route>
 
                                 {/* Routes quản lý đơn hàng */}
@@ -324,7 +356,9 @@ const IndexAdmin = () => {
                                 <Route path="stocks">
                                     <Route path="stock">
                                         <Route path="" element={<Stock />} />
-                                        <Route path="edit/:id" element={<EditStock />} />
+                                        <Route element={<PrivateRoute allowedRoles={["admin"]} />}>
+                                            <Route path="edit/:id" element={<EditStock />} />
+                                        </Route>
                                     </Route>
                                     <Route path="stocks_history">
                                         <Route path="" element={<StockHistory />} />
@@ -336,7 +370,7 @@ const IndexAdmin = () => {
                                     <Route path="" element={<Banners />} />
                                     <Route path="create" element={<CreateBanner />} />
                                     <Route path="edit/:id" element={<EditBanner />} />
-                                    
+
                                 </Route>
 
                                 {/* Routes quản lý blogs */}
@@ -344,7 +378,7 @@ const IndexAdmin = () => {
                                     <Route path="" element={<Blogs />} />
                                     <Route path="create" element={<CreateBlog />} />
                                     <Route path="edit/:id" element={<EditBlog />} />
-                                    
+
                                 </Route>
                                 {/* Routes quản lý contacts */}
                                 <Route path="contacts">

@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import DrawerProduct from "../../../components/LayoutAdmin/drawer/DrawerProduct";
 import { useDeleteProduct, useProducts } from "../../../hooks/useProducts";
+import { useRole } from "../../../hooks/useAuth";
 
 const Products = () => {
   const queryClient = useQueryClient();
@@ -20,6 +21,7 @@ const Products = () => {
     brand: '',
     category: '',
   });
+  const role = useRole();
 
   const filteredData = data?.filter((product: IProduct) => {
     const nameMatch = filters.name ? product.name.toLowerCase().includes(filters.name.toLowerCase()) : true;
@@ -151,18 +153,22 @@ const Products = () => {
             icon={<EyeOutlined />}
             onClick={() => showProductDetails(product)}
           />
-          <Link to={`/admin/Products/edit/${product._id}`}>
-            <Button type="default" icon={<EditOutlined />} />
-          </Link>
-          <Popconfirm
-            title="Xóa sản phẩm"
-            description="Bạn có chắc chắn muốn xóa sản phẩm này?"
-            onConfirm={() => handleDelete(product._id!)}
-            okText="Đồng ý"
-            cancelText="Hủy"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {role === "admin" && (
+            <Link to={`/admin/Products/edit/${product._id}`}>
+              <Button type="default" icon={<EditOutlined />} />
+            </Link>
+          )}
+          {role === "admin" && (
+            <Popconfirm
+              title="Xóa sản phẩm"
+              description="Bạn có chắc chắn muốn xóa sản phẩm này?"
+              onConfirm={() => handleDelete(product._id!)}
+              okText="Đồng ý"
+              cancelText="Hủy"
+            >
+              <Button type="primary" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
         </div>
       ),
     },
@@ -171,11 +177,13 @@ const Products = () => {
   return (
     <div>
       {contextHolder}
-      <div style={{ marginBottom: 16 }}>
-        <Link to="/admin/Products/create">
-          <Button type="primary">Thêm sản phẩm</Button>
-        </Link>
-      </div>
+      {role === "admin" && (
+        <div style={{ marginBottom: 16 }}>
+          <Link to="/admin/Products/create">
+            <Button type="primary">Thêm sản phẩm</Button>
+          </Link>
+        </div>
+      )}
 
       <Table
         columns={columns}

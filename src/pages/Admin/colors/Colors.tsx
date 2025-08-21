@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { IColor } from '../../../interface/color';
 import { useColors, useDeleteColor } from '../../../hooks/useColors';
 import DrawerColor from '../../../components/LayoutAdmin/drawer/DrawerColor';
+import { useRole } from '../../../hooks/useAuth';
 
 const Colors = () => {
     const queryClient = useQueryClient();
@@ -20,6 +21,7 @@ const Colors = () => {
         code: '',
         status: ''
     });
+    const role = useRole();
 
     const filteredData = colors?.filter((color: IColor) => {
         if (filters.name && !color.name.toLowerCase().includes(filters.name.toLowerCase())) {
@@ -144,18 +146,22 @@ const Colors = () => {
                         icon={<EyeOutlined />}
                         onClick={() => showColorDetails(color)}
                     />
-                    <Link to={`/admin/colors/edit/${color._id}`}>
-                        <Button type="default" icon={<EditOutlined />} />
-                    </Link>
-                    <Popconfirm
-                        title="Xóa màu sắc"
-                        description="Bạn có chắc chắn muốn xóa màu sắc này?"
-                        onConfirm={() => handleDelete(color._id!)}
-                        okText="Đồng ý"
-                        cancelText="Hủy"
-                    >
-                        <Button type="primary" danger icon={<DeleteOutlined />} />
-                    </Popconfirm>
+                    {role === "admin" && (
+                        <Link to={`/admin/colors/edit/${color._id}`}>
+                            <Button type="default" icon={<EditOutlined />} />
+                        </Link>
+                    )}
+                    {role === "admin" && (
+                        <Popconfirm
+                            title="Xóa màu sắc"
+                            description="Bạn có chắc chắn muốn xóa màu sắc này?"
+                            onConfirm={() => handleDelete(color._id!)}
+                            okText="Đồng ý"
+                            cancelText="Hủy"
+                        >
+                            <Button type="primary" danger icon={<DeleteOutlined />} />
+                        </Popconfirm>
+                    )}
                 </div>
             ),
         },
@@ -164,17 +170,19 @@ const Colors = () => {
     return (
         <div>
             {contextHolder}
-            <div style={{ marginBottom: 16 }}>
-                <Link to="/admin/colors/add">
-                    <Button type="primary">Thêm màu sắc mới</Button>
-                </Link>
-            </div>
+            {role === "admin" && (
+                <div style={{ marginBottom: 16 }}>
+                    <Link to="/admin/colors/add">
+                        <Button type="primary">Thêm màu sắc mới</Button>
+                    </Link>
+                </div>
+            )}
 
             <Table
                 columns={columns}
                 dataSource={filteredData}
                 rowKey="_id"
-                pagination={{
+                pagination={{   
                     total: filteredData?.length,
                     pageSize: 10,
                     showSizeChanger: true,

@@ -6,6 +6,7 @@ import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlin
 import type { ISize } from '../../../interface/size';
 import { useSizes, useDeleteSize } from '../../../hooks/useSizes';
 import DrawerSize from '../../../components/LayoutAdmin/drawer/DrawerSize';
+import { useRole } from '../../../hooks/useAuth';
 
 const Sizes = () => {
   const queryClient = useQueryClient();
@@ -18,6 +19,7 @@ const Sizes = () => {
   const [filters, setFilters] = useState({
     size: '',
   });
+  const role = useRole()
 
   const filteredData = data?.filter((size: ISize) => {
     if (filters.size && !size.size.toString().includes(filters.size.toString())) {
@@ -96,32 +98,37 @@ const Sizes = () => {
             icon={<EyeOutlined />}
             onClick={() => showSizeDetails(size)}
           />
-          <Link to={`/admin/sizes/edit/${size._id}`}>
-            <Button type="default" icon={<EditOutlined />} />
-          </Link>
-          <Popconfirm
-            title="Xóa kích thước"
-            description="Bạn có chắc chắn muốn xóa kích thước này?"
-            onConfirm={() => handleDelete(size._id!)}
-            okText="Đồng ý"
-            cancelText="Hủy"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {role === "admin" && (
+            <Link to={`/admin/sizes/edit/${size._id}`}>
+              <Button type="default" icon={<EditOutlined />} />
+            </Link>
+          )}
+          {role === "admin" && (
+            <Popconfirm
+              title="Xóa kích thước"
+              description="Bạn có chắc chắn muốn xóa kích thước này?"
+              onConfirm={() => handleDelete(size._id!)}
+              okText="Đồng ý"
+              cancelText="Hủy"
+            >
+              <Button type="primary" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
         </div>
       ),
     },
   ];
 
-
   return (
     <div>
       {contextHolder}
-      <div style={{ marginBottom: 16 }}>
-        <Link to="/admin/sizes/add">
-          <Button type="primary">Thêm kích thước mới</Button>
-        </Link>
-      </div>
+      {role === "admin" && (
+        <div style={{ marginBottom: 16 }}>
+          <Link to="/admin/sizes/add">
+            <Button type="primary">Thêm kích thước mới</Button>
+          </Link>
+        </div>
+      )}
 
       <Table
         columns={columns}

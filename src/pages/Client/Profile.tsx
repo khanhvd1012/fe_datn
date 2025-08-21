@@ -89,8 +89,8 @@ const Profile = () => {
               {
                 onSuccess: () => {
                   message.success("Đổi mật khẩu thành công!");
-                  setOpenChangePassword(false); 
-                  form.resetFields();        
+                  setOpenChangePassword(false);
+                  form.resetFields();
                 },
                 onError: (err: any) => {
                   message.error(err?.response?.data?.message || "Đổi mật khẩu thất bại!");
@@ -103,7 +103,22 @@ const Profile = () => {
             <Input.Password />
           </Form.Item>
 
-          <Form.Item label="Mật khẩu mới" name="newPassword" rules={[{ required: true, message: "Nhập mật khẩu mới" }]}>
+          <Form.Item
+            label="Mật khẩu mới"
+            name="newPassword"
+            dependencies={['oldPassword']}
+            rules={[
+              { required: true, message: "Nhập mật khẩu mới", min: 8 },
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  if (!value || value !== getFieldValue('oldPassword')) {
+                    return Promise.resolve();
+                  }
+                  return Promise.reject(new Error('Mật khẩu mới không được trùng với mật khẩu cũ'));
+                },
+              }),
+            ]}
+          >
             <Input.Password />
           </Form.Item>
 

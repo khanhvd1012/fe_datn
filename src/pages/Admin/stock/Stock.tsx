@@ -4,6 +4,7 @@ import { EditOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons"
 import { useStocks } from "../../../hooks/useStock";
 import type { IStock } from "../../../interface/stock";
 import { useState } from "react";
+import { useRole } from "../../../hooks/useAuth";
 
 const Stock = () => {
   const [messageApi, contextHolder] = message.useMessage();
@@ -14,6 +15,7 @@ const Stock = () => {
     color: '',
     size: '',
   });
+  const role = useRole()
 
   const normalize = (value: string | number | undefined | null) =>
     typeof value === 'string' ? value.toLowerCase() : value?.toString().toLowerCase() || '';
@@ -131,21 +133,25 @@ const Stock = () => {
       render: (text: string) =>
         text ? new Date(text).toLocaleString() : "Không có",
     },
-    {
-      title: "Thao tác",
-      key: "actions",
-      render: (_: any, stock: IStock) => (
-        <Link to={`/admin/stocks/stock/edit/${stock._id}`}>
-          <Button type="default" icon={<EditOutlined />} />
-        </Link>
-      ),
-    },
+    ...(role === "admin"
+      ? [
+        {
+          title: "Thao tác",
+          key: "actions",
+          render: (_: any, stock: IStock) => (
+            <Link to={`/admin/stocks/stock/edit/${stock._id}`}>
+              <Button type="default" icon={<EditOutlined />} />
+            </Link>
+          ),
+        },
+      ]
+      : []),
   ];
 
   return (
     <div>
       {contextHolder}
-      
+
       <div style={{ marginBottom: 16, display: 'flex', gap: 8 }}>
         <Input
           placeholder="Tìm kiếm nhanh theo SKU"

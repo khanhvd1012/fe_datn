@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import DrawerVariant from "../../../components/LayoutAdmin/drawer/DrawerVariant";
 import { useDeleteVariant, useVariants } from "../../../hooks/useVariants";
+import { useRole } from "../../../hooks/useAuth";
 
 const Variant = () => {
   const queryClient = useQueryClient();
@@ -23,6 +24,7 @@ const Variant = () => {
     priceMin: '',
     priceMax: '',
   });
+  const role = useRole()
 
   const normalizeText = (value: any) =>
     typeof value === 'string'
@@ -270,18 +272,22 @@ const Variant = () => {
             icon={<EyeOutlined />}
             onClick={() => showVariantDetails(variant)}
           />
-          <Link to={`/admin/variants/edit/${variant._id}`}>
-            <Button type="default" icon={<EditOutlined />} />
-          </Link>
-          <Popconfirm
-            title="Xóa biến thể"
-            description="Bạn có chắc chắn muốn xóa biến thể này?"
-            onConfirm={() => handleDelete(variant._id!)}
-            okText="Đồng ý"
-            cancelText="Hủy"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
+          {role === "admin" && (
+            <Link to={`/admin/variants/edit/${variant._id}`}>
+              <Button type="default" icon={<EditOutlined />} />
+            </Link>
+          )}
+          {role === "admin" && (
+            <Popconfirm
+              title="Xóa biến thể"
+              description="Bạn có chắc chắn muốn xóa biến thể này?"
+              onConfirm={() => handleDelete(variant._id!)}
+              okText="Đồng ý"
+              cancelText="Hủy"
+            >
+              <Button type="primary" danger icon={<DeleteOutlined />} />
+            </Popconfirm>
+          )}
         </div>
       ),
     },
@@ -290,11 +296,13 @@ const Variant = () => {
   return (
     <div>
       {contextHolder}
-      <div style={{ marginBottom: 16 }}>
-        <Link to="/admin/variants/create">
-          <Button type="primary">Thêm biến thể</Button>
-        </Link>
-      </div>
+      {role === "admin" && (
+        <div style={{ marginBottom: 16 }}>
+          <Link to="/admin/variants/create">
+            <Button type="primary">Thêm biến thể</Button>
+          </Link>
+        </div>
+      )}
       <Table
         columns={columns}
         dataSource={filteredData}

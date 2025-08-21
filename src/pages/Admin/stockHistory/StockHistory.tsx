@@ -4,6 +4,7 @@ import { Button, Empty, Input, message, Popconfirm, Skeleton, Table, Tag } from 
 import { DeleteOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import { useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useRole } from "../../../hooks/useAuth";
 
 const StockHistory = () => {
   const { data: stock_history, isLoading } = useStockHistory();
@@ -13,6 +14,7 @@ const StockHistory = () => {
   const [filters, setFilters] = useState({
     stock_id: '',
   });
+  const role = useRole()
 
   const normalizeText = (value: any) =>
     typeof value === 'string'
@@ -106,7 +108,9 @@ const StockHistory = () => {
       key: "createdAt",
       render: (date: string) => new Date(date).toLocaleString(),
     },
-    {
+    ...(role === "admin"
+      ? [
+        {
       title: "Thao tác",
       key: "actions",
       render: (_: any, record: IStockHistory) => (
@@ -123,6 +127,7 @@ const StockHistory = () => {
         </div>
       )
     },
+      ] : []),
   ];
 
   return (

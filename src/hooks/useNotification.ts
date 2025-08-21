@@ -21,7 +21,7 @@ export const useNotifications = () =>
   useQuery<INotification[]>({
     queryKey: ['notifications'],
     queryFn: getNotifications,
-    refetchInterval: 5000, 
+    refetchInterval: 10000, 
   });
 
 export const useLowStockNotifications = () =>
@@ -29,7 +29,7 @@ export const useLowStockNotifications = () =>
     queryKey: ['notifications', 'low-stock'],
     queryFn: getLowStockNotifications,
     select: (data) => data ?? [],
-    refetchInterval: 5000, 
+    refetchInterval: 10000, 
   });
 
 export const useMarkNotificationAsRead = () => {

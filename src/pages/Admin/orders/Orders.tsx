@@ -1,17 +1,5 @@
-import {
-  Table,
-  Tag,
-  Select,
-  message,
-  Popconfirm,
-  Button,
-  Skeleton,
-  Empty,
-  Modal,
-
-} from "antd";
+import { Table, Tag, Select, message, Popconfirm, Button, Skeleton, Empty, Modal } from "antd";
 import { DatePicker, Input } from "antd";
-
 import React, { useState } from "react";
 import { useAdminOrders, useCancelOrder, useUpdateOrderStatus } from "../../../hooks/useOrder";
 import { useUsers } from "../../../hooks/useUser";
@@ -20,13 +8,12 @@ import type { IOrder } from "../../../interface/order";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from 'dayjs';
 import DrawerOrder from "../../../components/LayoutAdmin/drawer/DrawerOrder";
+import { useRole } from "../../../hooks/useAuth";
+
 const Orders = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
-
   const { data: orders, isLoading } = useAdminOrders();
-  console.log("Orders data:", orders);
-
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: updateStatus } = useUpdateOrderStatus();
   const { data: users } = useUsers();
@@ -40,6 +27,7 @@ const Orders = () => {
     status: "",
     orderCode: "",
   });
+  const role = useRole()
   const handleFilterChange = (value: string, key: keyof typeof filters) => {
     setFilters({ ...filters, [key]: value });
   };
@@ -188,7 +176,7 @@ const Orders = () => {
       dataIndex: "sub_total",
       key: "sub_total",
       render: (value: number) =>
-        value.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        value.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
     },
     {
       title: "Giảm giá",
@@ -196,9 +184,9 @@ const Orders = () => {
       key: "voucher_discount",
       render: (value: number) =>
         value
-          ? `- ${value.toLocaleString("en-US", {
+          ? `- ${value.toLocaleString("vi-VN", {
             style: "currency",
-            currency: "USD",
+            currency: "VND",
           })}`
           : "-",
     },
@@ -207,7 +195,7 @@ const Orders = () => {
       dataIndex: "total_price",
       key: "total_price",
       render: (value: number) =>
-        value.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+        value.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
     },
     {
       title: "Phương thức",
@@ -331,7 +319,8 @@ const Orders = () => {
             onClick={() => showOrderDetails(record)}
           />
           {/* Nút hủy đơn hàng, chỉ hiển thị nếu đơn hàng chưa bị hủy hoặc giao xong */}
-          {record.status !== "canceled" &&
+          {role === "admin" &&
+            record.status !== "canceled" &&
             record.status !== "shipped" &&
             record.status !== "delivered" &&
             record.status !== "returned" && (
