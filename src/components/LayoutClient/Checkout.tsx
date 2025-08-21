@@ -3,7 +3,7 @@ import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import axios from 'axios';
 import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
-
+import { useLocation } from "react-router-dom";
 const Checkout = () => {
   const { TextArea } = Input;
   const { Title, Text } = Typography;
@@ -26,6 +26,32 @@ const Checkout = () => {
     voucher_type: '',
     voucher_value: 0,
   });
+
+  // const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const location = useLocation();
+  const { variant_id, quantity, size } = location.state || {};
+  const [buyNowItem, setBuyNowItem] = useState<any>(null);
+  console.log(variant_id, quantity, size);
+
+  // const isDirectBuy = variant_id && quantity && size;
+  useEffect(() => {
+    if (variant_id) {
+      // gọi API để lấy dữ liệu chi tiết variant
+      axios.get(`http://localhost:3000/api/variants/${variant_id}`)
+        .then(res => {
+          const item = {
+            variant: res.data,
+            quantity,
+            size
+          };
+          console.log("Buy Now Item (trực tiếp):", item); // log ở đây
+          setBuyNowItem(item);
+        })
+        .catch(err => console.error(err));
+    }
+  }, [variant_id, quantity, size]);
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('token');
@@ -37,7 +63,7 @@ const Checkout = () => {
         });
 
         const user = res.data.user;
-
+        console.log("user ", user)
         // Tìm địa chỉ có updatedAt gần nhất
         const latestAddress = (user?.shipping_addresses || [])
           .slice() // clone mảng tránh thay đổi gốc
@@ -81,31 +107,46 @@ const Checkout = () => {
 
     fetchCart();
   }, []);
+
   useEffect(() => {
-    if (!cartData?.cart_items) return;
+  const fetchAllColors = async () => {
+    const newColorMap: Record<string, { name: string; code: string }> = {};
 
-    const fetchAllColors = async () => {
-      const newColorMap: Record<string, { name: string; code: string }> = {};
-
-      for (const item of cartData.cart_items) {
-        const colorId = item.variant_id.color._id;
-
-        if (!newColorMap[colorId]) {
-          try {
+    try {
+      // Trường hợp checkout từ giỏ hàng
+      if (cartData?.cart_items) {
+        for (const item of cartData.cart_items) {
+          const colorId = item.variant_id.color._id;
+          if (!newColorMap[colorId]) {
             const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
             const color = res.data.color;
             newColorMap[colorId] = { name: color.name, code: color.code };
-          } catch (error) {
-            console.error(`Không lấy được màu với id ${colorId}`, error);
           }
         }
       }
 
-      setItemColors(newColorMap);
-    };
+      // Trường hợp mua ngay
+      // buyNowItem.variant
+      console.log("Buy Now - colorId:", buyNowItem?.variant);
+      if (buyNowItem?.variant.data.color) {
+        const colorId = buyNowItem.variant.data.color;
+        console.log("Buy Now - colorId:", colorId);
+        if (!newColorMap[colorId]) {
+          const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
+          const color = res.data.color;
+          newColorMap[colorId] = { name: color.name, code: color.code };
+        }
+      }
 
-    fetchAllColors();
-  }, [cartData]);
+      setItemColors(newColorMap);
+    } catch (error) {
+      console.error("Không lấy được màu", error);
+    }
+  };
+
+  fetchAllColors();
+}, [cartData, buyNowItem]);
+
 
 
   useEffect(() => {
@@ -199,45 +240,100 @@ const Checkout = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+  // const handleSubmit = async () => {
+  //   if (!validate()) return;
+  //   // setIsSubmitting(true);
+  //   const payload = {
+  //     cart_id: cartData.cart_items?.[0]?.cart_id,
+  //     // voucher_code: formData.voucher_code,
+  //     shipping_address: formData.shipping_address,
+  //     full_name: formData.full_name,
+  //     phone: formData.phone,
+  //     payment_method: formData.payment_method,
+  //   };
+
+
+  //   try {
+  //     const token = localStorage.getItem('token');
+  //     const res = await axios.post('http://localhost:3000/api/orders', payload, {
+  //       headers: { Authorization: `Bearer ${token}` },
+  //     });
+
+  //     const orderId = res.data?.donHang?._id || res.data?.data?._id;
+
+  //     // Nếu chọn ZaloPay thì redirect sang link thanh toán
+  //     if (formData.payment_method === 'ZALOPAY' && res.data?.redirectUrl) {
+  //       window.location.href = res.data.redirectUrl;
+  //       return;
+  //     }
+
+  //     // Các phương thức khác
+  //     message.success('Đặt hàng thành công!');
+  //     localStorage.setItem('last_order_id', orderId);
+  //     localStorage.removeItem('selected_voucher_id');
+  //     localStorage.removeItem('cart_backup');
+  //     navigate('/checkout/success');
+  //   } catch (err) {
+  //     console.error(err);
+  //     message.error('Đặt hàng thất bại!');
+  //     navigate('/checkout/failed');
+  //   }
+  // };
+
   const handleSubmit = async () => {
     if (!validate()) return;
 
-    const payload = {
-      cart_id: cartData.cart_items?.[0]?.cart_id,
-      // voucher_code: formData.voucher_code,
-      shipping_address: formData.shipping_address,
-      full_name: formData.full_name,
-      phone: formData.phone,
-      payment_method: formData.payment_method,
-    };
-
+    // Nếu là buyNowItem thì payload khác
+    const payload = buyNowItem
+      ? {
+        product_id: buyNowItem.product_id,
+        variant_id: buyNowItem.variant_id,
+        quantity: buyNowItem.quantity,
+        shipping_address: formData.shipping_address,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        payment_method: formData.payment_method,
+      }
+      : {
+        cart_id: cartData.cart_items?.[0]?.cart_id,
+        shipping_address: formData.shipping_address,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        payment_method: formData.payment_method,
+      };
 
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:3000/api/orders', payload, {
+      const token = localStorage.getItem("token");
+      const url = buyNowItem
+        ? "http://localhost:3000/api/orders/buy-now"
+        : "http://localhost:3000/api/orders";
+
+      const res = await axios.post(url, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const orderId = res.data?.donHang?._id || res.data?.data?._id;
 
-      // Nếu chọn ZaloPay thì redirect sang link thanh toán
-      if (formData.payment_method === 'ZALOPAY' && res.data?.redirectUrl) {
+      if (formData.payment_method === "ZALOPAY" && res.data?.redirectUrl) {
         window.location.href = res.data.redirectUrl;
         return;
       }
 
-      // Các phương thức khác
-      message.success('Đặt hàng thành công!');
-      localStorage.setItem('last_order_id', orderId);
-      localStorage.removeItem('selected_voucher_id');
-      localStorage.removeItem('cart_backup');
-      navigate('/checkout/success');
+      message.success("Đặt hàng thành công!");
+      localStorage.setItem("last_order_id", orderId);
+      localStorage.removeItem("selected_voucher_id");
+      localStorage.removeItem("cart_backup");
+      navigate("/checkout/success");
     } catch (err) {
       console.error(err);
-      message.error('Đặt hàng thất bại!');
-      navigate('/checkout/failed');
+      message.error("Đặt hàng thất bại!");
+      navigate("/checkout/failed");
     }
   };
+
+
+
+
 
   return (
     <>
@@ -338,95 +434,161 @@ const Checkout = () => {
                 className="mt-4 w-full h-10 bg-green-600 hover:bg-green-700"
                 onClick={handleSubmit}
               >
-                Đặt hàng ngay
+                {buyNowItem ? "Mua ngay" : "Đặt hàng ngay"}
               </Button>
+
             </Card>
           </Col>
 
           {/* BÊN PHẢI: Chi tiết giỏ hàng */}
+
           <Col xs={24} md={10}>
-            <Card title="Sản phẩm trong giỏ hàng" bordered={false}>
+            <Card title={variant_id ? "Sản phẩm Mua Ngay" : "Sản phẩm trong giỏ hàng"} bordered={false}>
               {loading ? (
                 <Spin />
               ) : (
                 <>
-                  {cartItems.map((item: any) => (
-                    <div className="flex gap-4 mb-3" key={item._id}>
-                      <Image
-                        width={80}
-                        src={item.variant_id.image_url[0]}
-                        alt="product"
-                        preview={false}
-                      />
-                      <div>
-                        <Text strong>{item.variant_id.product_id.name}</Text>
-                        <div>Size: {item.variant_id.size.size || 'Không rõ'}</div>
-                        {(() => {
-                          const color = itemColors[item.variant_id.color._id];
+                  {variant_id && buyNowItem ? (
 
-                          return color ? (
-                            <div className="flex items-center mt-1 gap-2 text-sm">
-                              <span>Màu:</span>
-                              <span
-                                style={{
-                                  width: 16,
-                                  height: 16,
-                                  display: 'inline-block',
-                                  backgroundColor: color.code,
-                                  border: '1px solid #ccc',
-                                }}
-                              />
-                            </div>
-                          ) : (
-                            <div className="text-sm text-gray-400">Đang tải màu...</div>
-                          );
-                        })()}
+                    // ================= MUA NGAY =================
+                    <div>
+                      <div className="flex gap-4 mb-3">
+                        <Image
+                          width={80}
+                          src={buyNowItem.variant.data.image_url[0]}
+                          alt="product"
+                          preview={false}
+                        />
+                        <div>
+                          <Text strong>{buyNowItem.variant.data.product_id.name}</Text>
+                          <div>Size: {buyNowItem.variant.data.size?.size || buyNowItem.size || "Không rõ"}</div>
 
+                          {(() => {
+                            const color = itemColors[buyNowItem.variant.data.color];
+                            return color ? (
+                              <div className="flex items-center mt-1 gap-2 text-sm">
+                                <span>Màu:</span>
+                                <span
+                                  style={{
+                                    width: 16,
+                                    height: 16,
+                                    display: "inline-block",
+                                    backgroundColor: color.code,
+                                    border: "1px solid #ccc",
+                                  }}
+                                />
+                              </div>
+                            ) : (
+                              <div className="text-sm text-gray-400">Đang tải màu...</div>
+                            );
+                          })()}
 
-
-                        <div>Số lượng: {item.quantity}</div>
+                          <div>Số lượng: {buyNowItem.quantity}</div>
+                        </div>
+                        <div className="ml-auto">
+                          <Text>
+                            {(buyNowItem.variant.data.price * buyNowItem.quantity).toLocaleString()} đ
+                          </Text>
+                        </div>
                       </div>
-                      <div className="ml-auto">
-                        <Text>
-                          {(item.variant_id.price * item.quantity).toLocaleString()} $
+
+                      <Divider />
+
+                      <div className="flex justify-between">
+                        <Text>Phí vận chuyển:</Text>
+                        <Text>{shippingFee.toLocaleString()} đ</Text>
+                      </div>
+
+                      <div className="flex justify-between mt-2">
+                        <Text strong className="text-lg">Tổng cộng:</Text>
+                        <Text strong className="text-lg text-black">
+                          {(buyNowItem.variant.data.price * buyNowItem.quantity + shippingFee).toLocaleString()} đ
                         </Text>
                       </div>
                     </div>
-                  ))}
 
-                  <Divider />
 
-                  <div className="flex justify-between">
-                    <Text>Tổng tiền:</Text>
-                    <Text>{total.toLocaleString()} $</Text>
-                  </div>
+                  ) : (
+                    // ================= GIỎ HÀNG =================
+                    <>
+                      {cartItems.map((item: any) => (
+                        <div className="flex gap-4 mb-3" key={item._id}>
+                          <Image
+                            width={80}
+                            src={item.variant_id.image_url[0]}
+                            alt="product"
+                            preview={false}
+                          />
+                          <div>
+                            <Text strong>{item.variant_id.product_id.name}</Text>
+                            <div>Size: {item.variant_id.size.size || "Không rõ"}</div>
+                            {(() => {
+                              const color = itemColors[item.variant_id.color._id];
+                              return color ? (
+                                <div className="flex items-center mt-1 gap-2 text-sm">
+                                  <span>Màu:</span>
+                                  <span
+                                    style={{
+                                      width: 16,
+                                      height: 16,
+                                      display: "inline-block",
+                                      backgroundColor: color.code,
+                                      border: "1px solid #ccc",
+                                    }}
+                                  />
+                                </div>
+                              ) : (
+                                <div className="text-sm text-gray-400">Đang tải màu...</div>
+                              );
+                            })()}
+                            <div>Số lượng: {item.quantity}</div>
+                          </div>
+                          <div className="ml-auto">
+                            <Text>
+                              {(item.variant_id.price * item.quantity).toLocaleString()} đ
+                            </Text>
+                          </div>
+                        </div>
+                      ))}
 
-                  {formData.voucher_code && (
-                    <div className="flex justify-between">
-                      <Text>Mã giảm giá:</Text>
-                      <Text className="text-red-600">
-                        {formData.voucher_type === 'percentage'
-                          ? `- ${formData.voucher_value}%`
-                          : `- ${formData.voucher_value?.toLocaleString()} $`}
-                      </Text>
-                    </div>
+                      <Divider />
+
+                      <div className="flex justify-between">
+                        <Text>Tổng tiền:</Text>
+                        <Text>{total.toLocaleString()} $</Text>
+                      </div>
+
+                      {formData.voucher_code && (
+                        <div className="flex justify-between">
+                          <Text>Mã giảm giá:</Text>
+                          <Text className="text-red-600">
+                            {formData.voucher_type === "percentage"
+                              ? `- ${formData.voucher_value}%`
+                              : `- ${formData.voucher_value?.toLocaleString()} đ`}
+                          </Text>
+                        </div>
+                      )}
+
+                      <div className="flex justify-between">
+                        <Text>Phí vận chuyển:</Text>
+                        <Text>{shippingFee.toLocaleString()} đ</Text>
+                      </div>
+
+                      <div className="flex justify-between mt-2">
+                        <Text strong className="text-lg">Tổng cộng:</Text>
+                        <Text strong className="text-lg text-black">
+                          {finalTotal.toLocaleString()} đ
+                        </Text>
+                      </div>
+                    </>
                   )}
-
-                  <div className="flex justify-between">
-                    <Text>Phí vận chuyển:</Text>
-                    <Text>{shippingFee.toLocaleString()} $</Text>
-                  </div>
-
-                  <div className="flex justify-between mt-2">
-                    <Text strong className="text-lg">Tổng cộng:</Text>
-                    <Text strong className="text-lg text-black">
-                      {finalTotal.toLocaleString()} $
-                    </Text>
-                  </div>
                 </>
               )}
             </Card>
           </Col>
+
+
+
         </Row>
       </div>
     </>
