@@ -14,6 +14,7 @@ import type { ISize } from '../../interface/size';
 import type { IReview } from '../../interface/review';
 import { useAddToCart } from '../../hooks/useCart';
 import type { IVariant } from '../../interface/product';
+import { useNavigate } from "react-router-dom";
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -35,6 +36,8 @@ const ProductDetail = () => {
   const [inputQuantity, setInputQuantity] = useState('1');
   const [showDescription, setShowDescription] = useState(false);
   const [reviews, setReviews] = useState<IReview[]>([]);
+
+  const navigate = useNavigate();
 
   const handleToggleDescription = () => setShowDescription(prev => !prev);
 
@@ -255,6 +258,26 @@ const ProductDetail = () => {
     reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
   ).toFixed(1);
 
+  const handleBuyNow = () => {
+    if (!selectedVariant || !selectedVariant._id) {
+      message.warning("Vui lòng chọn phân loại sản phẩm!");
+      return;
+    }
+
+    if (quantity > currentStock) {
+      message.warning(`Chỉ còn ${currentStock} sản phẩm trong kho`);
+      return;
+    }
+
+    navigate("/checkout", {
+      state: {
+        variant_id: selectedVariant._id,
+        quantity,
+        size: selectedSize,
+      },
+    });
+  };
+
   if (isLoading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
   if (!product) return <div>Không tìm thấy sản phẩm</div>;
 
@@ -436,18 +459,19 @@ const ProductDetail = () => {
             </div>
 
             <div className="action-buttons">
-              <Link to="/checkout-access">
-                <Button
-                  type="primary"
-                  size="large"
-                  danger
-                  className="buy-now"
-                  disabled={selectedVariant?.stock?.quantity === 0}
-                  style={selectedVariant?.stock?.quantity === 0 ? { color: '#fff', border: 'none', cursor: 'not-allowed' } : {}}
-                >
-                  Mua Ngay
-                </Button>
-              </Link>
+              {/* <Link to="/checkout"> */}
+              <Button
+                type="primary"
+                size="large"
+                danger
+                className="buy-now"
+                onClick={handleBuyNow}
+                disabled={selectedVariant?.stock?.quantity === 0}
+                style={selectedVariant?.stock?.quantity === 0 ? { color: '#fff', border: 'none', cursor: 'not-allowed' } : {}}
+              >
+                Mua Ngay
+              </Button>
+              {/* </Link> */}
             </div>
 
             <Button
