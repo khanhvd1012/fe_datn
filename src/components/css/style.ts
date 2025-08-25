@@ -20,10 +20,6 @@ export const HeaderTop = styled.div`
     animation: scrollLoop 30s linear infinite;
   }
 
-  & > span:nth-child(2) {
-    animation-delay: 15s; /* trễ nửa thời gian */
-  }
-
   @keyframes scrollLoop {
     0% {
       transform: translateX(100%);
@@ -33,7 +29,6 @@ export const HeaderTop = styled.div`
     }
   }
 `;
-
 
 export const HeaderMain = styled.div`
   display: flex;

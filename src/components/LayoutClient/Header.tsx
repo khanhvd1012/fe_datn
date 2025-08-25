@@ -166,8 +166,9 @@ const Header = () => {
   return (
     <>
       <HeaderTop>
-        <span>🚚 MIỄN PHÍ VẬN CHUYỂN NỘI THÀNH CHO ĐƠN &gt; 300K - ĐỔI TRẢ TRONG 30 NGÀY - CAM KẾT 100% CHÍNH HÃNG</span>
-        <span>🎉 KHUYẾN MÃI LỚN MỪNG KHAI TRƯƠNG - GIẢM GIÁ LÊN ĐẾN 50% - SỐ LƯỢNG CÓ HẠN</span>
+        <span>
+          🚚 MIỄN PHÍ VẬN CHUYỂN NỘI THÀNH CHO ĐƠN &gt; 300K - ĐỔI TRẢ TRONG 30 NGÀY - CAM KẾT 100% CHÍNH HÃNG - ƯU ĐÃI HẤP DẪN KHI THANH TOÁN ONLINE - GIẢM GIÁ ĐẶC BIỆT CHO THÀNH VIÊN - HÀNG MỚI VỀ LIÊN TỤC - HỖ TRỢ KHÁCH HÀNG 24/7 🚀
+        </span>
       </HeaderTop>
 
       <HeaderMain>

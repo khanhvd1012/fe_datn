@@ -58,7 +58,17 @@ const EditBlogs = () => {
     formData.append('title', values.title);
     formData.append('content', values.content);
 
-    imageFiles.forEach((file) => {
+    // Lấy ảnh cũ còn muốn giữ lại
+    const existingImages = fileList
+      .filter(file => file.url) // chỉ lấy ảnh có url (ảnh cũ)
+      .map(file => file.url as string);
+
+    existingImages.forEach(url => {
+      formData.append('existingImages', url);
+    });
+
+    // Lấy ảnh mới để upload
+    imageFiles.forEach(file => {
       formData.append('images', file);
     });
 

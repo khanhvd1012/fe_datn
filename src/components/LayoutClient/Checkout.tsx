@@ -21,7 +21,7 @@ const Checkout = () => {
     email: '',
     note: '',
     shipping_type: 'standard',
-    payment_method: 'cod zalopay',
+    payment_method: 'cod',
     voucher_code: '',
     voucher_type: '',
     voucher_value: 0,

@@ -34,10 +34,10 @@ const ProductDetail = () => {
   const { data: product, isLoading } = useProductBySlug(slug || '');
   const [inputQuantity, setInputQuantity] = useState('1');
   const [showDescription, setShowDescription] = useState(false);
+  const [reviews, setReviews] = useState<IReview[]>([]);
 
   const handleToggleDescription = () => setShowDescription(prev => !prev);
 
-  const [reviews, setReviews] = useState<IReview[]>([]);
   const getColorInfo = (id: string) => {
     return colors.find((c: IColor) => c._id === id) || null;
   };
@@ -89,9 +89,11 @@ const ProductDetail = () => {
     setMainImageIndex(0);
   };
 
-
   const availableSizes = getAvailableSizes(selectedColor || undefined);
   const availableColors = getAvailableColors(selectedSize || undefined);
+  const allVariantSizes = Array.isArray(product?.variants)
+    ? [...new Set(product.variants.flatMap((v: any) => Array.isArray(v.size) ? v.size : [v.size]))]
+    : [];
 
   useEffect(() => {
     if (!product) return;
@@ -140,6 +142,8 @@ const ProductDetail = () => {
     if (!imageList.length) return;
     setMainImageIndex((prevIndex) => (prevIndex + 1) % imageList.length);
   };
+
+  const currentStock = selectedVariant?.stock?.quantity ?? 0;
 
   const handleIncrease = () => {
     const q = parseInt(inputQuantity, 10) || 0;
@@ -251,15 +255,8 @@ const ProductDetail = () => {
     reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
   ).toFixed(1);
 
-  const currentStock = selectedVariant?.stock?.quantity ?? 0;
-
   if (isLoading) return <div style={{ textAlign: 'center', marginTop: 50 }}><Spin size="large" /></div>;
   if (!product) return <div>Không tìm thấy sản phẩm</div>;
-
-  // Lấy tất cả size duy nhất từ các biến thể sản phẩm (bỏ lọc theo màu)
-  const allVariantSizes = Array.isArray(product?.variants)
-    ? [...new Set(product.variants.flatMap((v: any) => Array.isArray(v.size) ? v.size : [v.size]))]
-    : [];
 
   return (
     <>

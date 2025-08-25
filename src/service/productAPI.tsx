@@ -105,3 +105,13 @@ export const getProductBySlug = async (slug: string): Promise<IProduct> => {
     }
 };
 
+export const getRelatedProducts = async (slug: string): Promise<IProduct[]> => {
+  try {
+    const response = await axios.get(`${API_URL}/products/${slug}/related`);
+    return response.data.data; // vì BE bạn trả về { success, data }
+  } catch (error) {
+    console.error("Error fetching related products:", error);
+    throw error;
+  }
+};
+
