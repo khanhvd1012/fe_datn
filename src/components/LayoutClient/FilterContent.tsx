@@ -24,7 +24,7 @@ interface Props {
 }
 
 const FilterContent = ({ onChange, defaultValues }: Props) => {
-    const [priceFilters, setPriceFilters] = useState<[number, number]>(defaultValues?.price || [0, 1000]);
+    const [priceFilters, setPriceFilters] = useState<[number, number]>(defaultValues?.price || [0, 10000000]);
     const [colorFilters, setColorFilters] = useState<string[]>(defaultValues?.colors || []);
     const [sizeFilters, setSizeFilters] = useState<string[]>(defaultValues?.sizes || []);
     const [brandFilters, setBrandFilters] = useState<string[]>(defaultValues?.brands || []);
@@ -36,18 +36,31 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
     const { data: brands = [] } = useBrands();
     const { data: categories = [] } = useCategories();
 
+    useEffect(() => {
+        if (defaultValues) {
+            setPriceFilters(defaultValues.price || [0, 1000]);
+            setColorFilters(defaultValues.colors || []);
+            setSizeFilters(defaultValues.sizes || []);
+            setBrandFilters(defaultValues.brands || []);
+            setCategoryFilters(defaultValues.categories || []);
+            setGenderFilters(defaultValues.gender || []);
+        }
+    }, []);
+
     // Gọi lại onChange mỗi khi filters thay đổi
     useEffect(() => {
-        onChange({
+        const newFilters: FilterValues = {
             price: priceFilters,
             colors: colorFilters,
             sizes: sizeFilters,
             brands: brandFilters,
             categories: categoryFilters,
             gender: genderFilters,
-        });
-    }, [priceFilters, colorFilters, sizeFilters, brandFilters, categoryFilters, genderFilters]);
+        };
 
+        onChange(newFilters);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [priceFilters, colorFilters, sizeFilters, brandFilters, categoryFilters, genderFilters]);
 
     return (
         <div style={{ width: 300, padding: 16 }}>
@@ -98,11 +111,10 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
                 min={0}
                 max={10000000}
                 step={10}
-                value={priceFilters}
+                value={[0, priceFilters[1]]}   
                 onChange={(value) => {
                     if (Array.isArray(value)) {
-                        // Giữ nguyên giá trị min (bên trái), chỉ cho phép thay đổi max (bên phải)
-                        setPriceFilters([priceFilters[0], value[1]]);
+                        setPriceFilters([0, value[1]]); 
                     }
                 }}
                 tipFormatter={(value) => `${value?.toLocaleString('vi-VN')}đ`}

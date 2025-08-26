@@ -38,19 +38,17 @@ const Products = () => {
   });
   const { mutate: addToCart } = useAddToCart();
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const pageSize = 24;
 
   const { data: allVariants = [], isLoading: loadingAll } = useVariants();
 
   const { data: topSelling = [], isLoading: loadingTopSelling } = useTopSellingVariants({
     enabled: sortOption === 'top-selling',
   });
-  console.log('topSelling', topSelling);
 
   const { data: topRated = [], isLoading: loadingTopRated } = useTopRatedVariants({
     enabled: sortOption === 'top-rated',
   });
-  console.log('topRated', topRated);
 
   const loading = loadingAll || loadingTopSelling || loadingTopRated;
 
@@ -139,7 +137,7 @@ const Products = () => {
 
   useEffect(() => {
     if (!loading && filteredVariants.length === 0) {
-      message.warning('Không có sản phẩm phù hợp với bộ lọc');
+      message.warning('Không có sản phẩm phù hợp');
     }
   }, [filteredVariants, loading]);
 

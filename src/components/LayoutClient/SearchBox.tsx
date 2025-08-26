@@ -8,6 +8,8 @@ interface Product {
   image?: string;
   price?: number;
   slug?: string;
+  brand?: string | { _id: string; name: string };
+  category?: string | { _id: string; name: string };
 }
 
 interface SearchBoxProps {
@@ -48,14 +50,36 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
   // Kết quả tìm kiếm
   const results = useMemo(() => {
     if (!search.trim() || !Array.isArray(products)) return [];
+    const keyword = search.toLowerCase();
+
     return products.filter(p =>
-      p.name.toLowerCase().includes(search.toLowerCase())
+      p.name.toLowerCase().includes(keyword) ||
+      (typeof p.brand !== 'string' && p.brand?.name.toLowerCase().includes(keyword)) ||
+      (typeof p.category !== 'string' && p.category?.name.toLowerCase().includes(keyword))
     );
   }, [search, products]);
 
   const handleSearch = () => {
     if (search.trim()) {
-      navigate(`/products?search=${encodeURIComponent(search.trim())}`);
+      const keyword = search.toLowerCase();
+
+      // tìm category trùng tên
+      const matchedCategory = products
+        .map(p => (typeof p.category !== 'string' ? p.category : null))
+        .find(c => c && c.name.toLowerCase() === keyword);
+
+      // tìm brand trùng tên
+      const matchedBrand = products
+        .map(p => (typeof p.brand !== 'string' ? p.brand : null))
+        .find(b => b && b.name.toLowerCase() === keyword);
+
+      navigate('/products', {
+        state: {
+          categories: matchedCategory ? [matchedCategory._id] : [],
+          brands: matchedBrand ? [matchedBrand._id] : [],
+          search: search.trim(),
+        },
+      });
       closeSearchBox();
     }
   };
@@ -99,18 +123,26 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
                 <Link
                   key={product._id}
                   to="/products"
-                  state={{ productId: product._id }}
-                  className="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-100 transition"
+                  state={{
+                    productId: product._id,
+                    brands: typeof product.brand !== "string" && product.brand ? [product.brand._id] : [],
+                    categories: typeof product.category !== "string" && product.category ? [product.category._id] : [],
+                  }}
                   onClick={closeSearchBox}
+                  className="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-100 transition"
                 >
                   {product.image && (
                     <img src={product.image} alt={product.name} className="w-8 h-8 object-cover rounded" />
                   )}
                   <div>
                     <div className="font-medium">{product.name}</div>
+                    <div className="text-xs text-gray-500">
+                      {typeof product.brand !== "string" && product.brand?.name} •{" "}
+                      {typeof product.category !== "string" && product.category?.name}
+                    </div>
                     {product.price && (
                       <div className="text-xs text-gray-500">
-                        {product.price.toLocaleString('vi-VN')}đ
+                        {product.price.toLocaleString("vi-VN")}đ
                       </div>
                     )}
                   </div>
