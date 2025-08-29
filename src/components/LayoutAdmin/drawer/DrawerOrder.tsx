@@ -10,29 +10,35 @@ interface DrawerOrderProps {
 }
 
 const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => {
+  { console.log("Order data:", order) }
+
   const renderStatus = (status: string) => {
     switch (status) {
-      case 'pending':
+      case "pending":
         return <Tag color="blue">Chờ xử lý</Tag>;
-      case 'processing':
-        return <Tag color="green">Đang xử lý</Tag>;
-      case 'shipped':
+      case "processing":
+        return <Tag color="cyan">Đang xử lý</Tag>;
+      case "shipped":
         return <Tag color="orange">Đang giao</Tag>;
-      case 'delivered':
+      case "delivered":
         return <Tag color="green">Đã giao</Tag>;
-      case 'canceled':
+      case "canceled":
         return <Tag color="red">Đã hủy</Tag>;
+      case "returned":
+        return <Tag color="purple">Đã trả hàng</Tag>;
       default:
         return <Tag color="default">Không rõ</Tag>;
     }
   };
 
+
   const columns: ColumnsType<any> = [
     {
       title: 'Tên sản phẩm',
-      dataIndex: ['product_id', 'name'],
       key: 'product_name',
+      render: (_, record) => record.variant_id?.product_id?.name || "Không rõ",
     },
+
     {
       title: 'Màu sắc',
       dataIndex: ['variant_id', 'color', 'name'],
