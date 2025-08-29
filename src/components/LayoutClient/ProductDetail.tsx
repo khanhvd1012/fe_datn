@@ -240,7 +240,7 @@ const ProductDetail = () => {
     try {
       const res = await axios.get(`http://localhost:3000/api/reviews/${product?._id}`);
       setReviews(res.data.reviews);
-
+      // console.log("Reviews API response:", res.data.reviews);
     } catch (error) {
       console.error('Lỗi khi lấy danh sách đánh giá:', error);
     }
@@ -622,8 +622,11 @@ const ProductDetail = () => {
         </div>
 
         {/* Danh sách đánh giá */}
+        {/* Danh sách đánh giá */}
         <div>
-          <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: 16 }}>Đánh giá sản phẩm</h3>
+          <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: 16 }}>
+            Đánh giá sản phẩm
+          </h3>
           {reviews.length === 0 ? (
             <p style={{ color: '#999' }}>Chưa có đánh giá nào.</p>
           ) : (
@@ -638,6 +641,7 @@ const ProductDetail = () => {
                   boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
                 }}
               >
+                {/* Người dùng + rating */}
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
                   <strong
                     style={{
@@ -651,14 +655,45 @@ const ProductDetail = () => {
                   </strong>
                   <Rate value={review.rating} disabled style={{ fontSize: 16 }} />
                 </div>
+
+                {/* Bình luận của user */}
                 <p style={{ margin: '4px 0 8px', color: '#444' }}>{review.comment}</p>
-                <div style={{ fontSize: '12px', color: '#999' }}>
+
+                {/* Ngày tạo */}
+                <div style={{ fontSize: '12px', color: '#999', marginBottom: 8 }}>
                   {new Date(review.createdAt).toLocaleString('vi-VN')}
                 </div>
+
+                {/* Nếu có phản hồi admin thì hiển thị */}
+                {review.admin_reply && (
+                  <div
+                    style={{
+                      marginTop: '12px',
+                      padding: '12px',
+                      borderRadius: '6px',
+                      backgroundColor: '#f6f9ff',
+                      border: '1px solid #d6e4ff',
+                    }}
+                  >
+                    <strong style={{ color: '#1d39c4' }}>Phản hồi từ Admin:</strong>
+                    <p
+                      style={{
+                        margin: '4px 0 0',
+                        color: '#333',
+                        wordWrap: 'break-word',   //  tự động xuống dòng
+                        whiteSpace: 'pre-wrap',   //  giữ format và xuống dòng
+                      }}
+                    >
+                      {review.admin_reply}
+                    </p>
+                  </div>
+                )}
+
               </div>
             ))
           )}
         </div>
+
       </div>
       <RelatedProducts />
     </>
