@@ -4,6 +4,10 @@ import axios from 'axios';
 import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
+
+import { Table, Radio } from "antd";
+import type { ColumnsType } from "antd/es/table";
+
 const Checkout = () => {
   const { TextArea } = Input;
   const { Title, Text } = Typography;
@@ -26,6 +30,9 @@ const Checkout = () => {
     voucher_type: '',
     voucher_value: 0,
   });
+  const [userAddresses, setUserAddresses] = useState<any[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
 
   // const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,20 +70,20 @@ const Checkout = () => {
         });
 
         const user = res.data.user;
-        console.log("user ", user)
-        // Tìm địa chỉ có updatedAt gần nhất
-        const latestAddress = (user?.shipping_addresses || [])
-          .slice() // clone mảng tránh thay đổi gốc
-          .sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
+        setUserAddresses(user?.shipping_addresses || []);
+        // // Tìm địa chỉ có updatedAt gần nhất
+        // const latestAddress = (user?.shipping_addresses || [])
+        //   .slice() // clone mảng tránh thay đổi gốc
+        //   .sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
 
-        // Cập nhật form nếu có địa chỉ
-        setFormData((prev) => ({
-          ...prev,
-          full_name: latestAddress?.full_name || '',
-          phone: latestAddress?.phone || '',
-          shipping_address: latestAddress?.address || '',
-          email: user?.email || '',
-        }));
+        // // Cập nhật form nếu có địa chỉ
+        // setFormData((prev) => ({
+        //   ...prev,
+        //   full_name: latestAddress?.full_name || '',
+        //   phone: latestAddress?.phone || '',
+        //   shipping_address: latestAddress?.address || '',
+        //   email: user?.email || '',
+        // }));
 
       } catch (error) {
         console.error('Không lấy được thông tin người dùng:', error);
@@ -85,6 +92,28 @@ const Checkout = () => {
 
     fetchUserProfile();
   }, []);
+
+  // Bảng hiển thị địa chỉ
+  const addressColumns: ColumnsType<any> = [
+    { title: "Họ tên", dataIndex: "full_name" },
+    { title: "Số điện thoại", dataIndex: "phone" },
+    { title: "Địa chỉ", dataIndex: "address" },
+  ];
+
+  const rowSelection = {
+    type: "radio" as const,
+    selectedRowKeys: selectedAddressId ? [selectedAddressId] : [],
+    onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+      const selected = selectedRows[0];
+      setSelectedAddressId(selected._id);
+      setFormData((prev) => ({
+        ...prev,
+        shipping_address: selected._id, //  lưu ID
+        full_name: selected.full_name,
+        phone: selected.phone,
+      }));
+    },
+  };
 
 
   useEffect(() => {
@@ -109,43 +138,43 @@ const Checkout = () => {
   }, []);
 
   useEffect(() => {
-  const fetchAllColors = async () => {
-    const newColorMap: Record<string, { name: string; code: string }> = {};
+    const fetchAllColors = async () => {
+      const newColorMap: Record<string, { name: string; code: string }> = {};
 
-    try {
-      // Trường hợp checkout từ giỏ hàng
-      if (cartData?.cart_items) {
-        for (const item of cartData.cart_items) {
-          const colorId = item.variant_id.color._id;
+      try {
+        // Trường hợp checkout từ giỏ hàng
+        if (cartData?.cart_items) {
+          for (const item of cartData.cart_items) {
+            const colorId = item.variant_id.color._id;
+            if (!newColorMap[colorId]) {
+              const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
+              const color = res.data.color;
+              newColorMap[colorId] = { name: color.name, code: color.code };
+            }
+          }
+        }
+
+        // Trường hợp mua ngay
+        // buyNowItem.variant
+        console.log("Buy Now - colorId:", buyNowItem?.variant);
+        if (buyNowItem?.variant.data.color) {
+          const colorId = buyNowItem.variant.data.color;
+          console.log("Buy Now - colorId:", colorId);
           if (!newColorMap[colorId]) {
             const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
             const color = res.data.color;
             newColorMap[colorId] = { name: color.name, code: color.code };
           }
         }
+
+        setItemColors(newColorMap);
+      } catch (error) {
+        console.error("Không lấy được màu", error);
       }
+    };
 
-      // Trường hợp mua ngay
-      // buyNowItem.variant
-      console.log("Buy Now - colorId:", buyNowItem?.variant);
-      if (buyNowItem?.variant.data.color) {
-        const colorId = buyNowItem.variant.data.color;
-        console.log("Buy Now - colorId:", colorId);
-        if (!newColorMap[colorId]) {
-          const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
-          const color = res.data.color;
-          newColorMap[colorId] = { name: color.name, code: color.code };
-        }
-      }
-
-      setItemColors(newColorMap);
-    } catch (error) {
-      console.error("Không lấy được màu", error);
-    }
-  };
-
-  fetchAllColors();
-}, [cartData, buyNowItem]);
+    fetchAllColors();
+  }, [cartData, buyNowItem]);
 
 
 
@@ -290,12 +319,14 @@ const Checkout = () => {
         variant_id: buyNowItem.variant.data._id,
         quantity: buyNowItem.quantity,
         shipping_address: formData.shipping_address,
+        shipping_address_id: formData.shipping_address?._id,
         full_name: formData.full_name,
         phone: formData.phone,
         payment_method: formData.payment_method,
       }
       : {
         cart_id: cartData.cart_items?.[0]?.cart_id,
+        shipping_address_id: formData.shipping_address?._id,
         shipping_address: formData.shipping_address,
         full_name: formData.full_name,
         phone: formData.phone,
@@ -330,8 +361,29 @@ const Checkout = () => {
       navigate("/checkout/failed");
     }
   };
-
-
+  const columns: ColumnsType<any> = [
+    {
+      title: "Họ tên",
+      dataIndex: "full_name",
+    },
+    {
+      title: "Số điện thoại",
+      dataIndex: "phone",
+    },
+    {
+      title: "Địa chỉ",
+      dataIndex: "shipping_address",
+    },
+    {
+      title: "Email",
+      dataIndex: "email",
+    },
+    {
+      title: "Ghi chú",
+      dataIndex: "note",
+    },
+  ];
+  const [showForm, setShowForm] = useState(false);
 
 
 
@@ -344,48 +396,90 @@ const Checkout = () => {
         <Row gutter={[24, 24]}>
           {/* BÊN TRÁI: Form nhập */}
           <Col xs={24} md={14}>
-            <Card title="Thông tin người nhận" bordered={false}>
-              <div className="mb-[10px]">
-                <Input
-                  placeholder="Họ tên *"
-                  value={formData.full_name}
-                  onChange={(e) => handleChange('full_name', e.target.value)}
-                />
-                {errors.full_name && <Text type="danger">{errors.full_name}</Text>}
-              </div>
-              <div className="mb-[10px]">
-                <Input
-                  placeholder="Số điện thoại *"
-                  value={formData.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                />
-                {errors.phone && <Text type="danger">{errors.phone}</Text>}
-              </div>
-              <div className="mb-[10px]">
-                <Input
-                  placeholder="Địa chỉ nhận hàng *"
-                  value={formData.shipping_address}
-                  onChange={(e) => handleChange('shipping_address', e.target.value)}
-                />
-                {errors.shipping_address && <Text type="danger">{errors.shipping_address}</Text>}
-              </div>
-              <div className="mb-[10px]">
-                <Input
-                  placeholder="Email (tuỳ chọn)"
-                  value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                />
-                {errors.email && <Text type="danger">{errors.email}</Text>}
-              </div>
-              <div className="mb-[10px]">
-                <TextArea
-                  rows={3}
-                  placeholder="Ghi chú (tuỳ chọn)"
-                  value={formData.note}
-                  onChange={(e) => handleChange('note', e.target.value)}
-                />
-              </div>
-              <div className="mb-[10px]">
+            <Card title="Thông tin người nhận" bordered={false}
+              extra={
+
+                userAddresses && userAddresses.length > 0 ? (
+                  showForm ? (
+                    <Button onClick={() => setShowForm(false)}>Quay lại</Button>
+                  ) : (
+                    <Button type="primary" onClick={() => setShowForm(true)}>
+                      Thêm thông tin người nhận
+                    </Button>
+                  )
+                ) : null
+              }
+            >
+              {userAddresses && userAddresses.length > 0 && !showForm ? (
+
+
+                <>
+
+
+                  {/* ✅ Bảng chọn địa chỉ */}
+                  <Table
+                    className="mb-[10px]"
+                    rowKey="_id"
+                    columns={addressColumns}
+                    dataSource={userAddresses}
+                    rowSelection={rowSelection}
+                    pagination={false}
+                    scroll={{ y: 200 }}
+                  />
+                </>
+              ) : (
+                // ❌ Không có địa chỉ => hiển thị form nhập
+                <div>
+                  <div className="mb-[10px]">
+                    <Input
+                      placeholder="Họ tên *"
+                      // value={formData.full_name}
+                      onChange={(e) => handleChange("full_name", e.target.value)}
+                    />
+                    {errors.full_name && <Text type="danger">{errors.full_name}</Text>}
+                  </div>
+
+                  <div className="mb-[10px]">
+                    <Input
+                      placeholder="Số điện thoại *"
+                      // value={formData.phone}
+                      onChange={(e) => handleChange("phone", e.target.value)}
+                    />
+                    {errors.phone && <Text type="danger">{errors.phone}</Text>}
+                  </div>
+
+                  <div className="mb-[10px]">
+                    <Input
+                      placeholder="Địa chỉ nhận hàng *"
+                      // value={formData.shipping_address}
+                      onChange={(e) => handleChange("shipping_address", e.target.value)}
+                    />
+                    {errors.shipping_address && (
+                      <Text type="danger">{errors.shipping_address}</Text>
+                    )}
+                  </div>
+
+                  <div className="mb-[10px]">
+                    <Input
+                      placeholder="Email (tuỳ chọn)"
+                      // value={formData.email}
+                      onChange={(e) => handleChange("email", e.target.value)}
+                    />
+                    {errors.email && <Text type="danger">{errors.email}</Text>}
+                  </div>
+
+                  <div className="mb-[10px]">
+                    <TextArea
+                      rows={3}
+                      placeholder="Ghi chú (tuỳ chọn)"
+                      // value={formData.note}
+                      onChange={(e) => handleChange("note", e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-[10px]"  >
                 <Select
                   className="w-full"
                   value={formData.shipping_type}
