@@ -310,6 +310,7 @@ const Vouchers = () => {
                     showQuickJumper: true,
                     showTotal: (total) => `Tổng ${total} voucher`,
                 }}
+                 scroll={{ x: "max-content" }}
             />
 
             <DrawerVoucher

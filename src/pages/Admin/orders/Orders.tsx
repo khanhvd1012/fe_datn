@@ -14,6 +14,7 @@ const Orders = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const { data: orders, isLoading } = useAdminOrders();
+  console.log("Orders data:", orders);
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: updateStatus } = useUpdateOrderStatus();
   const { data: users } = useUsers();
@@ -26,6 +27,8 @@ const Orders = () => {
     createdAt: "",
     status: "",
     orderCode: "",
+    productName: "",
+    sku: "",
   });
   const role = useRole()
   const handleFilterChange = (value: string, key: keyof typeof filters) => {
@@ -52,7 +55,21 @@ const Orders = () => {
     if (filters.orderCode && !order._id.toLowerCase().includes(filters.orderCode.toLowerCase())) {
       return false;
     }
+    // lọc theo tên sản phẩm
+    if (filters.productName) {
+      const productNames = order?.items?.map((i: any) => i.variant_id?.product_id?.name?.toLowerCase() || "");
+      if (!productNames?.some((name: string) => name.includes(filters.productName.toLowerCase()))) {
+        return false;
+      }
+    }
 
+    // lọc theo SKU
+    if (filters.sku) {
+      const skus = order?.items?.map((i: any) => i.variant_id?.sku?.toLowerCase() || "");
+      if (!skus?.some((sku: string) => sku.includes(filters.sku.toLowerCase()))) {
+        return false;
+      }
+    }
     return true;
   });
 
@@ -121,6 +138,56 @@ const Orders = () => {
       ),
       render: (id: string) => <Tag color="blue">#{id.slice(-6).toUpperCase()}</Tag>,
     },
+    {
+      title: "Sản phẩm",
+      dataIndex: "items",
+      key: "product_name",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm sản phẩm"
+            value={filters.productName}
+            onChange={(e) => handleFilterChange(e.target.value, "productName")}
+            prefix={<SearchOutlined />}
+            allowClear
+            style={{ width: 200 }}
+          />
+        </div>
+      ),
+      filterIcon: () => (
+        <FilterOutlined style={{ color: filters.productName ? "#1890ff" : undefined }} />
+      ),
+      render: (items: any[]) => {
+        if (!items || items.length === 0) return "Không có sản phẩm";
+        return items[0]?.variant_id?.product_id?.name || "Không rõ";
+      },
+    },
+    {
+      title: "SKU",
+      dataIndex: "items",
+      key: "product_sku",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
+          <Input
+            placeholder="Tìm SKU"
+            value={filters.sku}
+            onChange={(e) => handleFilterChange(e.target.value, "sku")}
+            prefix={<SearchOutlined />}
+            allowClear
+            style={{ width: 200 }}
+          />
+        </div>
+      ),
+      filterIcon: () => (
+        <FilterOutlined style={{ color: filters.sku ? "#1890ff" : undefined }} />
+      ),
+      render: (items: any[]) => {
+        if (!items || items.length === 0) return "không có";
+        return items.map((item) => item.variant_id?.sku || "không có").join(", ");
+      },
+    },
+
+
 
     {
       title: "Người đặt",
@@ -270,7 +337,7 @@ const Orders = () => {
           shipped: "Đang giao",
           delivered: "Đã giao",
           // canceled: "Đã hủy",
-          returned: "Đã trả hàng",
+          // returned: "Đã trả hàng",
         };
 
 
@@ -280,7 +347,7 @@ const Orders = () => {
           "Đang giao": "shipped",
           "Đã giao": "delivered",
           // "Đã hủy": "canceled",
-          "Đã trả hàng": "returned",
+          // "Đã trả hàng": "returned",
         };
 
 
@@ -360,6 +427,7 @@ const Orders = () => {
         columns={columns}
         dataSource={[...filteredOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
         pagination={{ pageSize: 10 }}
+        scroll={{ x: "max-content" }}
       />
 
       <DrawerOrder
