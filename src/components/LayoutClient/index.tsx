@@ -25,6 +25,7 @@ import NotificationPopup from './NotificationPopup';
 import BackToTop from './BackToTop';
 import ForgotPassword from '../../pages/Auth/ForgotPassword';
 import ResetPassword from '../../pages/Auth/ResetPassword';
+import CheckoutResult from './CheckoutResult';
 
 const IndexClient = () => {
   const location = useLocation();
@@ -65,6 +66,7 @@ const IndexClient = () => {
           <Route path="/cart" element={<Cart />} />
           <Route path="/products/:slug" element={<ProductDetail />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/result" element={<CheckoutResult />} />
           <Route path="/collection/:slug" element={<CollectionPage />} />
           <Route path="/checkout/success" element={<CheckoutSuccess />} />
           <Route path="/checkout/failed" element={<CheckoutFailed />} />

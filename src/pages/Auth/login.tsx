@@ -4,11 +4,13 @@ import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { useGoogleLogin } from "../../hooks/useAuth";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Login = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
   const googleLogin = useGoogleLogin();
+  const queryClient = useQueryClient()
 
   const onFinish = async (values: any) => {
     try {
@@ -21,6 +23,9 @@ const Login = () => {
         localStorage.setItem("role", res.data.user.role || "user");
         localStorage.setItem("userName", res.data.user.username || "User");
         localStorage.setItem("user", JSON.stringify(res.data.user));
+        queryClient.invalidateQueries({ queryKey: ["profile"] });
+        queryClient.invalidateQueries({ queryKey: ["cart"] });
+        queryClient.invalidateQueries({ queryKey: ["notifications"] });
         message.success("Đăng nhập thành công!");
         navigate("/");
       } else {

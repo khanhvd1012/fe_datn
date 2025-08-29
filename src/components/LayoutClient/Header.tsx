@@ -45,7 +45,6 @@ const Header = () => {
   const { mutate: markAsRead } = useMarkNotificationAsRead();
 
   const { data: cartData } = useCart();
-  const items = cartData?.cart_items || [];
   const cartCount = cartData?.cart_items?.reduce((total, item) => total + item.quantity, 0) || 0;
 
   const { data: user } = useQuery<IUser>({
@@ -122,6 +121,8 @@ const Header = () => {
   const handleLogout = () => {
     localStorage.clear();
     queryClient.removeQueries({ queryKey: ['profile'] });
+    queryClient.removeQueries({ queryKey: ['cart'] });
+    queryClient.removeQueries({ queryKey: ['notifications'] });
     message.info('Đăng xuất thành công!');
     navigate('/');
   };
@@ -214,7 +215,7 @@ const Header = () => {
             open={visible}
             onOpenChange={(open) => setVisible(open)}
           >
-            <Badge count={unreadCount} offset={[6, 0]} size="small">
+            <Badge count={token ? unreadCount : 0} offset={[6, 0]} size="small">
               <span
                 style={{
                   fontSize: 20, // kích thước icon
@@ -230,13 +231,13 @@ const Header = () => {
             </Badge>
           </Popover>
 
-          <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer' , paddingLeft: 10}}>
+          <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer', paddingLeft: 10 }}>
             <SearchOutlined />
           </Icon>
 
-          <Icon onClick={() => setShowCart(true)} style={{ paddingLeft: 10}}>
-            <Badge 
-              count={cartCount > 9 ? '9+' : cartCount}
+          <Icon onClick={() => setShowCart(true)} style={{ paddingLeft: 10 }}>
+            <Badge
+              count={token ? (cartCount > 9 ? '9+' : cartCount) : 0}
               offset={[6, 0]}
               size="small"
               style={{
