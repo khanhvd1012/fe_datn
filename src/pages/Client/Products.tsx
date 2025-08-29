@@ -36,6 +36,9 @@ const Products = () => {
     sizes: initialFilters.sizes || [],
     gender: initialFilters.gender || [],
   });
+  const isLoggedIn = () => {
+    return !!localStorage.getItem("token");
+  };
   const { mutate: addToCart } = useAddToCart();
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 24;
@@ -272,8 +275,15 @@ const Products = () => {
 
                       <div className="absolute top-2 right-2 z-10">
                         <div
-                          onClick={(e) => {
+                          onClick={e => {
                             e.preventDefault();
+
+                            if (!isLoggedIn()) {
+                              import("antd").then(({ message }) => {
+                                message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+                              });
+                              return;
+                            }
                             addToCart({ variant_id: variant._id!, quantity: 1 });
                           }}
                           className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"

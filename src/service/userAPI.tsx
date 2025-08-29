@@ -105,3 +105,25 @@ export const deleteAddress = async (addressId: string) => {
         throw error;
     }
 };
+
+// Khoá hoặc mở khoá user
+export const toggleBlockUser = async (userId: string, reason?: string): Promise<IUser> => {
+    const token = localStorage.getItem("token");
+
+    try {
+        const response = await axios.patch(`${API_URL}/auth/${userId}/toggle-block`,
+            { reason }, // chỉ cần khi block
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            }
+        );
+
+        // backend trả { message, data: user }
+        return response.data.data as IUser;
+    } catch (error) {
+        console.error(`Error toggling block for user ID ${userId}:`, error);
+        throw error;
+    }
+};

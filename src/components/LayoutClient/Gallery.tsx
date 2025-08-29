@@ -43,7 +43,7 @@ const Gallery = () => {
           width: '100%', // full width màn hình
           height: 400,
           backgroundImage:
-            'url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1350&q=80")',
+            'url("https://bizweb.dktcdn.net/100/449/472/themes/854535/assets/banner1.jpg?1731575865034")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           backgroundRepeat: 'no-repeat',
@@ -63,7 +63,7 @@ const Gallery = () => {
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
           }}
         >
-          <Carousel autoplay>
+          <Carousel autoplay dots={false}>
             {filteredReviews.map((review) => (
               <div
                 key={review._id}

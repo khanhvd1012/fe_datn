@@ -230,33 +230,27 @@ const Header = () => {
             </Badge>
           </Popover>
 
-          <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer' }}>
+          <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer' , paddingLeft: 10}}>
             <SearchOutlined />
           </Icon>
 
-          <Icon onClick={() => setShowCart(true)} style={{ position: 'relative', cursor: 'pointer' }}>
-            <ShoppingCartOutlined />
-            {cartCount > 0 && (
-              <span
-                style={{
-                  position: 'absolute',
-                  top: '-4px',
-                  right: '-6px',
-                  background: 'red',
-                  color: 'white',
-                  borderRadius: '50%',
-                  width: '14px',
-                  height: '14px',
-                  fontSize: '10px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  lineHeight: 1,
-                }}
-              >
-                {cartCount > 9 ? '9+' : cartCount}
-              </span>
-            )}
+          <Icon onClick={() => setShowCart(true)} style={{ paddingLeft: 10}}>
+            <Badge 
+              count={cartCount > 9 ? '9+' : cartCount}
+              offset={[6, 0]}
+              size="small"
+              style={{
+                fontSize: 10, // chỉnh font số nhỏ lại
+                minWidth: 14,
+                height: 14,
+                lineHeight: '20px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <ShoppingCartOutlined />
+            </Badge>
           </Icon>
 
         </IconGroup>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAllUsers, getProfile, updateProfile } from "../service/userAPI";
+import { getAllUsers, getProfile, toggleBlockUser, updateProfile } from "../service/userAPI";
 import type { IUser } from "../interface/user";
 
 // Lấy toàn bộ người dùng (chỉ dùng cho admin)
@@ -39,3 +39,18 @@ export const useUpdateUser = () => {
     });
 };
 
+export const useToggleBlockUser = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { userId: string; reason?: string }) =>
+      toggleBlockUser(data.userId, data.reason),
+    onSuccess: (_, variables) => {
+      // Làm mới danh sách users
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+
+      // Làm mới user cụ thể (nếu có query theo id)
+      queryClient.invalidateQueries({ queryKey: ["users", variables.userId] });
+    },
+  });
+};

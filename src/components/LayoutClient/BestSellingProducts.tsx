@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Typography, Spin, Rate, Button } from 'antd';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -19,6 +19,9 @@ const BestSellingProducts = () => {
     queryKey: ['products'],
     queryFn: getProducts,
   });
+  const isLoggedIn = () => {
+    return !!localStorage.getItem("token");
+  };
 
   const getAverageRatingForVariant = (variantId: string) => {
     const related = reviews.filter(r => {
@@ -129,10 +132,19 @@ const BestSellingProducts = () => {
                   <div className="relative">
                     <img src={variant.image_url?.[0] || 'https://picsum.photos/200'} alt={product.name}
                       className="w-full h-48 object-cover rounded-md" />
-                    <div className="absolute top-2 right-2 z-10" onClick={e => {
-                      e.preventDefault();
-                      addToCart({ variant_id: variant._id!, quantity: 1 });
-                    }}>
+                    <div className="absolute top-2 right-2 z-10"
+                      onClick={e => {
+                        e.preventDefault();
+
+                        if (!isLoggedIn()) {
+                          import("antd").then(({ message }) => {
+                            message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+                          });
+                          return;
+                        }
+                        addToCart({ variant_id: variant._id!, quantity: 1 });
+                      }}
+                    >
                       <div className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition">
                         <ShoppingCartOutlined />
                       </div>

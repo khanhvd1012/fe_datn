@@ -26,20 +26,19 @@ import BackToTop from './BackToTop';
 import ForgotPassword from '../../pages/Auth/ForgotPassword';
 import ResetPassword from '../../pages/Auth/ResetPassword';
 
-
 const IndexClient = () => {
   const location = useLocation();
   const matchProductDetail = useMatch('/products/:slug');
   const matchCollectionPage = useMatch('/collection/:slug');
-   const matchOrderDetailPage = useMatch('/OrderDetail/:id');
-     const matchBlogDetailPage = useMatch('/blog/:id');
+  const matchOrderDetailPage = useMatch('/OrderDetail/:id');
+  const matchBlogDetailPage = useMatch('/blog/:id');
 
   // Kiểm tra các trang cần ẩn slideshow
   const isNoSlidePage =
-    ['/login', '/register', '/profile', '/cart', '/checkout','/checkout/success' ,'/order-history' ,'/ProductReview'].includes(location.pathname) ||
+    ['/login', '/register', '/profile', '/cart', '/checkout', '/checkout/success', '/order-history', '/ProductReview'].includes(location.pathname) ||
     Boolean(matchProductDetail) ||
     Boolean(matchCollectionPage) ||
-    Boolean(matchOrderDetailPage)||
+    Boolean(matchOrderDetailPage) ||
     Boolean(matchBlogDetailPage);
 
   return (

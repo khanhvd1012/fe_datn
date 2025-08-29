@@ -20,7 +20,6 @@ const slugify = (str: string) =>
 const Collection: React.FC<Props> = ({ onClose }) => {
   const { data: brands = [], isLoading: loadingBrands } = useBrands();
   const { data: categories = [], isLoading: loadingCategories } = useCategories();
-
   // Tự động đóng khi cuộn trang
   useEffect(() => {
     const handleScroll = () => {

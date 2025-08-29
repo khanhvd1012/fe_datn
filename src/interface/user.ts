@@ -14,6 +14,8 @@ export interface IUser {
   password?: string;
   image?: string; 
   shipping_addresses: IShippingAddress[];
+  isBlocked?: boolean;  
+  blockReason?: string;
   role: "user" | "employee" | "admin";
   createdAt?: string;
   updatedAt?: string;

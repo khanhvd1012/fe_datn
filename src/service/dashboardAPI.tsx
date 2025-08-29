@@ -1,32 +1,9 @@
 import axios from "axios";
+import type { IDashboardStats } from "../interface/dashboard";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export interface DashboardStats {
-    totalProducts: number;
-    productsByCategory: {
-        _id: string;
-        count: number;
-        category: {
-            name: string;
-        }[];
-    }[];
-    topProducts: {
-        _id: string;
-        name: string;
-        totalSales: number;
-        totalRevenue: number;
-    }[];
-    totalOrders: number;
-    monthlyRevenue: number;
-    ordersByDate: {
-        date: string;
-        orders: number;
-    }[];
-    totalUsers: number;
-}
-
-export const getDashboardStats = async (params = {}): Promise<DashboardStats> => {
+export const getDashboardStats = async (params = {}): Promise<IDashboardStats> => {
     try {
         const response = await axios.get(`${API_URL}/dashboards/stats`, { params });
         return response.data.data;

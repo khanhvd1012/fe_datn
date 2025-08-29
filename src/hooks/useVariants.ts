@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addVariant, deleteVariant, getTopRatedVariants, getTopSellingVariants, getVariantById, getVariants, updateVariant } from "../service/variantAPI";
 import type { IVariant } from "../interface/variant";
 
-export const useVariants = (variantId?: any) => {
+export const useVariants = () => {
   return useQuery<IVariant[]>({
     queryKey: ['variants'],
     queryFn: getVariants

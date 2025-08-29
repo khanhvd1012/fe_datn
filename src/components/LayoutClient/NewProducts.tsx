@@ -17,7 +17,9 @@ const NewProducts = () => {
   const { mutate: addToCart } = useAddToCart();
   const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const sliderRef = useRef<HTMLDivElement>(null);
-
+  const isLoggedIn = () => {
+    return !!localStorage.getItem("token");
+  };
   // Fetch products & variants
   useEffect(() => {
     (async () => {
@@ -95,11 +97,11 @@ const NewProducts = () => {
       </Title>
 
       <div style={{ textAlign: 'center', marginTop: 8, marginBottom: 30 }}>
-              <Link to="/products?tab=newest">
-                <Text type="secondary" style={{ fontSize: 12 }}>
-                  Xem thêm
-                </Text>
-              </Link>
+        <Link to="/products?tab=newest">
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            Xem thêm
+          </Text>
+        </Link>
       </div>
 
       {loading ? (
@@ -141,8 +143,17 @@ const NewProducts = () => {
                         alt={product.name} className="w-full h-48 object-cover rounded-md" />
                       <div className="absolute top-2 right-2 z-10">
                         <div
-                          onClick={e => { e.preventDefault(); addToCart({ variant_id: variant._id!, quantity: 1 }); }}
-                          className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
+                          onClick={e => {
+                            e.preventDefault();
+
+                            if (!isLoggedIn()) {
+                              import("antd").then(({ message }) => {
+                                message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+                              });
+                              return;
+                            }
+                            addToCart({ variant_id: variant._id!, quantity: 1 });
+                          }} className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
                         >
                           <ShoppingCartOutlined />
                         </div>

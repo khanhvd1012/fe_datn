@@ -14,7 +14,9 @@ const RelatedProducts = () => {
   const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const sliderRef = useRef<HTMLDivElement>(null);
   const { mutate: addToCart } = useAddToCart();
-
+  const isLoggedIn = () => {
+    return !!localStorage.getItem("token");
+  };
   // Tính rating trung bình cho variant
   const getAverageRatingForVariant = (variantId: string) => {
     const related = reviews.filter(r => {
@@ -131,6 +133,13 @@ const RelatedProducts = () => {
                         className="absolute top-2 right-2 z-10"
                         onClick={e => {
                           e.preventDefault();
+
+                          if (!isLoggedIn()) {
+                            import("antd").then(({ message }) => {
+                              message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+                            });
+                            return;
+                          }
                           addToCart({ variant_id: variant._id!, quantity: 1 });
                         }}
                       >

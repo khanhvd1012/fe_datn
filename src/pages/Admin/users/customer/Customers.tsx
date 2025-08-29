@@ -2,7 +2,7 @@ import { Button, Empty, Input, message, Skeleton, Table, Tag } from "antd";
 import { useState } from "react";
 import { EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import type { IUser } from '../../../../interface/user';
-import { useUsers } from '../../../../hooks/useUser';
+import { useToggleBlockUser, useUsers } from '../../../../hooks/useUser';
 import DrawerUser from "../../../../components/LayoutAdmin/drawer/DrawerUser";
 
 const Customers = () => {
@@ -16,6 +16,7 @@ const Customers = () => {
     email: '',
     phone: ''
   });
+  const toggleBlockUserMutation = useToggleBlockUser();
 
   const customers = user?.filter((u) => u.role === "user") || [];
 
@@ -153,6 +154,26 @@ const Customers = () => {
             icon={<EyeOutlined />}
             onClick={() => showUserDetails(user)}
           />
+          <Button
+            danger={!user.isBlocked}
+            loading={toggleBlockUserMutation.isPending}
+            onClick={() => {
+              if (!user.isBlocked) {
+                // Nếu chưa bị khóa thì bắt buộc nhập lý do
+                const reason = prompt("Nhập lý do khóa tài khoản:");
+                if (!reason) {
+                  messageApi.error("Cần nhập lý do khi khóa tài khoản");
+                  return;
+                }
+                toggleBlockUserMutation.mutate({ userId: user._id!, reason });
+              } else {
+                // Nếu đã bị khóa thì chỉ cần mở
+                toggleBlockUserMutation.mutate({ userId: user._id! });
+              }
+            }}
+          >
+            {user.isBlocked ? "Mở khóa" : "Khóa"}
+          </Button>
         </div>
       ),
     },
