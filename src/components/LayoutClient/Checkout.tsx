@@ -396,17 +396,25 @@ const Checkout = () => {
         <Row gutter={[24, 24]}>
           {/* BÊN TRÁI: Form nhập */}
           <Col xs={24} md={14}>
-            <Card title="Thông tin người nhận" bordered={false}>
+            <Card title="Thông tin người nhận" bordered={false}
+              extra={
+
+                userAddresses && userAddresses.length > 0 ? (
+                  showForm ? (
+                    <Button onClick={() => setShowForm(false)}>Quay lại</Button>
+                  ) : (
+                    <Button type="primary" onClick={() => setShowForm(true)}>
+                      Thêm thông tin người nhận
+                    </Button>
+                  )
+                ) : null
+              }
+            >
               {userAddresses && userAddresses.length > 0 && !showForm ? (
 
 
                 <>
-                 {/* Nút thêm */}
-                  <div style={{ marginTop: 16, textAlign: "right" }} className="mb-4 text-right">
-                    <Button type="primary" onClick={() => setShowForm(true)}>
-                      Thêm thông tin người nhận
-                    </Button>
-                  </div>
+
 
                   {/* ✅ Bảng chọn địa chỉ */}
                   <Table
@@ -418,18 +426,10 @@ const Checkout = () => {
                     pagination={false}
                     scroll={{ y: 200 }}
                   />
-
-                 
                 </>
               ) : (
                 // ❌ Không có địa chỉ => hiển thị form nhập
                 <div>
-                  {/* Nút quay lại */}
-                  {userAddresses && userAddresses.length > 0 && (
-                    <div style={{ marginTop: 16, textAlign: "right" }} className="mb-4 text-right">
-                      <Button onClick={() => setShowForm(false)}>Quay lại</Button>
-                    </div>
-                  )}
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Họ tên *"
