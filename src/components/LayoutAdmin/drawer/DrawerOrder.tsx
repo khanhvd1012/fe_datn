@@ -1,6 +1,9 @@
 import { Drawer, Descriptions, Skeleton, Divider, Tag, Table } from 'antd';
 import type { IOrder } from '../../../interface/order';
 import type { ColumnsType } from 'antd/es/table';
+import { useColors } from '../../../hooks/useColors';
+import { useSizes } from '../../../hooks/useSizes';
+
 
 interface DrawerOrderProps {
   visible: boolean;
@@ -11,6 +14,9 @@ interface DrawerOrderProps {
 
 const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => {
   { console.log("Order data:", order) }
+  // const { data: colors } = useColor();
+  const { data: colors } = useColors();
+  const { data: sizesData } = useSizes();
 
   const renderStatus = (status: string) => {
     switch (status) {
@@ -32,6 +38,7 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
   };
 
 
+
   const columns: ColumnsType<any> = [
     {
       title: 'Tên sản phẩm',
@@ -41,9 +48,33 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
 
     {
       title: 'Màu sắc',
-      dataIndex: ['variant_id', 'color', 'name'],
       key: 'color',
+      render: (_, record) => {
+        const colorId = record.variant_id?.color;
+        const colorDetail = colors?.find((c: any) => c._id === colorId);
+
+        return colorDetail ? (
+          <span>{colorDetail.name}</span>
+        ) : (
+          "---"
+        );
+      },
     },
+    {
+      title: 'Kích thước',
+      key: 'size',
+      render: (_, record) => {
+        const sizeId = record.variant_id?.size;
+        const sizeDetail = sizesData?.find((s: any) => s._id === sizeId);
+
+        return sizeDetail ? (
+          <span>{sizeDetail.size}</span>
+        ) : (
+          "---"
+        );
+      },
+    },
+
     {
       title: 'Giá',
       dataIndex: 'price',
@@ -79,7 +110,7 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
             <h3 className="text-base font-medium mb-2">Thông tin đơn hàng</h3>
             <Descriptions column={1} bordered size="small">
               <Descriptions.Item label="Mã đơn hàng">
-                {order._id}
+                {order.order_code}
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái">
                 {renderStatus(order.status)}
@@ -113,19 +144,22 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
           <div className="mb-4">
             <h3 className="text-base font-medium mb-2">Thông tin người đặt</h3>
             <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="Tên tài khoản">
-                {typeof order.user_id === 'object' && 'username' in order.user_id
-                  ? order.user_id.username
-                  : '---'}
-              </Descriptions.Item>
-              <Descriptions.Item label="Email">
-                {typeof order.user_id === 'object' && 'email' in order.user_id
-                  ? order.user_id.email
-                  : '---'}
-              </Descriptions.Item>
+              {/* Tách shipping_address thành Tên - SĐT - Địa chỉ */}
+              {order.shipping_address && (
+                <>
+                  <Descriptions.Item label="Người nhận">
+                    {order.shipping_address.split(" - ")[0] || "---"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Số điện thoại">
+                    {order.shipping_address.split(" - ")[1] || "---"}
+                  </Descriptions.Item>
+                  <Descriptions.Item label="Địa chỉ">
+                    {order.shipping_address.split(" - ")[2] || "---"}
+                  </Descriptions.Item>
+                </>
+              )}
             </Descriptions>
           </div>
-
           <Divider />
 
           {/* Danh sách sản phẩm */}

@@ -332,7 +332,7 @@ const Checkout = () => {
         phone: formData.phone,
         payment_method: formData.payment_method,
       };
-
+ console.log("Payload gửi đi:", payload);
     try {
       const token = localStorage.getItem("token");
       const url = buyNowItem
@@ -433,7 +433,7 @@ const Checkout = () => {
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Họ tên *"
-                      // value={formData.full_name}
+                      value={formData.full_name}
                       onChange={(e) => handleChange("full_name", e.target.value)}
                     />
                     {errors.full_name && <Text type="danger">{errors.full_name}</Text>}

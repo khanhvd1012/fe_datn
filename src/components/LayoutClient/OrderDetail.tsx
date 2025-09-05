@@ -144,6 +144,7 @@ const OrderDetail = () => {
                 });
 
                 const user = res.data.user;
+                console.log("User:", res.data.user); 
                 const orderDate = new Date(order.createdAt).getTime();
 
                 const matchedAddress = (user?.shipping_addresses || [])
@@ -152,7 +153,7 @@ const OrderDetail = () => {
                         (a: any, b: any) =>
                             new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
                     )[0];
-
+console.log("matchedAddress:", matchedAddress); 
                 if (matchedAddress) {
                     setUserShipping({
                         full_name: matchedAddress.full_name,
