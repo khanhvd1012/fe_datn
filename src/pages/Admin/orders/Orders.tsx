@@ -337,7 +337,7 @@ const Orders = () => {
           shipped: "Đang giao",
           delivered: "Đã giao",
           // canceled: "Đã hủy",
-          // returned: "Đã trả hàng",
+          returned: "Đã trả hàng",
         };
 
 
@@ -347,7 +347,7 @@ const Orders = () => {
           "Đang giao": "shipped",
           "Đã giao": "delivered",
           // "Đã hủy": "canceled",
-          // "Đã trả hàng": "returned",
+          "Đã trả hàng": "returned",
         };
 
 
@@ -361,7 +361,7 @@ const Orders = () => {
               const statusEng = valueMap[label];
               handleUpdateStatus(order._id!, statusEng);
             }}
-            disabled={order.status === "delivered" || order.status === "canceled" || order.status === "returned"}
+            disabled={order.status === "canceled" }
           >
             {Object.entries(labelMap)
               .filter(([key]) => statusOrder[key as IOrder["status"]] > currentStatusIndex)

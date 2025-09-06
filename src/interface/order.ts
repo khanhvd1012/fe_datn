@@ -13,7 +13,8 @@ export interface IOrder {
   cancelled_by?: string | null;
   createdAt?: string;
   updatedAt?: string;
-
+  order_code?: string;
+  shipping_address?: string;
   items?: IOrderItem[];
   trangThai?: string;
 
