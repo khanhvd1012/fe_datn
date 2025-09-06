@@ -260,7 +260,18 @@ const Variant = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status: string) => status === 'inStock' ? <Tag color="success">Còn hàng</Tag> : <Tag color="red">Hết hàng</Tag>,
+      render: (status: string) => {
+        switch (status) {
+          case "inStock":
+            return <Tag color="success">Còn hàng</Tag>;
+          case "outOfStock":
+            return <Tag color="red">Hết hàng</Tag>;
+          case "paused":
+            return <Tag color="orange">Tạm dừng</Tag>;
+          default:
+            return <Tag color="default">Không rõ</Tag>;
+        }
+      },
     },
     {
       title: "Thao tác",

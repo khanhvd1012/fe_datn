@@ -68,4 +68,3 @@ export const useRelatedProducts = (slug: string) => {
     staleTime: 0,
   });
 };
-

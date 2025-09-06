@@ -254,9 +254,10 @@ const ProductDetail = () => {
     return acc;
   }, {} as Record<number, number>);
 
-  const avgRating = (
-    reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
-  ).toFixed(1);
+  const avgRating = Number(
+    (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
+  );
+
 
   const handleBuyNow = () => {
     if (!selectedVariant || !selectedVariant._id) {
@@ -285,7 +286,38 @@ const ProductDetail = () => {
     <>
       <Breadcrumb current={product.name ? `Sản phẩm / ${product.name}` : 'Sản phẩm'} />
       <div className="product-detail-container">
+        {selectedVariant?.stock?.status && (
+          <span
+            style={{
+              marginLeft: 1150,
+              padding: '2px 6px',
+              borderRadius: 4,
+              fontSize: 12,
+              fontWeight: 500,
+              backgroundColor:
+                selectedVariant.stock.status === 'inStock'
+                  ? '#f6ffed'
+                  : selectedVariant.stock.status === 'outOfStock'
+                    ? '#fff1f0'
+                    : '#fffbe6',
+              color:
+                selectedVariant.stock.status === 'inStock'
+                  ? '#52c41a'
+                  : selectedVariant.stock.status === 'outOfStock'
+                    ? '#cf1322'
+                    : '#d48806',
+              border: '1px solid #d9d9d9',
+            }}
+          >
+            {selectedVariant.stock.status === 'inStock'
+              ? 'Còn hàng'
+              : selectedVariant.stock.status === 'outOfStock'
+                ? 'Hết hàng'
+                : 'Tạm dừng'}
+          </span>
+        )}
         <div className="product-detail-content">
+
           {/* Ảnh sản phẩm */}
           <div className="product-images-vertical">
             <div className="thumbnail-list-vertical">
@@ -416,10 +448,21 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <p style={{ color: currentStock === 0 ? 'red' : '#666' }}>
-              {currentStock === 0
-                ? 'Hết hàng'
-                : `Còn lại trong kho: ${currentStock} sản phẩm`}
+            <p
+              style={{
+                color:
+                  selectedVariant?.stock?.status === "outOfStock" ||
+                    selectedVariant?.stock?.status === "paused" ||
+                    currentStock === 0
+                    ? "red"
+                    : "#666",
+              }}
+            >
+              {selectedVariant?.stock?.status === "paused"
+                ? "Sản phẩm đang tạm dừng bán"
+                : selectedVariant?.stock?.status === "outOfStock" || currentStock === 0
+                  ? "Hết hàng"
+                  : `Còn lại trong kho: ${currentStock} sản phẩm`}
             </p>
 
             <div className="purchase-section">
@@ -428,7 +471,10 @@ const ProductDetail = () => {
                   size="small"
                   icon={<MinusOutlined />}
                   onClick={handleDecrease}
-                  disabled={parseInt(inputQuantity, 10) <= 1}
+                  disabled={
+                    parseInt(inputQuantity, 10) <= 1 ||
+                    selectedVariant?.stock?.status !== "inStock"
+                  }
                 />
                 <input
                   value={inputQuantity}
@@ -440,11 +486,13 @@ const ProductDetail = () => {
                     setQuantity(val);
                     setInputQuantity(val.toString());
                   }}
+                  disabled={selectedVariant?.stock?.status !== "inStock"}
                 />
                 <Button
                   size="small"
                   icon={<PlusOutlined />}
                   onClick={handleIncrease}
+                  disabled={selectedVariant?.stock?.status !== "inStock"}
                 />
               </div>
 
@@ -452,26 +500,46 @@ const ProductDetail = () => {
                 type="default"
                 className="add-cart"
                 onClick={addToCart}
-                disabled={currentStock === 0}
+                disabled={
+                  currentStock === 0 ||
+                  selectedVariant?.stock?.status === "outOfStock" ||
+                  selectedVariant?.stock?.status === "paused"
+                }
               >
-                THÊM VÀO GIỎ
+                {selectedVariant?.stock?.status === "paused"
+                  ? "TẠM DỪNG BÁN"
+                  : selectedVariant?.stock?.status === "outOfStock" || currentStock === 0
+                    ? "HẾT HÀNG"
+                    : "THÊM VÀO GIỎ"}
               </Button>
             </div>
 
             <div className="action-buttons">
-              {/* <Link to="/checkout"> */}
               <Button
                 type="primary"
                 size="large"
                 danger
                 className="buy-now"
                 onClick={handleBuyNow}
-                disabled={selectedVariant?.stock?.quantity === 0}
-                style={selectedVariant?.stock?.quantity === 0 ? { color: '#fff', border: 'none', cursor: 'not-allowed' } : {}}
+                disabled={
+                  currentStock === 0 ||
+                  selectedVariant?.stock?.status === "outOfStock" ||
+                  selectedVariant?.stock?.status === "paused"
+                }
+                style={
+                  currentStock === 0 ||
+                    selectedVariant?.stock?.status === "outOfStock" ||
+                    selectedVariant?.stock?.status === "paused"
+                    ? { color: "#fff", border: "none", cursor: "not-allowed" }
+                    : {}
+                }
               >
-                Mua Ngay
+                {selectedVariant?.stock?.status === "paused"
+                  ? "TẠM DỪNG BÁN"
+                  : selectedVariant?.stock?.status === "outOfStock" || currentStock === 0
+                    ? "HẾT HÀNG"
+                    : "MUA NGAY"}
               </Button>
-              {/* </Link> */}
             </div>
 
             <Button
@@ -592,7 +660,6 @@ const ProductDetail = () => {
             </div>
           </div>
 
-
           {/* Thanh phần trăm theo số sao */}
           <div style={{ flex: 1 }}>
             {[5, 4, 3, 2, 1].map((star) => {
@@ -621,7 +688,6 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Danh sách đánh giá */}
         {/* Danh sách đánh giá */}
         <div>
           <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: 16 }}>

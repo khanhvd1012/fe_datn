@@ -16,6 +16,12 @@ export interface IUser {
   shipping_addresses: IShippingAddress[];
   isBlocked?: boolean;  
   blockReason?: string;
+  blockedBy?: {
+    _id: string;
+    username: string;
+    email: string;
+    role: "employee" | "admin";
+  } | null;
   role: "user" | "employee" | "admin";
   createdAt?: string;
   updatedAt?: string;

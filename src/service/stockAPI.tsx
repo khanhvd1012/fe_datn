@@ -20,7 +20,7 @@ export const getAllStock = async (): Promise<IStock[]> => {
 };
 
 // Cập nhật số lượng tồn kho
-export const updateStock = async (id: string, data: { quantity_change: number; reason: string }): Promise<IStockHistory> => {
+export const updateStock = async (id: string, data: { quantity_change: number; reason: string, status?: string }): Promise<IStockHistory> => {
     try {
         const token = localStorage.getItem("token");
         const response = await axios.put(`${API_URL}/stocks/${id}`, data, {

@@ -7,6 +7,7 @@ export interface IStock {
   product_name: string;
   product_variant_id: string;
   last_updated: string;
+  status: 'inStock' | 'outOfStock' | 'paused';
   createdAt: string;
 }
 

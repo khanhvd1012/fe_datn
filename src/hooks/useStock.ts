@@ -16,12 +16,13 @@ export const useUpdateStock = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: string; quantity_change: number; reason: string }) => {
+    mutationFn: (data: { id: string; quantity_change: number; reason: string; status?: string }) => {
       console.log("Gửi updateStock với:", data);
 
       return updateStock(data.id, {
         quantity_change: data.quantity_change,
         reason: data.reason,
+        status: data.status, 
       });
     },
     onSuccess: () => {

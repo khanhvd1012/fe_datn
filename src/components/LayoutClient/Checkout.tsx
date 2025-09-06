@@ -269,45 +269,6 @@ const Checkout = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  // const handleSubmit = async () => {
-  //   if (!validate()) return;
-  //   // setIsSubmitting(true);
-  //   const payload = {
-  //     cart_id: cartData.cart_items?.[0]?.cart_id,
-  //     // voucher_code: formData.voucher_code,
-  //     shipping_address: formData.shipping_address,
-  //     full_name: formData.full_name,
-  //     phone: formData.phone,
-  //     payment_method: formData.payment_method,
-  //   };
-
-
-  //   try {
-  //     const token = localStorage.getItem('token');
-  //     const res = await axios.post('http://localhost:3000/api/orders', payload, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-
-  //     const orderId = res.data?.donHang?._id || res.data?.data?._id;
-
-  //     // Nếu chọn ZaloPay thì redirect sang link thanh toán
-  //     if (formData.payment_method === 'ZALOPAY' && res.data?.redirectUrl) {
-  //       window.location.href = res.data.redirectUrl;
-  //       return;
-  //     }
-
-  //     // Các phương thức khác
-  //     message.success('Đặt hàng thành công!');
-  //     localStorage.setItem('last_order_id', orderId);
-  //     localStorage.removeItem('selected_voucher_id');
-  //     localStorage.removeItem('cart_backup');
-  //     navigate('/checkout/success');
-  //   } catch (err) {
-  //     console.error(err);
-  //     message.error('Đặt hàng thất bại!');
-  //     navigate('/checkout/failed');
-  //   }
-  // };
 
   const handleSubmit = async () => {
     if (!validate()) return;
@@ -411,12 +372,7 @@ const Checkout = () => {
               }
             >
               {userAddresses && userAddresses.length > 0 && !showForm ? (
-
-
                 <>
-
-
-                  {/* ✅ Bảng chọn địa chỉ */}
                   <Table
                     className="mb-[10px]"
                     rowKey="_id"
@@ -428,12 +384,10 @@ const Checkout = () => {
                   />
                 </>
               ) : (
-                // ❌ Không có địa chỉ => hiển thị form nhập
                 <div>
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Họ tên *"
-                      // value={formData.full_name}
                       onChange={(e) => handleChange("full_name", e.target.value)}
                     />
                     {errors.full_name && <Text type="danger">{errors.full_name}</Text>}
@@ -496,30 +450,31 @@ const Checkout = () => {
                   {[
                     { label: 'Thanh toán khi nhận hàng', value: 'cod', icon: '💰' },
                     {
-                      label: (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      label: 'Thanh toán qua ZaloPay',
+                      value: 'ZALOPAY',
+                      icon: (
+                        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                           <img
                             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwPynD27LbXlPsbofv1AX-5ZXDn_XMGo-1TA&s"
                             alt="ZaloPay"
-                            style={{ width: 20, height: 20 }}
+                            style={{ width: 50, height: 50, borderRadius: '5px' }}
                           />
-                          Thanh toán qua ZaloPay
-                        </span>
+                        </div>
                       ),
-                      value: 'ZALOPAY'
-                    }].map((method) => (
-                      <div
-                        key={method.value}
-                        onClick={() => handleChange('payment_method', method.value)}
-                        className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
-                          ? 'border-green-600 bg-green-50'
-                          : 'border-gray-300 hover:border-green-400'
-                          }`}
-                      >
-                        <div className="text-2xl mb-1">{method.icon}</div>
-                        <Text>{method.label}</Text>
-                      </div>
-                    ))}
+                    },
+                  ].map((method) => (
+                    <div
+                      key={method.value}
+                      onClick={() => handleChange('payment_method', method.value)}
+                      className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
+                        ? 'border-green-600 bg-green-50'
+                        : 'border-gray-300 hover:border-green-400'
+                        }`}
+                    >
+                      <div className="text-2xl mb-1">{method.icon}</div>
+                      <Text>{method.label}</Text>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -680,9 +635,6 @@ const Checkout = () => {
               )}
             </Card>
           </Col>
-
-
-
         </Row>
       </div>
     </>

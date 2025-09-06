@@ -1,4 +1,4 @@
-import { Button, Empty, Input, message, Skeleton, Table, Tag } from "antd";
+import { Button, Empty, Input, message, Skeleton, Table, Tag, Modal } from "antd";
 import { useState } from "react";
 import { EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import type { IUser } from '../../../../interface/user';
@@ -7,6 +7,9 @@ import DrawerUser from "../../../../components/LayoutAdmin/drawer/DrawerUser";
 
 const Customers = () => {
   const [messageApi, contextHolder] = message.useMessage();
+  const [isReasonModalVisible, setIsReasonModalVisible] = useState(false);
+  const [currentUser, setCurrentUser] = useState<IUser | null>(null);
+  const [reason, setReason] = useState("");
   const [isDrawerVisible, setIsDrawerVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
   const [drawerLoading, setDrawerLoading] = useState(false);
@@ -145,6 +148,25 @@ const Customers = () => {
       },
     },
     {
+      title: "Lý do",
+      key: "blockReason",
+      render: (_: any, record: IUser) => {
+        if (record.isBlocked) {
+          return (
+            <div>
+              <div><b>Lý do:</b> {record.blockReason}</div>
+              {record.blockedBy && (
+                <div style={{ fontSize: "12px", color: "#888" }}>
+                  (Khóa bởi: {record.blockedBy.username})
+                </div>
+              )}
+            </div>
+          );
+        }
+        return <span style={{ color: "#999" }}>Chưa có</span>;
+      }
+    },
+    {
       title: "Thao tác",
       key: "actions",
       render: (_: any, user: IUser) => (
@@ -159,16 +181,19 @@ const Customers = () => {
             loading={toggleBlockUserMutation.isPending}
             onClick={() => {
               if (!user.isBlocked) {
-                // Nếu chưa bị khóa thì bắt buộc nhập lý do
-                const reason = prompt("Nhập lý do khóa tài khoản:");
-                if (!reason) {
-                  messageApi.error("Cần nhập lý do khi khóa tài khoản");
-                  return;
-                }
-                toggleBlockUserMutation.mutate({ userId: user._id!, reason });
+                // Hiện modal nhập lý do
+                setCurrentUser(user);
+                setIsReasonModalVisible(true);
               } else {
-                // Nếu đã bị khóa thì chỉ cần mở
-                toggleBlockUserMutation.mutate({ userId: user._id! });
+                // Mở khóa trực tiếp
+                toggleBlockUserMutation.mutate(
+                  { userId: user._id! },
+                  {
+                    onSuccess: () => {
+                      messageApi.success("Mở khóa thành công");
+                    }
+                  }
+                );
               }
             }}
           >
@@ -195,6 +220,41 @@ const Customers = () => {
           showTotal: (total) => `Tổng ${total} người dùng`,
         }}
       />
+      <Modal
+        title="Nhập lý do khóa tài khoản"
+        open={isReasonModalVisible}
+        onOk={() => {
+          if (!reason.trim()) {
+            messageApi.error("Vui lòng nhập lý do");
+            return;
+          }
+          toggleBlockUserMutation.mutate(
+            { userId: currentUser!._id!, reason },
+            {
+              onSuccess: () => {
+                messageApi.success("Khóa tài khoản thành công");
+                setIsReasonModalVisible(false);
+                setReason("");
+                setCurrentUser(null);
+              }
+            }
+          );
+        }}
+        onCancel={() => {
+          setIsReasonModalVisible(false);
+          setReason("");
+          setCurrentUser(null);
+        }}
+        okText="Xác nhận"
+        cancelText="Hủy"
+      >
+        <Input.TextArea
+          placeholder="Nhập lý do..."
+          value={reason}
+          onChange={(e) => setReason(e.target.value)}
+          rows={4}
+        />
+      </Modal>
 
       <DrawerUser
         visible={isDrawerVisible}

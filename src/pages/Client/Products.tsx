@@ -24,8 +24,9 @@ interface FilterValues {
 const Products = () => {
   const [sortOption, setSortOption] = useState('default');
   const location = useLocation();
-  const locationState = location.state as { productId?: string };
-  const productIdFromSearch = locationState?.productId;
+  const [productIdFromSearch, setProductIdFromSearch] = useState<string | undefined>(
+    (location.state as { productId?: string })?.productId
+  );
   const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const initialFilters = (location.state as Partial<FilterValues>) || {};
   const [filters, setFilters] = useState<FilterValues>({
@@ -36,6 +37,30 @@ const Products = () => {
     sizes: initialFilters.sizes || [],
     gender: initialFilters.gender || [],
   });
+  // Cập nhật lại filters khi state thay đổi
+  useEffect(() => {
+    const newFilters = (location.state as Partial<FilterValues>) || {};
+    setFilters({
+      price: newFilters.price || [0, 10000000],
+      brands: newFilters.brands || [],
+      categories: newFilters.categories || [],
+      colors: newFilters.colors || [],
+      sizes: newFilters.sizes || [],
+      gender: newFilters.gender || [],
+    });
+  }, [location.state]);
+
+  // Cập nhật lại productId khi state thay đổi
+  useEffect(() => {
+    const newState = location.state as { productId?: string };
+    setProductIdFromSearch(newState?.productId);
+  }, [location.state]);
+
+  // Reset trang về 1 khi filter thay đổi
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, productIdFromSearch]);
+
   const isLoggedIn = () => {
     return !!localStorage.getItem("token");
   };

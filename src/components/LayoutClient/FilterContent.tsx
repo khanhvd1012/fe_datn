@@ -38,14 +38,14 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
 
     useEffect(() => {
         if (defaultValues) {
-            setPriceFilters(defaultValues.price || [0, 1000]);
+            setPriceFilters(defaultValues.price || [0, 10000000]);
             setColorFilters(defaultValues.colors || []);
             setSizeFilters(defaultValues.sizes || []);
             setBrandFilters(defaultValues.brands || []);
             setCategoryFilters(defaultValues.categories || []);
             setGenderFilters(defaultValues.gender || []);
         }
-    }, []);
+    }, [defaultValues]);
 
     // Gọi lại onChange mỗi khi filters thay đổi
     useEffect(() => {
@@ -111,10 +111,10 @@ const FilterContent = ({ onChange, defaultValues }: Props) => {
                 min={0}
                 max={10000000}
                 step={10}
-                value={[0, priceFilters[1]]}   
+                value={[0, priceFilters[1]]}
                 onChange={(value) => {
                     if (Array.isArray(value)) {
-                        setPriceFilters([0, value[1]]); 
+                        setPriceFilters([0, value[1]]);
                     }
                 }}
                 tipFormatter={(value) => `${value?.toLocaleString('vi-VN')}đ`}

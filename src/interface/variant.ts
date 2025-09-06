@@ -11,7 +11,7 @@ export interface IVariant {
     image_url: string[];
     import_price: number;
     gender?: 'unisex' | 'male' | 'female';
-    status?: 'inStock' | 'outOfStock';
+    status?: 'inStock' | 'outOfStock' | 'paused';
     totalSold?: number;
     averageRating?: number;
     reviewCount?: number;

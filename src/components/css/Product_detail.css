@@ -160,7 +160,7 @@
 
 .purchase-section .add-cart {
   height: 48px; /* cùng chiều cao với quantity-control */
-  min-width: 100%;
+  min-width: 104%;
   font-weight: 700;
   font-size: 1.1rem;
   background: white;

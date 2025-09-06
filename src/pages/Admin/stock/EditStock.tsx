@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, InputNumber, message, Skeleton } from 'antd';
+import { Button, Form, Input, InputNumber, message, Skeleton, Select } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useStocks, useUpdateStock } from '../../../hooks/useStock';
 import { useEffect } from 'react';
@@ -16,7 +16,7 @@ const EditStock = () => {
 
   const selectedStock = stock?.find(item => item._id === id);
 
-  const handleSubmit = (values: { quantity: number; reason: string }) => {
+  const handleSubmit = (values: { quantity: number; reason: string; status?: string }) => {
     if (!id || !stock) return;
 
     const selectedStock = stock.find(item => item._id === id);
@@ -24,8 +24,9 @@ const EditStock = () => {
 
     const quantity_change = values.quantity - selectedStock.quantity;
 
-    if (quantity_change === 0) {
-      messageApi.warning('Số lượng không thay đổi!');
+    // Nếu chỉ đổi trạng thái mà không đổi số lượng
+    if (quantity_change === 0 && values.status === selectedStock.status) {
+      messageApi.warning('Không có thay đổi nào!');
       return;
     }
 
@@ -35,17 +36,17 @@ const EditStock = () => {
     }
 
     mutate(
-      { id, quantity_change, reason: values.reason },
+      { id, quantity_change, reason: values.reason, status: values.status },
       {
         onSuccess: () => {
-          messageApi.success('Cập nhật số lượng thành công!');
+          messageApi.success('Cập nhật tồn kho thành công!');
           queryClient.invalidateQueries({ queryKey: ['stocks'] });
           setTimeout(() => {
             navigate('/admin/stocks/stock');
           }, 1000);
         },
         onError: () => {
-          messageApi.error('Cập nhật số lượng thất bại!');
+          messageApi.error('Cập nhật tồn kho thất bại!');
         },
       }
     );
@@ -55,74 +56,55 @@ const EditStock = () => {
     if (selectedStock) {
       form.setFieldsValue({
         quantity: selectedStock.quantity,
+        status: selectedStock.status, // set mặc định trạng thái hiện tại
       });
     }
   }, [selectedStock, form]);
-
 
   if (isLoading || !selectedStock) return <Skeleton active />;
 
   return (
     <div className="max-w-md mx-auto p-4">
       {contextHolder}
-      <h2 className="text-2xl font-bold mb-4">Cập nhật Số Lượng</h2>
+      <h2 className="text-2xl font-bold mb-4">Cập nhật Tồn Kho</h2>
 
       <Form form={form} layout="vertical" onFinish={handleSubmit}>
         <Form.Item label="Tên sản phẩm">
-          <Input
-            value={selectedStock.product_name}
-            disabled
-            style={{ color: 'black' }}
-          />
+          <Input value={selectedStock.product_name} disabled style={{ color: 'black' }} />
         </Form.Item>
 
         <Form.Item label="SKU">
-          <Input
-            value={selectedStock.sku}
-            disabled
-            style={{ color: 'black' }}
-          />
+          <Input value={selectedStock.sku} disabled style={{ color: 'black' }} />
         </Form.Item>
 
         <Form.Item label="Màu sắc">
-          <Input
-            value={selectedStock.color}
-            disabled
-            style={{ color: 'black' }}
-          />
+          <Input value={selectedStock.color} disabled style={{ color: 'black' }} />
         </Form.Item>
 
         <Form.Item label="Kích cỡ">
-          <Input
-            value={selectedStock.size}
-            disabled
-            style={{ color: 'black' }}
-          />
+          <Input value={selectedStock.size} disabled style={{ color: 'black' }} />
         </Form.Item>
 
         <Form.Item
-          label="Số lượng thay đổi"
+          label="Số lượng"
           name="quantity"
-          rules={[
-            { required: true, message: 'Vui lòng nhập lượng thay đổi!' },
-            {
-              validator: (_, value) => {
-                if (value === undefined) return Promise.resolve();
-
-                if (value === 0) {
-                  return Promise.reject('Số lượng không thay đổi!');
-                }
-
-                if (value < 0 && Math.abs(value) > selectedStock.quantity) {
-                  return Promise.reject(`Không thể giảm quá ${selectedStock.quantity} sản phẩm hiện có!`);
-                }
-
-                return Promise.resolve();
-              },
-            },
-          ]}
+          rules={[{ required: true, message: 'Vui lòng nhập số lượng!' }]}
         >
           <InputNumber style={{ width: '100%' }} />
+        </Form.Item>
+
+        <Form.Item
+          label="Trạng thái"
+          name="status"
+          rules={[{ required: true, message: 'Vui lòng chọn trạng thái!' }]}
+        >
+          <Select
+            options={[
+              { label: 'Còn hàng', value: 'inStock' },
+              { label: 'Hết hàng', value: 'outOfStock' },
+              { label: 'Tạm dừng', value: 'paused' },
+            ]}
+          />
         </Form.Item>
 
         <Form.Item

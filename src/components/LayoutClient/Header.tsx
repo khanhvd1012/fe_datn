@@ -43,6 +43,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { data: notis } = useNotifications();
   const { mutate: markAsRead } = useMarkNotificationAsRead();
+  const [searchOpen, setSearchOpen] = useState(false);
 
   const { data: cartData } = useCart();
   const cartCount = cartData?.cart_items?.reduce((total, item) => total + item.quantity, 0) || 0;
@@ -123,6 +124,7 @@ const Header = () => {
     queryClient.removeQueries({ queryKey: ['profile'] });
     queryClient.removeQueries({ queryKey: ['cart'] });
     queryClient.removeQueries({ queryKey: ['notifications'] });
+    window.dispatchEvent(new Event("clearSearchHistory"));
     message.info('Đăng xuất thành công!');
     navigate('/');
   };
@@ -161,7 +163,6 @@ const Header = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleOpenSearch = useCallback(() => setShowSearch(true), []);
   const handleCloseSearch = useCallback(() => setShowSearch(false), []);
 
   return (
@@ -231,9 +232,24 @@ const Header = () => {
             </Badge>
           </Popover>
 
-          <Icon onClick={handleOpenSearch} style={{ cursor: 'pointer', paddingLeft: 10 }}>
-            <SearchOutlined />
-          </Icon>
+          <Popover
+            trigger="click"
+            placement="bottomRight"
+            open={searchOpen}
+            onOpenChange={setSearchOpen}
+            content={
+              <div style={{ width: 350 }}>
+                <SearchBox
+                  onClose={() => setSearchOpen(false)}
+                  products={products}
+                />
+              </div>
+            }
+          >
+            <Icon style={{ cursor: "pointer", paddingLeft: 10 }}>
+              <SearchOutlined />
+            </Icon>
+          </Popover>
 
           <Icon onClick={() => setShowCart(true)} style={{ paddingLeft: 10 }}>
             <Badge
