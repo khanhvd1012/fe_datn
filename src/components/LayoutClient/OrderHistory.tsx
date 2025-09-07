@@ -119,21 +119,20 @@ const OrderHistory = () => {
         });
 
         const baseOrders = res.data || [];
-
+        console.log("Orders từ API:", baseOrders);
         const ordersWithDetails = await Promise.all(
           baseOrders.map(async (order: any) => {
-            const detailRes = await axios.get(
-              `http://localhost:3000/api/orders/${order._id}`,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
+            // const detailRes = await axios.get(
+            //   `http://localhost:3000/api/orders/${order._id}`,
+            //   {
+            //     headers: { Authorization: `Bearer ${token}` },
+            //   }
+            // );
 
-            console.log("Chi tiết đơn hàng:", detailRes.data);
+            // console.log("Chi tiết đơn hàng:", detailRes.data);
 
             const itemsWithDetails = await Promise.all(
-              (detailRes.data.items || []).map(async (item: any) => {
-
+              (order.items || []).map(async (item: any) => {
                 const variantId = item.variant_id?._id;
                 console.log('variantId:', variantId);
                 const variantData = await axios
@@ -194,24 +193,28 @@ const OrderHistory = () => {
             Đánh giá sản phẩm
           </Button>
         </div>
-        <Tabs defaultActiveKey="pending" type="card">
-          {Object.keys(statusLabels).map((status) => (
-            <TabPane tab={statusLabels[status]} key={status}>
-              {groupOrdersByStatus(status).length === 0 ? (
+        <Tabs
+          defaultActiveKey="pending"
+          type="card"
+          items={Object.keys(statusLabels).map((status) => ({
+            key: status,
+            label: statusLabels[status],
+            children:
+              groupOrdersByStatus(status).length === 0 ? (
                 <Text>Không có đơn hàng nào ở trạng thái này</Text>
               ) : (
                 groupOrdersByStatus(status).map((order) => (
                   <Card
-                    key={order._id}
+                    key={order.order_code}
                     className="mb-6"
                     title={
                       <div className="flex justify-between items-center">
                         <div>
                           <Tag color="blue">
-                            #{order._id?.slice(-6).toUpperCase()}
+                            #{order.order_code}
                           </Tag>
                           <span className="ml-2 text-gray-600">
-                            {new Date(order.createdAt).toLocaleString('vi-VN')}
+                            {new Date(order.createdAt).toLocaleString("vi-VN")}
                           </span>
                         </div>
                       </div>
@@ -220,13 +223,13 @@ const OrderHistory = () => {
                     <Table
                       columns={[
                         {
-                          title: 'Sản phẩm',
+                          title: "Sản phẩm",
                           render: (_: any, record: any) => (
-                            <>{record.product_id?.name || 'Không rõ'}</>
+                            <>{record.variant_id.product_id?.name || "Không rõ"}</>
                           ),
                         },
                         {
-                          title: 'Hình ảnh',
+                          title: "Hình ảnh",
                           render: (_: any, record: any) => (
                             <img
                               src={record.imageUrl}
@@ -234,18 +237,24 @@ const OrderHistory = () => {
                               style={{
                                 width: 60,
                                 height: 60,
-                                objectFit: 'cover',
+                                objectFit: "cover",
                               }}
                             />
                           ),
                         },
                         {
-                          title: 'Số lượng',
-                          dataIndex: 'quantity',
+                          title: "Số lượng",
+                          dataIndex: "quantity",
                         },
                         {
-                          title: 'Size',
-                          dataIndex: 'sizeName',
+                          title: "Size",
+                          dataIndex: "sizeName",
+                        },
+                        {
+                          title: 'Màu sắc',
+                          render: (_: any, record: any) => (
+                            <>{record.variant_id.color?.name || "Không rõ"}</>
+                          ),
                         },
                       ]}
                       dataSource={order.items}
@@ -257,14 +266,13 @@ const OrderHistory = () => {
 
                     <div className="flex justify-between items-center mt-4">
                       <div>
-                        <Tag color={statusColor[order.status] || 'default'}>
+                        <Tag color={statusColor[order.status] || "default"}>
                           {statusLabels[order.status]}
                         </Tag>
                       </div>
 
                       <div className="text-green-600 font-semibold">
-                        Tổng tiền:{' '}
-                        {(order.total_price || 0).toLocaleString('en-US')}$
+                        Tổng tiền: {(order.total_price || 0).toLocaleString("en-US")}$
                       </div>
                     </div>
 
@@ -275,7 +283,7 @@ const OrderHistory = () => {
                       >
                         Xem chi tiết
                       </a>
-                      {order.status === 'pending' && (
+                      {order.status === "pending" && (
                         <Button
                           danger
                           size="small"
@@ -287,10 +295,9 @@ const OrderHistory = () => {
                     </div>
                   </Card>
                 ))
-              )}
-            </TabPane>
-          ))}
-        </Tabs>
+              ),
+          }))}
+        />
       </div>
     </>
   );
