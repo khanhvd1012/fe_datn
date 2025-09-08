@@ -568,7 +568,8 @@ const Checkout = () => {
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Họ tên *"
-                      value={formData.full_name}
+                      // value={formData.full_name}
+                      // value= {}
                       onChange={(e) => handleChange("full_name", e.target.value)}
                     />
                     {errors.full_name && <Text type="danger">{errors.full_name}</Text>}
@@ -578,7 +579,7 @@ const Checkout = () => {
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Số điện thoại *"
-                      value={formData.phone}
+                      // value={formData.phone}
                       onChange={(e) => {
                         const value = e.target.value;
                         if (/^\d*$/.test(value)) { // chỉ cho nhập số
@@ -587,18 +588,6 @@ const Checkout = () => {
                       }}
                     />
                     {errors.phone && <Text type="danger">{errors.phone}</Text>}
-                  </div>
-
-                  {/* Địa chỉ chi tiết */}
-                  <div className="mb-[10px]">
-                    <Input
-                      placeholder="Địa chỉ nhận hàng *"
-                      value={formData.shipping_address}
-                      onChange={(e) => handleChange("shipping_address", e.target.value)}
-                    />
-                    {errors.shipping_address && (
-                      <Text type="danger">{errors.shipping_address}</Text>
-                    )}
                   </div>
 
                   {/* Province */}
@@ -670,6 +659,20 @@ const Checkout = () => {
                       </Col>
                     </Row>
                   </div>
+
+                  {/* Địa chỉ chi tiết */}
+                  <div className="mb-[10px]">
+                    <Input
+                      placeholder="Nhập số nhà, đường, ngõ hoặc thôn *"
+                      // value={formData.shipping_address}
+                      onChange={(e) => handleChange("shipping_address", e.target.value)}
+                    />
+                    {errors.shipping_address && (
+                      <Text type="danger">{errors.shipping_address}</Text>
+                    )}
+                  </div>
+
+
 
 
                   {/* Email (optional) */}
