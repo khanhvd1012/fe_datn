@@ -92,6 +92,7 @@ const OrderDetail = () => {
             const res = await axios.get(`http://localhost:3000/api/orders/${id}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
+            console.log("Orders từ API:gtgt ", res.data);
             setOrder(res.data);
         } catch (err) {
             console.error("Lỗi khi lấy chi tiết đơn hàng:", err);
@@ -131,43 +132,55 @@ const OrderDetail = () => {
         }
     }, [order]);
 
-    useEffect(() => {
-        if (!order) return;
+    // useEffect(() => {
+    //     if (!order) return;
 
-        const fetchUserProfileAndMatchAddress = async () => {
-            const token = localStorage.getItem("token");
-            if (!token) return;
+    //     const fetchUserProfileAndMatchAddress = async () => {
+    //         const token = localStorage.getItem("token");
+    //         if (!token) return;
 
-            try {
-                const res = await axios.get("http://localhost:3000/api/auth/profile", {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
+    //         try {
+    //             const res = await axios.get("http://localhost:3000/api/auth/profile", {
+    //                 headers: { Authorization: `Bearer ${token}` },
+    //             });
 
-                const user = res.data.user;
-                console.log("User:", res.data.user); 
-                const orderDate = new Date(order.createdAt).getTime();
+    //             const user = res.data.user;
+    //             console.log("User:", res.data.user);
+    //             const orderDate = new Date(order.createdAt).getTime();
 
-                const matchedAddress = (user?.shipping_addresses || [])
-                    .filter((addr: any) => new Date(addr.updatedAt).getTime() <= orderDate)
-                    .sort(
-                        (a: any, b: any) =>
-                            new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-                    )[0];
-console.log("matchedAddress:", matchedAddress); 
-                if (matchedAddress) {
-                    setUserShipping({
-                        full_name: matchedAddress.full_name,
-                        phone: matchedAddress.phone,
-                        address: matchedAddress.address,
-                    });
-                }
-            } catch (error) {
-                console.error("Không thể lấy địa chỉ người dùng", error);
-            }
+    //             const matchedAddress = (user?.shipping_addresses || [])
+    //                 .filter((addr: any) => new Date(addr.updatedAt).getTime() <= orderDate)
+    //                 .sort(
+    //                     (a: any, b: any) =>
+    //                         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+    //                 )[0];
+    //             console.log("matchedAddress:", matchedAddress);
+    //             if (matchedAddress) {
+    //                 setUserShipping({
+    //                     full_name: matchedAddress.full_name,
+    //                     phone: matchedAddress.phone,
+    //                     address: matchedAddress.address,
+    //                 });
+    //             }
+    //         } catch (error) {
+    //             console.error("Không thể lấy địa chỉ người dùng", error);
+    //         }
+    //     };
+
+    //     fetchUserProfileAndMatchAddress();
+    // }, [order]);
+    const parseShippingAddress = (address?: string | null) => {
+        if (!address) return { name: '', phone: '', address: '' };
+        const parts = address.split(" - ");
+        return {
+            name: parts[0] || '',
+            phone: parts[1] || '',
+            address: parts.slice(2).join(" - ") || '', // phần còn lại
         };
+    };
 
-        fetchUserProfileAndMatchAddress();
-    }, [order]);
+    const shipping = parseShippingAddress(order?.shipping_address);
+
 
     useEffect(() => {
         const fetchColors = async () => {
@@ -295,14 +308,20 @@ console.log("matchedAddress:", matchedAddress);
                             {order.status === 'returned' && 'Đã trả hàng'}
                         </Tag>
                     </Descriptions.Item>
+
                     <Descriptions.Item label="Người nhận">
-                        {userShipping
-                            ? `${userShipping.full_name} - ${userShipping.phone}`
-                            : `${order.full_name} - ${order.phone}`}
+                        {shipping.name}
                     </Descriptions.Item>
+
+                    <Descriptions.Item label="Số điện thoại">
+                        {shipping.phone}
+                    </Descriptions.Item>
+
                     <Descriptions.Item label="Địa chỉ giao hàng">
-                        {userShipping ? userShipping.address : order.shipping_address}
+                        {shipping.address}
                     </Descriptions.Item>
+
+
                     <Descriptions.Item label="Phương thức thanh toán">
                         {order.payment_method === 'cod'
                             ? 'Thanh toán khi nhận hàng'

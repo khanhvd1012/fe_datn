@@ -29,9 +29,19 @@ const Checkout = () => {
     voucher_code: '',
     voucher_type: '',
     voucher_value: 0,
+
+    province_id: null,
+    district_id: null,
+    ward_code: null,
   });
   const [userAddresses, setUserAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+
+
 
 
   // const [isSubmitting, setIsSubmitting] = useState(false);
@@ -99,21 +109,24 @@ const Checkout = () => {
     { title: "Số điện thoại", dataIndex: "phone" },
     { title: "Địa chỉ", dataIndex: "address" },
   ];
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
   const rowSelection = {
     type: "radio" as const,
-    selectedRowKeys: selectedAddressId ? [selectedAddressId] : [],
-    onChange: (selectedRowKeys: React.Key[], selectedRows: any[]) => {
+    selectedRowKeys,
+    onChange: (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
       const selected = selectedRows[0];
+      setSelectedRowKeys(newSelectedRowKeys);
       setSelectedAddressId(selected._id);
       setFormData((prev) => ({
         ...prev,
-        shipping_address: selected._id, //  lưu ID
+        shipping_address: selected._id, // lưu ID
         full_name: selected.full_name,
         phone: selected.phone,
       }));
     },
   };
+
 
 
   useEffect(() => {
@@ -235,40 +248,65 @@ const Checkout = () => {
     setErrors({ ...errors, [field]: '' });
   };
 
+
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
+    const isNewAddress =
+      (userAddresses && userAddresses.length > 0 && showForm) ||
+      !(userAddresses && userAddresses.length > 0);
 
-    // Kiểm tra họ tên: phải có ít nhất 2 từ, không chứa số
-    if (!formData.full_name.trim()) {
-      newErrors.full_name = 'Vui lòng nhập họ tên';
-    } else if (!/^[\p{L}\s']+$/u.test(formData.full_name)) {
-      newErrors.full_name = 'Họ tên chỉ được chứa chữ và khoảng trắng';
-    } else if (formData.full_name.trim().split(/\s+/).length < 2) {
-      newErrors.full_name = 'Vui lòng nhập đầy đủ họ và tên';
-    }
+    if (isNewAddress) {
+      // Kiểm tra họ tên: phải có ít nhất 2 từ, không chứa số
+      if (!formData.full_name.trim()) {
+        newErrors.full_name = 'Vui lòng nhập họ tên';
+      } else if (!/^[\p{L}\s']+$/u.test(formData.full_name)) {
+        newErrors.full_name = 'Họ tên chỉ được chứa chữ và khoảng trắng';
+      } else if (formData.full_name.trim().split(/\s+/).length < 2) {
+        newErrors.full_name = 'Vui lòng nhập đầy đủ họ và tên';
+      }
 
-    // Kiểm tra số điện thoại Việt Nam
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'Vui lòng nhập số điện thoại';
-    } else if (!/^0[3-9]\d{8}$/.test(formData.phone)) {
-      newErrors.phone = 'Số điện thoại không hợp lệ';
-    }
+      // Kiểm tra số điện thoại Việt Nam
+      if (!formData.phone.trim()) {
+        newErrors.phone = 'Vui lòng nhập số điện thoại';
+      } else if (!/^0[3-9]\d{8}$/.test(formData.phone)) {
+        newErrors.phone = 'Số điện thoại không hợp lệ';
+      }
 
-    // Kiểm tra địa chỉ: ít nhất 10 ký tự
-    if (!formData.shipping_address.trim()) {
-      newErrors.shipping_address = 'Vui lòng nhập địa chỉ';
-    } else if (formData.shipping_address.length < 10) {
-      newErrors.shipping_address = 'Địa chỉ quá ngắn';
-    }
+      // Kiểm tra địa chỉ: ít nhất 10 ký tự
+      if (!formData.shipping_address.trim()) {
+        newErrors.shipping_address = 'Vui lòng nhập địa chỉ';
+      }
 
-    // Kiểm tra email (nếu có nhập)
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Email không hợp lệ';
+      // Province
+      if (!formData.province_id) {
+        newErrors.province_id = "Vui lòng chọn Tỉnh/Thành phố";
+      }
+
+      // District
+      if (!formData.district_id) {
+        newErrors.district_id = "Vui lòng chọn Quận/Huyện";
+      }
+
+      // Ward
+      if (!formData.ward_code) {
+        newErrors.ward_code = "Vui lòng chọn Phường/Xã";
+      }
+
+      // Kiểm tra email (nếu có nhập)
+      if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = 'Email không hợp lệ';
+      }
+    } else {
+      if (!selectedRowKeys || selectedRowKeys.length === 0) {
+        newErrors.addressTable = "Vui lòng chọn địa chỉ giao hàng";
+      }
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+
   // const handleSubmit = async () => {
   //   if (!validate()) return;
   //   // setIsSubmitting(true);
@@ -309,30 +347,122 @@ const Checkout = () => {
   //   }
   // };
 
+
+
+
+  const token = localStorage.getItem("token");
+  // Lấy provinces khi load form
+  useEffect(() => {
+    axios
+      .post("http://localhost:3000/api/shipping/provinces", {}, {
+
+        headers: { Authorization: `Bearer ${token}` }, // nếu middleware yêu cầu
+      })
+      .then((res) => {
+        console.log("API provinces trả về:", res.data);
+        setProvinces(res.data.data); // ✅ phải lấy res.data.data
+      })
+      .catch((err) => {
+        console.error("Lỗi khi gọi API provinces:", err.response?.data || err.message);
+      });
+  }, [token]);
+
+
+  // Khi chọn province thì gọi districts
+  useEffect(() => {
+    if (formData.province_id) {
+      axios
+        .post(
+          "http://localhost:3000/api/shipping/districts",
+          { province_id: formData.province_id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+        .then((res) => {
+          console.log("API districts trả về:", res.data);
+          setDistricts(res.data.data || []); // ✅ lấy đúng mảng
+          setWards([]); // reset ward
+          handleChange("district_id", null);
+          handleChange("ward_code", null);
+        })
+        .catch((err) => {
+          console.error("Lỗi khi lấy districts:", err.response?.data || err.message);
+          setDistricts([]);
+        });
+    }
+  }, [formData.province_id, token]);
+
+
+  // Khi chọn district thì gọi wards
+  useEffect(() => {
+    if (formData.district_id) {
+      axios
+        .post(
+          "http://localhost:3000/api/shipping/wards",
+          { district_id: formData.district_id },
+          { headers: { Authorization: `Bearer ${token}` } }
+        )
+        .then((res) => {
+          console.log("API wards trả về:", res.data);
+          setWards(res.data.data || []); // ✅ lấy đúng mảng wards
+          handleChange("ward_code", null); // reset ward đã chọn
+        })
+        .catch((err) => {
+          console.error("Lỗi khi lấy wards:", err.response?.data || err.message);
+          setWards([]);
+        });
+    }
+  }, [formData.district_id, token]);
+
+
   const handleSubmit = async () => {
+
     if (!validate()) return;
 
-    // Nếu là buyNowItem thì payload khác
+    // Trường hợp nhập địa chỉ mới
+    const isNewAddress =
+      (userAddresses && userAddresses.length > 0 && showForm) ||
+      !(userAddresses && userAddresses.length > 0);
+
+    // const isNewAddress = showForm || !selectedAddressId;
+
     const payload = buyNowItem
       ? {
         size: buyNowItem.size,
         variant_id: buyNowItem.variant.data._id,
         quantity: buyNowItem.quantity,
-        shipping_address: formData.shipping_address,
-        shipping_address_id: formData.shipping_address?._id,
-        full_name: formData.full_name,
-        phone: formData.phone,
+        ...(isNewAddress
+          ? {
+            shipping_address: formData.shipping_address,
+            province_id: formData.province_id,
+            district_id: formData.district_id,
+            ward_code: formData.ward_code,
+            full_name: formData.full_name,
+            phone: formData.phone,
+          }
+          : {
+            shipping_address_id: selectedAddressId,
+          }),
         payment_method: formData.payment_method,
       }
       : {
         cart_id: cartData.cart_items?.[0]?.cart_id,
-        shipping_address_id: formData.shipping_address?._id,
-        shipping_address: formData.shipping_address,
-        full_name: formData.full_name,
-        phone: formData.phone,
+        ...(isNewAddress
+          ? {
+            shipping_address: formData.shipping_address,
+            province_id: formData.province_id,
+            district_id: formData.district_id,
+            ward_code: formData.ward_code,
+            full_name: formData.full_name,
+            phone: formData.phone,
+          }
+          : {
+            shipping_address_id: selectedAddressId,
+          }),
         payment_method: formData.payment_method,
       };
- console.log("Payload gửi đi:", payload);
+
+    console.log("Payload gửi đi:", payload);
+
     try {
       const token = localStorage.getItem("token");
       const url = buyNowItem
@@ -361,6 +491,7 @@ const Checkout = () => {
       navigate("/checkout/failed");
     }
   };
+
   const columns: ColumnsType<any> = [
     {
       title: "Họ tên",
@@ -414,8 +545,6 @@ const Checkout = () => {
 
 
                 <>
-
-
                   {/* ✅ Bảng chọn địa chỉ */}
                   <Table
                     className="mb-[10px]"
@@ -426,31 +555,115 @@ const Checkout = () => {
                     pagination={false}
                     scroll={{ y: 200 }}
                   />
+                  {errors.addressTable && (
+                    <Text type="danger" style={{ display: "block", marginTop: 4 }}>
+                      {errors.addressTable}
+                    </Text>
+                  )}
                 </>
               ) : (
                 // ❌ Không có địa chỉ => hiển thị form nhập
                 <div>
+                  {/* Họ tên */}
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Họ tên *"
-                      value={formData.full_name}
+                      // value={formData.full_name}
+                      // value= {}
                       onChange={(e) => handleChange("full_name", e.target.value)}
                     />
                     {errors.full_name && <Text type="danger">{errors.full_name}</Text>}
                   </div>
 
+                  {/* Số điện thoại */}
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Số điện thoại *"
                       // value={formData.phone}
-                      onChange={(e) => handleChange("phone", e.target.value)}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (/^\d*$/.test(value)) { // chỉ cho nhập số
+                          handleChange("phone", value);
+                        }
+                      }}
                     />
                     {errors.phone && <Text type="danger">{errors.phone}</Text>}
                   </div>
 
+                  {/* Province */}
+                  <div className="mb-[10px]">
+                    <Row gutter={16}>
+                      <Col span={8}>
+                        <Select
+                          showSearch
+                          placeholder="Chọn Tỉnh/Thành phố *"
+                          value={formData.province_id}
+                          onChange={(value) => {
+                            handleChange("province_id", value);
+                            // reset Quận/Huyện và Phường/Xã
+                            // handleChange("district_id", null);
+                            // handleChange("ward_code", null);
+                          }}
+                          options={provinces.map((p: any) => ({
+                            label: p.ProvinceName,
+                            value: p.ProvinceID,
+                          }))}
+                          optionFilterProp="label"
+                          filterOption={(input, option) =>
+                            (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                          }
+                          className="w-full"
+                        />
+                        {errors.province_id && <Text type="danger">{errors.province_id}</Text>}
+                      </Col>
+
+                      <Col span={8}>
+                        <Select
+                          showSearch
+                          placeholder="Chọn Quận/Huyện *"
+                          value={formData.district_id}
+                          onChange={(value) => {
+                            handleChange("district_id", value);
+                            // handleChange("ward_code", null);
+                          }}
+                          options={districts.map((d) => ({
+                            label: d.DistrictName,
+                            value: d.DistrictID,
+                          }))}
+                          optionFilterProp="label"
+                          filterOption={(input, option) =>
+                            (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                          }
+                          className="w-full"
+                        />
+                        {errors.district_id && <Text type="danger">{errors.district_id}</Text>}
+                      </Col>
+
+                      <Col span={8}>
+                        <Select
+                          showSearch
+                          placeholder="Chọn Phường/Xã *"
+                          value={formData.ward_code}
+                          onChange={(value) => handleChange("ward_code", value)}
+                          options={wards.map((w) => ({
+                            label: w.WardName,
+                            value: w.WardCode,
+                          }))}
+                          optionFilterProp="label"
+                          filterOption={(input, option) =>
+                            (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                          }
+                          className="w-full"
+                        />
+                        {errors.ward_code && <Text type="danger">{errors.ward_code}</Text>}
+                      </Col>
+                    </Row>
+                  </div>
+
+                  {/* Địa chỉ chi tiết */}
                   <div className="mb-[10px]">
                     <Input
-                      placeholder="Địa chỉ nhận hàng *"
+                      placeholder="Nhập số nhà, đường, ngõ hoặc thôn *"
                       // value={formData.shipping_address}
                       onChange={(e) => handleChange("shipping_address", e.target.value)}
                     />
@@ -459,20 +672,25 @@ const Checkout = () => {
                     )}
                   </div>
 
+
+
+
+                  {/* Email (optional) */}
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Email (tuỳ chọn)"
-                      // value={formData.email}
+                      value={formData.email}
                       onChange={(e) => handleChange("email", e.target.value)}
                     />
                     {errors.email && <Text type="danger">{errors.email}</Text>}
                   </div>
 
+                  {/* Note (optional) */}
                   <div className="mb-[10px]">
                     <TextArea
                       rows={3}
                       placeholder="Ghi chú (tuỳ chọn)"
-                      // value={formData.note}
+                      value={formData.note}
                       onChange={(e) => handleChange("note", e.target.value)}
                     />
                   </div>
