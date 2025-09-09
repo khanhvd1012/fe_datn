@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
+import { useLocation, useParams } from 'react-router-dom';
 import { Button, Spin, message, Card, Row, Col, Rate, Progress } from 'antd';
 import { MinusOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import axios from 'axios';
@@ -92,7 +92,6 @@ const ProductDetail = () => {
     setMainImageIndex(0);
   };
 
-  const availableSizes = getAvailableSizes(selectedColor || undefined);
   const availableColors = getAvailableColors(selectedSize || undefined);
   const allVariantSizes = Array.isArray(product?.variants)
     ? [...new Set(product.variants.flatMap((v: any) => Array.isArray(v.size) ? v.size : [v.size]))]

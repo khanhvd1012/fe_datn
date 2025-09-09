@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, InputNumber, message, Select, Skeleton, Upload } from 'antd';
+import { Button, Form, InputNumber, message, Select, Skeleton, Upload, Typography, Row, Col } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateVariant, useVariant } from '../../../hooks/useVariants';
@@ -67,6 +67,10 @@ const EditVariant = () => {
     formData.append("price", values.price);
     formData.append("import_price", values.import_price);
     formData.append("gender", values.gender);
+    formData.append("weight", values.weight);
+    formData.append("length", values.length);
+    formData.append("width", values.width);
+    formData.append("height", values.height);
 
     // Tách ảnh cũ (chỉ có url) và ảnh mới (có originFileObj)
     const existingImageUrls = fileList
@@ -162,6 +166,47 @@ const EditVariant = () => {
           ]}
         >
           <InputNumber style={{ width: '100%' }} />
+        </Form.Item>
+
+        <Form.Item label="Thông số vận chuyển">
+          <Row gutter={12}>
+            <Col span={6}>
+              <Form.Item
+                name="weight"
+                noStyle
+                rules={[{ required: true, message: 'Nhập trọng lượng!' }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Trọng lượng (g)" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name="length"
+                noStyle
+                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều dài không hợp lệ'); return Promise.resolve(); } }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Dài (cm)" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name="width"
+                noStyle
+                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều rộng không hợp lệ'); return Promise.resolve(); } }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Rộng (cm)" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name="height"
+                noStyle
+                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều cao không hợp lệ'); return Promise.resolve(); } }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Cao (cm)" />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form.Item>
 
         <Form.Item label="Giới tính" name="gender" rules={[{ required: true }]}>

@@ -11,6 +11,7 @@ import {
 } from '../../hooks/useNotification';
 import { useState } from 'react';
 import dayjs from 'dayjs';
+import { useQueryClient } from '@tanstack/react-query';
 
 const { Text } = Typography;
 
@@ -19,7 +20,7 @@ const Headers = () => {
     token: { colorBgContainer },
   } = theme.useToken();
   const navigate = useNavigate();
-
+  const queryClient = useQueryClient();
   const { data: user, isLoading } = useCurrentUser();
   const { data: notis } = useNotifications();
   const { data: lowStockNotis } = useLowStockNotifications();
@@ -33,6 +34,7 @@ const Headers = () => {
 
   const handleLogout = () => {
     localStorage.clear();
+    queryClient.removeQueries({ queryKey: ['profile'] });
     navigate('/');
   };
 

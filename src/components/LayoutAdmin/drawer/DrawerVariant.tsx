@@ -92,6 +92,26 @@ const DrawerVariant = ({ visible, variant, onClose, loading }: DrawerVariantProp
           <Divider />
 
           <div>
+            <h3 className="text-base font-medium mb-2">Thông số vận chuyển</h3>
+            <Descriptions column={2} bordered size="small">
+              <Descriptions.Item label="Trọng lượng" className="bg-gray-50">
+                {variant?.weight ? `${variant.weight} g` : '---'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Chiều dài">
+                {variant?.length ? `${variant.length} cm` : '---'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Chiều rộng" className="bg-gray-50">
+                {variant?.width ? `${variant.width} cm` : '---'}
+              </Descriptions.Item>
+              <Descriptions.Item label="Chiều cao">
+                {variant?.height ? `${variant.height} cm` : '---'}
+              </Descriptions.Item>
+            </Descriptions>
+          </div>
+
+          <Divider />
+
+          <div>
             <h3 className="text-base font-medium mb-2">Thông tin thời gian</h3>
             <Descriptions column={1} bordered size="small">
               <Descriptions.Item label="Ngày tạo" className="bg-gray-50">

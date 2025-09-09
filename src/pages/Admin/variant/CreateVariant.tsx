@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, InputNumber, message, Select, Skeleton, Upload, Typography } from 'antd';
+import { Button, Form, InputNumber, message, Select, Skeleton, Upload, Typography, Row, Col } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useAddVariant } from '../../../hooks/useVariants';
@@ -45,6 +45,10 @@ const CreateVariant = () => {
     formData.append("import_price", values.import_price);
     formData.append("gender", values.gender);
     formData.append("initial_stock", values.initial_stock);
+    formData.append("weight", values.weight);
+    formData.append("length", values.length);
+    formData.append("width", values.width);
+    formData.append("height", values.height);
 
     imageFiles.forEach((file: File) => {
       formData.append("images", file);
@@ -146,6 +150,47 @@ const CreateVariant = () => {
           ]}
         >
           <InputNumber style={{ width: '100%' }} placeholder="Nhập giá nhập" />
+        </Form.Item>
+
+        <Form.Item label="Thông số vận chuyển">
+          <Row gutter={12}>
+            <Col span={6}>
+              <Form.Item
+                name="weight"
+                noStyle
+                rules={[{ required: true, message: 'Nhập trọng lượng!' }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Trọng lượng (g)" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name="length"
+                noStyle
+                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều dài không hợp lệ'); return Promise.resolve(); } }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Dài (cm)" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name="width"
+                noStyle
+                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều rộng không hợp lệ'); return Promise.resolve(); } }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Rộng (cm)" />
+              </Form.Item>
+            </Col>
+            <Col span={6}>
+              <Form.Item
+                name="height"
+                noStyle
+                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều cao không hợp lệ'); return Promise.resolve(); } }]}
+              >
+                <InputNumber style={{ width: '100%' }} placeholder="Cao (cm)" />
+              </Form.Item>
+            </Col>
+          </Row>
         </Form.Item>
 
         <Form.Item

@@ -12,6 +12,10 @@ export interface IVariant {
     import_price: number;
     gender?: 'unisex' | 'male' | 'female';
     status?: 'inStock' | 'outOfStock' | 'paused';
+    weight?: number;
+    length?: number;
+    width?: number;
+    height?: number;
     totalSold?: number;
     averageRating?: number;
     reviewCount?: number;
