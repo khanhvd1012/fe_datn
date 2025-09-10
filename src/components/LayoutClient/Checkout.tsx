@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import axios from 'axios';
-import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message } from 'antd';
+import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message, Tag } from 'antd';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
@@ -35,6 +35,22 @@ const Checkout = () => {
     district_id: null,
     ward_code: null,
   });
+
+  interface IShippingAddress {
+    _id: string;
+    full_name: string;
+    phone: string;
+    address: string;
+    province_id: number;
+    province_name: string;
+    district_id: number;
+    district_name: string;
+    ward_code: string;
+    ward_name: string;
+    is_default: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }
   const [userAddresses, setUserAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
@@ -70,6 +86,46 @@ const Checkout = () => {
     }
   }, [variant_id, quantity, size]);
 
+  const [shippingFee, setShippingFee] = useState(0); // phí vận chuyển
+  const [shippingLoading, setShippingLoading] = useState(false);
+
+  // Gọi API tính phí vận chuyển
+  const fetchShippingFee = async () => {
+    console.log("District ID:", formData);
+    if (!formData.province_id || !formData.district_id || !formData.ward_code) return;
+
+    try {
+      setShippingLoading(true);
+
+      const res = await axios.post(
+        "http://localhost:3000/api/shipping/fee", // endpoint ví dụ
+        {
+          cart_id: cartData.cart_items?.[0]?.cart_id,
+          toDistrictId: formData.district_id,
+          toWardCode: formData.ward_code,
+
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // giả sử API trả về res.data.fee
+      setShippingFee(res.data.fee.service_fee);
+      // console.log(res.data.fee.service_fee);
+
+    } catch (err) {
+      console.error("Lỗi tính phí vận chuyển:", err);
+      setShippingFee(0);
+    } finally {
+      setShippingLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchShippingFee();
+  }, [formData.province_id, formData.district_id, formData.ward_code, formData.shipping_type]);
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('token');
@@ -82,6 +138,8 @@ const Checkout = () => {
 
         const user = res.data.user;
         setUserAddresses(user?.shipping_addresses || []);
+        console.log("🟢 User detail:", user);
+        console.log("🟢 Shipping addresses:", user?.shipping_addresses);
         // // Tìm địa chỉ có updatedAt gần nhất
         // const latestAddress = (user?.shipping_addresses || [])
         //   .slice() // clone mảng tránh thay đổi gốc
@@ -105,10 +163,29 @@ const Checkout = () => {
   }, []);
 
   // Bảng hiển thị địa chỉ
-  const addressColumns: ColumnsType<any> = [
-    { title: "Họ tên", dataIndex: "full_name" },
-    { title: "Số điện thoại", dataIndex: "phone" },
-    { title: "Địa chỉ", dataIndex: "address" },
+  const addressColumns: ColumnsType<IShippingAddress> = [
+    {
+      title: "Họ tên",
+      dataIndex: "full_name",
+      key: "full_name",
+      // width: 150,
+    },
+    {
+      title: "Số điện thoại",
+      dataIndex: "phone",
+      key: "phone",
+      // width: 120,
+    },
+    {
+      title: "Địa chỉ",
+      key: "address",
+      width: 250,
+      render: (_, record) => (
+        <span style={{ display: 'block', whiteSpace: 'normal' }}>
+          {record.address}, {record.ward_name}, {record.district_name}, {record.province_name}
+        </span>
+      ),
+    }
   ];
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -235,7 +312,7 @@ const Checkout = () => {
 
   const cartItems = cartData?.cart_items || [];
   const total = cartData?.total || 0;
-  const shippingFee = 35000;
+  // const shippingFee = 35000;
 
   const discountAmount =
     formData.voucher_type === 'percentage'
@@ -655,6 +732,7 @@ const Checkout = () => {
                           value={formData.province_id}
                           onChange={(value) => {
                             handleChange("province_id", value);
+
                             // reset Quận/Huyện và Phường/Xã
                             // handleChange("district_id", null);
                             // handleChange("ward_code", null);
@@ -699,7 +777,10 @@ const Checkout = () => {
                           showSearch
                           placeholder="Chọn Phường/Xã *"
                           value={formData.ward_code}
-                          onChange={(value) => handleChange("ward_code", value)}
+                          onChange={(value) => {
+                            handleChange("ward_code", value);
+
+                          }}
                           options={wards.map((w) => ({
                             label: w.WardName,
                             value: w.WardCode,
@@ -752,7 +833,7 @@ const Checkout = () => {
                 </div>
               )}
 
-              <div className="mb-[10px]"  >
+              {/* <div className="mb-[10px]"  >
                 <Select
                   className="w-full"
                   value={formData.shipping_type}
@@ -761,7 +842,7 @@ const Checkout = () => {
                   <Select.Option value="standard">Giao hàng tiêu chuẩn</Select.Option>
                   <Select.Option value="fast">Giao hàng nhanh</Select.Option>
                 </Select>
-              </div>
+              </div> */}
 
               <div className="mb-4">
                 <Text strong className="block mb-2">Phương thức thanh toán</Text>
@@ -944,7 +1025,7 @@ const Checkout = () => {
                       <div className="flex justify-between mt-2">
                         <Text strong className="text-lg">Tổng cộng:</Text>
                         <Text strong className="text-lg text-black">
-                          {finalTotal.toLocaleString()} đ
+                          {shippingLoading ? "Đang tính phí..." : finalTotal.toLocaleString()} đ
                         </Text>
                       </div>
                     </>
