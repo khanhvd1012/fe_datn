@@ -1,4 +1,5 @@
-import { Drawer, Form, Input, Button, message, Upload } from "antd";
+// src/components/UpdateProfileDrawer.tsx
+import { Drawer, Form, Input, Button, message, Upload, Col, Select, Row } from "antd";
 import ImgCrop from "antd-img-crop";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
@@ -7,6 +8,7 @@ import { useEffect, useState } from "react";
 import type { UploadFile } from "antd/es/upload";
 import type { IUser } from "../../interface/user";
 import type { UploadFileStatus } from "antd/es/upload/interface";
+import { useProvinces, useDistricts, useWards } from "../../hooks/useShipping";
 
 interface Props {
     open: boolean;
@@ -19,7 +21,17 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
     const queryClient = useQueryClient();
     const [file, setFile] = useState<File | null>(null);
     const [fileList, setFileList] = useState<UploadFile[]>([]);
-    const address = user.shipping_addresses?.[0] || {};
+
+    // chọn địa chỉ mặc định hoặc fallback sang địa chỉ đầu tiên
+    const address =
+        user.shipping_addresses?.find((addr) => addr.is_default) ||
+        user.shipping_addresses?.[0] ||
+        {};
+
+    // gọi hooks để lấy dữ liệu tỉnh/huyện/xã
+    const { data: provinces = [] } = useProvinces();
+    const { data: districts = [] } = useDistricts(form.getFieldValue("province_id"));
+    const { data: wards = [] } = useWards(form.getFieldValue("district_id"));
 
     useEffect(() => {
         if (open && user) {
@@ -29,9 +41,9 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                 full_name: address.full_name || "",
                 phone: address.phone || "",
                 address: address.address || "",
-                province_name: address.province_name || "",
-                district_name: address.district_name || "",
-                ward_name: address.ward_name || "",
+                province_id: address.province_id || undefined,
+                district_id: address.district_id || undefined,
+                ward_code: address.ward_code || undefined,
             });
 
             if (user.image) {
@@ -49,7 +61,7 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
 
             setFile(null);
         }
-    }, [open, user, form, address]);
+    }, [open, user, form]);
 
     const handleUploadChange = (info: any) => {
         const selectedFile = info.fileList[0]?.originFileObj;
@@ -74,6 +86,11 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
 
     const handleFinish = async (values: any) => {
         try {
+            // Lấy object hiển thị từ options dựa trên id
+            const province = provinces.find((p: any) => p.value === values.province_id);
+            const district = districts.find((d: any) => d.value === values.district_id);
+            const ward = wards.find((w: any) => w.value === values.ward_code);
+
             const token = localStorage.getItem("token");
             const formData = new FormData();
 
@@ -82,9 +99,12 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
             formData.append("shipping_addresses[0][full_name]", values.full_name);
             formData.append("shipping_addresses[0][phone]", values.phone);
             formData.append("shipping_addresses[0][address]", values.address);
-            formData.append("shipping_addresses[0][province_name]", values.province_name);
-            formData.append("shipping_addresses[0][district_name]", values.district_name);
-            formData.append("shipping_addresses[0][ward_name]", values.ward_name);
+            formData.append("shipping_addresses[0][province_id]", values.province_id);
+            formData.append("shipping_addresses[0][province_name]", province?.label || "");
+            formData.append("shipping_addresses[0][district_id]", values.district_id);
+            formData.append("shipping_addresses[0][district_name]", district?.label || "");
+            formData.append("shipping_addresses[0][ward_code]", values.ward_code);
+            formData.append("shipping_addresses[0][ward_name]", ward?.label || "");
             formData.append("shipping_addresses[0][is_default]", "true");
 
             if (file) {
@@ -102,9 +122,6 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                 }
             );
 
-            console.log("res.data:", res.data); // DEBUG
-
-
             if (res.data.error || res.status !== 200) {
                 return message.error(res.data.message || "Cập nhật thất bại!");
             }
@@ -118,18 +135,12 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
             }, 300);
         } catch (error) {
             message.error("Cập nhật thất bại!");
-            console.error(error); // DEBUG lỗi JS nếu có
+            console.error(error);
         }
     };
 
-
     return (
-        <Drawer
-            title="Cập nhật thông tin cá nhân"
-            open={open}
-            onClose={onClose}
-            width={400}
-        >
+        <Drawer title="Cập nhật thông tin cá nhân" open={open} onClose={onClose} width={400}>
             <Form layout="vertical" form={form} onFinish={handleFinish}>
                 <Form.Item label="Tên đăng nhập" name="username">
                     <Input />
@@ -146,14 +157,17 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                 <Form.Item label="Địa chỉ" name="address">
                     <Input />
                 </Form.Item>
-                <Form.Item label="Tỉnh/Thành phố" name="province_name">
-                    <Input />
+
+                <Form.Item name="province_id" rules={[{ required: true, message: "Chọn Tỉnh/Thành phố!" }]}>
+                    <Select showSearch placeholder="Chọn Tỉnh/Thành phố *" options={provinces} />
                 </Form.Item>
-                <Form.Item label="Quận/Huyện" name="district_name">
-                    <Input />
+
+                <Form.Item name="district_id" rules={[{ required: true, message: "Chọn Quận/Huyện!" }]}>
+                    <Select showSearch placeholder="Chọn Quận/Huyện *" options={districts} />
                 </Form.Item>
-                <Form.Item label="Phường/Xã" name="ward_name">
-                    <Input />
+
+                <Form.Item name="ward_code" rules={[{ required: true, message: "Chọn Phường/Xã!" }]}>
+                    <Select showSearch placeholder="Chọn Phường/Xã *" options={wards} />
                 </Form.Item>
 
                 <Form.Item label="Ảnh đại diện">
@@ -175,6 +189,7 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                         </Upload>
                     </ImgCrop>
                 </Form.Item>
+
                 <Form.Item>
                     <Button type="primary" htmlType="submit" block>
                         Lưu thay đổi

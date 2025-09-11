@@ -137,6 +137,12 @@ const ProductDetail = () => {
   const imageList = selectedVariant?.image_url || [];
   const currentMainImage = imageList[mainImageIndex] || '';
 
+  useEffect(() => {
+    if (selectedVariant) {
+      console.log("Số lượng đã bán:", selectedVariant.soldQuantity);
+    }
+  }, [selectedVariant]);
+
   const handleMainImageClick = () => {
     if (!imageList.length) return;
     setMainImageIndex((prevIndex) => (prevIndex + 1) % imageList.length);
@@ -413,22 +419,44 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            <p
-              style={{
-                color:
-                  selectedVariant?.stock?.status === "outOfStock" ||
-                    selectedVariant?.stock?.status === "paused" ||
-                    currentStock === 0
-                    ? "red"
-                    : "#666",
-              }}
-            >
-              {selectedVariant?.stock?.status === "paused"
-                ? "Sản phẩm đang tạm dừng bán"
-                : selectedVariant?.stock?.status === "outOfStock" || currentStock === 0
-                  ? "Hết hàng"
-                  : `Còn lại trong kho: ${currentStock} sản phẩm`}
-            </p>
+            <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+              <p
+                style={{
+                  margin: 0,
+                  padding: "4px 8px",
+                  border: "1px solid orange", 
+                  borderRadius: 8,
+                  color:
+                    selectedVariant?.stock?.status === "outOfStock" ||
+                      selectedVariant?.stock?.status === "paused" ||
+                      currentStock === 0
+                      ? "red"
+                      : "#666",
+                  fontWeight: 500,
+                }}
+              >
+                {selectedVariant?.stock?.status === "paused"
+                  ? "Sản phẩm đang tạm dừng bán"
+                  : selectedVariant?.stock?.status === "outOfStock" || currentStock === 0
+                    ? "Hết hàng"
+                    : `Còn lại trong kho: ${currentStock} sản phẩm`}
+              </p>
+
+              {selectedVariant?.soldQuantity ? (
+                <p
+                  style={{
+                    margin: 0,
+                    padding: "4px 8px",
+                    border: "1px solid orange",
+                    borderRadius: 8,
+                    color: "#666",
+                    fontWeight: 500,
+                  }}
+                >
+                  Đã bán: {selectedVariant.soldQuantity} sản phẩm
+                </p>
+              ) : null}
+            </div>
 
             <div className="purchase-section">
               <div className="quantity-control">

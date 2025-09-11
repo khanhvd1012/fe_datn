@@ -51,24 +51,33 @@ const Checkout = () => {
     createdAt: string;
     updatedAt: string;
   }
+  interface IProvince {
+    ProvinceID: number;
+    ProvinceName: string;
+  }
+
+  interface IDistrict {
+    DistrictID: number;
+    DistrictName: string;
+  }
+
+  interface IWard {
+    WardCode: string;
+    WardName: string;
+  }
+
   const [userAddresses, setUserAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
-  const [provinces, setProvinces] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
-
-
-
-
-  // const [isSubmitting, setIsSubmitting] = useState(false);
+  const [provinces, setProvinces] = useState<IProvince[]>([]);
+  const [districts, setDistricts] = useState<IDistrict[]>([]);
+  const [wards, setWards] = useState<IWard[]>([]);
 
   const location = useLocation();
   const { variant_id, quantity, size } = location.state || {};
   const [buyNowItem, setBuyNowItem] = useState<any>(null);
   console.log(variant_id, quantity, size);
 
-  // const isDirectBuy = variant_id && quantity && size;
   useEffect(() => {
     if (variant_id) {
       // gọi API để lấy dữ liệu chi tiết variant
@@ -188,8 +197,6 @@ const Checkout = () => {
     },
   };
 
-
-
   useEffect(() => {
     const fetchCart = async () => {
       try {
@@ -249,8 +256,6 @@ const Checkout = () => {
 
     fetchAllColors();
   }, [cartData, buyNowItem]);
-
-
 
   useEffect(() => {
     const fetchSizes = async () => {
@@ -418,8 +423,6 @@ const Checkout = () => {
       (userAddresses && userAddresses.length > 0 && showForm) ||
       !(userAddresses && userAddresses.length > 0);
 
-    // const isNewAddress = showForm || !selectedAddressId;
-
     const payload = buyNowItem
       ? {
         size: buyNowItem.size,
@@ -482,7 +485,7 @@ const Checkout = () => {
       localStorage.removeItem("selected_voucher_id");
       localStorage.removeItem("cart_backup");
       navigate("/checkout/success");
-    } catch (err) {
+    } catch (err: any) {
       if (err.response && err.response.data && err.response.data.message) {
         message.error(err.response.data.message);
       }
@@ -495,7 +498,6 @@ const Checkout = () => {
   };
 
   const [showForm, setShowForm] = useState(false);
-
 
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [showVouchers, setShowVouchers] = useState(false);
@@ -523,7 +525,6 @@ const Checkout = () => {
     }
   };
 
-  // 👉 Chọn / bỏ chọn voucher
   const handleApplyVoucher = (voucher: any) => {
     if (selectedVoucherId === voucher._id) {
       setSelectedVoucherId(null);
@@ -541,9 +542,6 @@ const Checkout = () => {
       message.success(`Đã chọn mã: ${voucher.code}`);
     }
   };
-
-
-
 
   return (
     <>
@@ -685,7 +683,6 @@ const Checkout = () => {
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Nhập số nhà, đường, ngõ hoặc thôn *"
-                      // value={formData.shipping_address}
                       onChange={(e) => handleChange("shipping_address", e.target.value)}
                     />
                     {errors.shipping_address && (
@@ -735,8 +732,8 @@ const Checkout = () => {
                       key={method.value}
                       onClick={() => handleChange("payment_method", method.value)}
                       className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
-                          ? "border-green-600 bg-green-50"
-                          : "border-gray-300 hover:border-green-400"
+                        ? "border-green-600 bg-green-50"
+                        : "border-gray-300 hover:border-green-400"
                         }`}
                     >
                       {/* Icon nằm trên */}

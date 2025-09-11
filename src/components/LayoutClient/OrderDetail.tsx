@@ -282,9 +282,9 @@ const OrderDetail = () => {
                     <Descriptions.Item label="Phương thức thanh toán">
                         {order.payment_method === 'cod'
                             ? 'Thanh toán khi nhận hàng'
-                            : order.payment_method === 'bank'
+                            : order.payment_method === 'zalopay'
                                 ? 'Chuyển khoản'
-                                : 'Momo'}
+                                : 'Zalopay'}
                     </Descriptions.Item>
                 </Descriptions>
 

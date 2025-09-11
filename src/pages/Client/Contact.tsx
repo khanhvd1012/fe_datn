@@ -26,7 +26,11 @@ const Contact = () => {
       setValue("username", user.username || "");
       setValue("email", user.email || "");
       setValue("phone", defaultAddr?.phone || "");
-      setValue("address", defaultAddr?.address || "");
+
+      if (defaultAddr) {
+        const fullAddress = `${defaultAddr.address}, ${defaultAddr.ward_name}, ${defaultAddr.district_name}, ${defaultAddr.province_name}`;
+        setValue("address", fullAddress);
+      }
     }
   }, [user, loading, setValue]);
 
@@ -66,7 +70,7 @@ const Contact = () => {
       },
     });
   };
-  
+
   return (
     <>
       <Breadcrumb current="Liên hệ" />
