@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   Card,
-  Descriptions,
   Table,
   Tag,
   Typography,
@@ -13,11 +12,10 @@ import {
   Modal,
   Input,
   Tabs,
+  Pagination,
 } from 'antd';
 import Breadcrumb from './Breadcrumb';
-import { getVariantById } from '../../service/variantAPI';
 const { Title, Text } = Typography;
-const { TabPane } = Tabs;
 
 const statusColor: Record<string, string> = {
   pending: 'orange',
@@ -30,7 +28,7 @@ const statusColor: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   pending: 'Chờ xác nhận',
-  processing: 'Đã xác nhận',
+  processing: 'Đang xử lý',
   shipped: 'Đang giao',
   delivered: 'Đã giao',
   canceled: 'Đã hủy',
@@ -40,22 +38,23 @@ const statusLabels: Record<string, string> = {
 const OrderHistory = () => {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [sizeCache, setSizeCache] = useState<Record<string, string>>({});
 
-  const fetchSizeName = async (id: string): Promise<string> => {
-    if (sizeCache[id]) return sizeCache[id];
-    try {
-      const token = localStorage.getItem('token');
-      const res = await axios.get(`http://localhost:3000/api/sizes/${id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const sizeValue = res.data?.size?.size?.toString() || 'Không rõ';
-      setSizeCache((prev) => ({ ...prev, [id]: sizeValue }));
-      return sizeValue;
-    } catch (err) {
-      console.error('Lỗi khi lấy size:', err);
-      return 'Không rõ';
-    }
+  // Thêm state cho phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 5;
+
+  const paginateOrders = (status: string) => {
+    const filtered = orders
+      .filter((order) => order.status === status)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+
+    return {
+      data: filtered.slice(startIndex, endIndex),
+      total: filtered.length,
+    };
   };
 
   const handleCancel = (orderId: string) => {
@@ -122,14 +121,6 @@ const OrderHistory = () => {
         console.log("Orders từ API:", baseOrders);
         const ordersWithDetails = await Promise.all(
           baseOrders.map(async (order: any) => {
-            // const detailRes = await axios.get(
-            //   `http://localhost:3000/api/orders/${order._id}`,
-            //   {
-            //     headers: { Authorization: `Bearer ${token}` },
-            //   }
-            // );
-
-            // console.log("Chi tiết đơn hàng:", detailRes.data);
 
             const itemsWithDetails = await Promise.all(
               (order.items || []).map(async (item: any) => {
@@ -199,103 +190,118 @@ const OrderHistory = () => {
           items={Object.keys(statusLabels).map((status) => ({
             key: status,
             label: statusLabels[status],
-            children:
-              groupOrdersByStatus(status).length === 0 ? (
+            children: (() => {
+              const { data, total } = paginateOrders(status);
+
+              return data.length === 0 ? (
                 <Text>Không có đơn hàng nào ở trạng thái này</Text>
               ) : (
-                groupOrdersByStatus(status).map((order) => (
-                  <Card
-                    key={order.order_code}
-                    className="mb-6"
-                    title={
-                      <div className="flex justify-between items-center">
+                <>
+                  {data.map((order) => (
+                    <Card
+                      key={order.order_code}
+                      className="mb-6"
+                      title={
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <Tag color="blue">
+                              #{order.order_code}
+                            </Tag>
+                            <span className="ml-2 text-gray-600">
+                              {new Date(order.createdAt).toLocaleString("vi-VN")}
+                            </span>
+                          </div>
+                        </div>
+                      }
+                    >
+                      <Table
+                        columns={[
+                          {
+                            title: "Sản phẩm",
+                            render: (_: any, record: any) => (
+                              <>{record.variant_id.product_id?.name || "Không rõ"}</>
+                            ),
+                          },
+                          {
+                            title: "Hình ảnh",
+                            render: (_: any, record: any) => (
+                              <img
+                                src={record.imageUrl}
+                                alt="product"
+                                style={{
+                                  width: 60,
+                                  height: 60,
+                                  objectFit: "cover",
+                                }}
+                              />
+                            ),
+                          },
+                          {
+                            title: "Số lượng",
+                            dataIndex: "quantity",
+                          },
+                          {
+                            title: "Size",
+                            dataIndex: "sizeName",
+                          },
+                          {
+                            title: "Màu sắc",
+                            render: (_: any, record: any) => (
+                              <>{record.variant_id.color?.name || "Không rõ"}</>
+                            ),
+                          },
+                        ]}
+                        dataSource={order.items}
+                        rowKey={(record) => record._id}
+                        pagination={false}
+                      />
+
+                      <Divider />
+
+                      <div className="flex justify-between items-center mt-4">
                         <div>
-                          <Tag color="blue">
-                            #{order.order_code}
+                          <Tag color={statusColor[order.status] || "default"}>
+                            {statusLabels[order.status]}
                           </Tag>
-                          <span className="ml-2 text-gray-600">
-                            {new Date(order.createdAt).toLocaleString("vi-VN")}
-                          </span>
+                        </div>
+
+                        <div className="text-green-600 font-semibold">
+                          Tổng tiền: {(order.total_price || 0).toLocaleString("vi-VN")}đ
                         </div>
                       </div>
-                    }
-                  >
-                    <Table
-                      columns={[
-                        {
-                          title: "Sản phẩm",
-                          render: (_: any, record: any) => (
-                            <>{record.variant_id.product_id?.name || "Không rõ"}</>
-                          ),
-                        },
-                        {
-                          title: "Hình ảnh",
-                          render: (_: any, record: any) => (
-                            <img
-                              src={record.imageUrl}
-                              alt="product"
-                              style={{
-                                width: 60,
-                                height: 60,
-                                objectFit: "cover",
-                              }}
-                            />
-                          ),
-                        },
-                        {
-                          title: "Số lượng",
-                          dataIndex: "quantity",
-                        },
-                        {
-                          title: "Size",
-                          dataIndex: "sizeName",
-                        },
-                        {
-                          title: 'Màu sắc',
-                          render: (_: any, record: any) => (
-                            <>{record.variant_id.color?.name || "Không rõ"}</>
-                          ),
-                        },
-                      ]}
-                      dataSource={order.items}
-                      rowKey={(record) => record._id}
-                      pagination={false}
-                    />
 
-                    <Divider />
-
-                    <div className="flex justify-between items-center mt-4">
-                      <div>
-                        <Tag color={statusColor[order.status] || "default"}>
-                          {statusLabels[order.status]}
-                        </Tag>
-                      </div>
-
-                      <div className="text-green-600 font-semibold">
-                        Tổng tiền: {(order.total_price || 0).toLocaleString("en-US")}$
-                      </div>
-                    </div>
-
-                    <div className="flex justify-end space-x-3 mt-4">
-                      <a
-                        href={`/OrderDetail/${order._id}`}
-                        className="text-blue-500 hover:underline"
-                      >
-                        Xem chi tiết
-                      </a>
-                      {order.status === "pending" && (
-                        <Button
-                          danger
-                          size="small"
-                          onClick={() => handleCancel(order._id)}
+                      <div className="flex justify-end space-x-3 mt-4">
+                        <a
+                          href={`/OrderDetail/${order._id}`}
+                          className="text-blue-500 hover:underline"
                         >
-                          Hủy đơn
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                ))
-              ),
+                          Xem chi tiết
+                        </a>
+                        {order.status === "pending" && (
+                          <Button
+                            danger
+                            size="small"
+                            onClick={() => handleCancel(order._id)}
+                          >
+                            Hủy đơn
+                          </Button>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+
+                  {/* Pagination */}
+                  <div className="flex justify-center mt-4">
+                    <Pagination
+                      current={currentPage}
+                      pageSize={pageSize}
+                      total={total}
+                      onChange={(page) => setCurrentPage(page)}
+                    />
+                  </div>
+                </>
+              );
+            })(),
           }))}
         />
       </div>

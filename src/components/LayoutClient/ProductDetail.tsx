@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useParams } from 'react-router-dom';
-import { Button, Spin, message, Card, Row, Col, Rate, Progress } from 'antd';
+import { Button, Spin, message, Descriptions, Rate, Progress } from 'antd';
 import { MinusOutlined, PlusOutlined, DownOutlined, UpOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import Breadcrumb from './Breadcrumb';
@@ -23,11 +23,8 @@ const ProductDetail = () => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  const [vouchers, setVouchers] = useState<any[]>([]);
-  const [showVouchers, setShowVouchers] = useState(false);
   const location = useLocation();
   const variantIdFromState = location.state?.variantId || null;
-  const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
   const { data: sizes = [] } = useSizes();
   const { data: colors = [] } = useColors();
   const [mainImageIndex, setMainImageIndex] = useState(0);
@@ -205,41 +202,10 @@ const ProductDetail = () => {
     );
   };
 
-  const handleToggleVouchers = () => {
-    if (!showVouchers && vouchers.length === 0) {
-      axios.get("http://localhost:3000/api/vouchers")
-        .then(res => {
-          const allVouchers = res.data || [];
-          const activeVouchers = allVouchers.filter((voucher: any) => {
-            const now = new Date();
-            return new Date(voucher.startDate) <= now && now <= new Date(voucher.endDate) && voucher.quantity > 0;
-          });
-          setVouchers(activeVouchers);
-          setShowVouchers(true);
-        })
-        .catch(() => {
-          message.error("Không thể tải danh sách voucher");
-        });
-    } else {
-      setShowVouchers(!showVouchers);
-    }
-  };
-
-  const handleApplyVoucher = (voucher: any) => {
-    if (selectedVoucherId === voucher._id) {
-      setSelectedVoucherId(null);
-      message.info(`Đã bỏ chọn mã: ${voucher.code}`);
-    } else {
-      setSelectedVoucherId(voucher._id);
-      message.success(`Đã chọn mã: ${voucher.code}`);
-    }
-  };
-  // reviews
   const fetchProductReviews = async () => {
     try {
       const res = await axios.get(`http://localhost:3000/api/reviews/${product?._id}`);
       setReviews(res.data.reviews);
-      // console.log("Reviews API response:", res.data.reviews);
     } catch (error) {
       console.error('Lỗi khi lấy danh sách đánh giá:', error);
     }
@@ -552,82 +518,26 @@ const ProductDetail = () => {
             </Button>
 
             {showDescription && (
-              <div className="product-description">
-                <p style={{ whiteSpace: 'pre-line' }}>{product.description}</p>
-              </div>
+              <div className="mt-4 p-4 border rounded-lg bg-gray-50">
+                {/* Mô tả chung của sản phẩm */}
+                <p className="mb-4">{product?.description || "Không có mô tả sản phẩm"}</p>
 
-            )}
-
-            <Button
-              type="default"
-              block
-              className="dropdown-btn"
-              onClick={handleToggleVouchers}
-            >
-              <span>MÃ GIẢM GIÁ</span>
-              {showVouchers ? <UpOutlined /> : <DownOutlined />}
-            </Button>
-
-            {showVouchers && (
-              <div className="voucher-list">
-                {vouchers.length === 0 ? (
-                  <p>Không có mã giảm giá nào</p>
-                ) : (
-                  <ul>
-                    {vouchers.map(voucher => {
-                      const end = new Date(voucher.endDate);
-                      const now = new Date();
-                      const diffMs = end.getTime() - now.getTime();
-                      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                      const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
-                      const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
-                      const timeLeft = diffMs <= 0 ? "Đã hết hạn" : `${diffDays} ngày ${diffHours} giờ ${diffMinutes} phút`;
-                      const isSelected = selectedVoucherId === voucher._id;
-
-                      return (
-                        <li key={voucher._id} onClick={() => handleApplyVoucher(voucher)}
-                        >
-                          <Card
-                            size="small"
-                            bordered
-                            hoverable
-                            bodyStyle={{ padding: '12px' }}
-                            style={{
-                              borderRadius: '10px',
-                              boxShadow: isSelected ? '0 0 0 2px #91caff' : undefined,
-                              backgroundColor: '#FF3300',
-                            }}
-                          >
-                            <Row justify="space-between" align="middle" wrap={false}>
-                              <Col flex="auto" style={{ color: '#FFFFFF' }}>
-                                <strong>{voucher.code}</strong>
-                                <br />
-                                <small>Đơn tối thiểu: <strong>{voucher.minOrderValue.toLocaleString('vi-VN')}đ</strong></small>
-                                <br />
-                                <small>Còn lại: {timeLeft}</small>
-                              </Col>
-                              <Col>
-                                <div style={{
-                                  backgroundColor: voucher.type === 'percentage' ? '#f6ffed' : '#fff1f0',
-                                  color: voucher.type === 'percentage' ? '#52c41a' : '#cf1322',
-                                  border: '1px solid',
-                                  borderColor: voucher.type === 'percentage' ? '#b7eb8f' : '#ffa39e',
-                                  borderRadius: '12px',
-                                  fontWeight: 'bold',
-                                  fontSize: '16px',
-                                  padding: '6px 12px',
-                                  textAlign: 'center',
-                                  whiteSpace: 'nowrap',
-                                }}>
-                                  {voucher.type === 'percentage' ? `-${voucher.value}%` : `-${voucher.value.toLocaleString('vi-VN')}đ`}
-                                </div>
-                              </Col>
-                            </Row>
-                          </Card>
-                        </li>
-                      );
-                    })}
-                  </ul>
+                {/* Thông số riêng của biến thể */}
+                {selectedVariant && (
+                  <Descriptions bordered column={2} size="small">
+                    <Descriptions.Item label="Chiều dài">
+                      {selectedVariant.length ?? 0} cm
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Chiều rộng">
+                      {selectedVariant.width ?? 0} cm
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Chiều cao">
+                      {selectedVariant.height ?? 0} cm
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Cân nặng">
+                      {selectedVariant.weight ?? 0} g
+                    </Descriptions.Item>
+                  </Descriptions>
                 )}
               </div>
             )}

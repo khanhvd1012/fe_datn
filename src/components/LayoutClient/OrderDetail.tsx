@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
@@ -33,11 +33,6 @@ const OrderDetail = () => {
     const [order, setOrder] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [variantMap, setVariantMap] = useState<Record<string, any>>({});
-    const [userShipping, setUserShipping] = useState<{
-        full_name: string;
-        phone: string;
-        address: string;
-    } | null>(null);
     const [colorMap, setColorMap] = useState<Record<string, any>>({});
 
     const handleCancel = () => {
@@ -132,50 +127,13 @@ const OrderDetail = () => {
         }
     }, [order]);
 
-    // useEffect(() => {
-    //     if (!order) return;
-
-    //     const fetchUserProfileAndMatchAddress = async () => {
-    //         const token = localStorage.getItem("token");
-    //         if (!token) return;
-
-    //         try {
-    //             const res = await axios.get("http://localhost:3000/api/auth/profile", {
-    //                 headers: { Authorization: `Bearer ${token}` },
-    //             });
-
-    //             const user = res.data.user;
-    //             console.log("User:", res.data.user);
-    //             const orderDate = new Date(order.createdAt).getTime();
-
-    //             const matchedAddress = (user?.shipping_addresses || [])
-    //                 .filter((addr: any) => new Date(addr.updatedAt).getTime() <= orderDate)
-    //                 .sort(
-    //                     (a: any, b: any) =>
-    //                         new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-    //                 )[0];
-    //             console.log("matchedAddress:", matchedAddress);
-    //             if (matchedAddress) {
-    //                 setUserShipping({
-    //                     full_name: matchedAddress.full_name,
-    //                     phone: matchedAddress.phone,
-    //                     address: matchedAddress.address,
-    //                 });
-    //             }
-    //         } catch (error) {
-    //             console.error("Không thể lấy địa chỉ người dùng", error);
-    //         }
-    //     };
-
-    //     fetchUserProfileAndMatchAddress();
-    // }, [order]);
     const parseShippingAddress = (address?: string | null) => {
         if (!address) return { name: '', phone: '', address: '' };
         const parts = address.split(" - ");
         return {
             name: parts[0] || '',
             phone: parts[1] || '',
-            address: parts.slice(2).join(" - ") || '', // phần còn lại
+            address: parts.slice(2).join(" - ") || '', 
         };
     };
 
@@ -196,7 +154,6 @@ const OrderDetail = () => {
                 try {
 
                     const res = await axios.get(`http://localhost:3000/api/colors/${colorId}`);
-                    //  console.log('Color info:', res.data);
                     newColorMap[colorId] = res.data;
                 } catch (err) {
                     console.error("Không lấy được màu:", colorId, err);
@@ -278,7 +235,7 @@ const OrderDetail = () => {
         {
             title: 'Giá',
             render: (_: any, record: any) => (
-                <>{(record.price || 0).toLocaleString('en-US')}$</>
+                <>{(record.price || 0).toLocaleString('vi-VN')}đ</>
             )
         }
     ];
@@ -342,7 +299,7 @@ const OrderDetail = () => {
                 <div className="flex justify-between mt-6">
                     <Text strong className="text-lg">Tổng thanh toán:</Text>
                     <Text strong className="text-lg text-green-600">
-                        {(order.total_price || 0).toLocaleString('en-US')}$
+                        {(order.total_price || 0).toLocaleString('vi-VN')}đ
                     </Text>
                 </div>
 

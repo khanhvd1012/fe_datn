@@ -1,12 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import axios from 'axios';
-import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message, Tag } from 'antd';
+import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message } from 'antd';
 import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
 
-import { Table, Radio } from "antd";
+import { Table } from "antd";
 import type { ColumnsType } from "antd/es/table";
 
 const Checkout = () => {
@@ -98,7 +98,7 @@ const Checkout = () => {
       setShippingLoading(true);
 
       const res = await axios.post(
-        "http://localhost:3000/api/shipping/fee", // endpoint ví dụ
+        "http://localhost:3000/api/shipping/fee",
         {
           cart_id: cartData.cart_items?.[0]?.cart_id,
           toDistrictId: formData.district_id,
@@ -110,9 +110,7 @@ const Checkout = () => {
         }
       );
 
-      // giả sử API trả về res.data.fee
       setShippingFee(res.data.fee.service_fee);
-      // console.log(res.data.fee.service_fee);
 
     } catch (err) {
       console.error("Lỗi tính phí vận chuyển:", err);
@@ -138,21 +136,6 @@ const Checkout = () => {
 
         const user = res.data.user;
         setUserAddresses(user?.shipping_addresses || []);
-        console.log("🟢 User detail:", user);
-        console.log("🟢 Shipping addresses:", user?.shipping_addresses);
-        // // Tìm địa chỉ có updatedAt gần nhất
-        // const latestAddress = (user?.shipping_addresses || [])
-        //   .slice() // clone mảng tránh thay đổi gốc
-        //   .sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())[0];
-
-        // // Cập nhật form nếu có địa chỉ
-        // setFormData((prev) => ({
-        //   ...prev,
-        //   full_name: latestAddress?.full_name || '',
-        //   phone: latestAddress?.phone || '',
-        //   shipping_address: latestAddress?.address || '',
-        //   email: user?.email || '',
-        // }));
 
       } catch (error) {
         console.error('Không lấy được thông tin người dùng:', error);
@@ -288,28 +271,6 @@ const Checkout = () => {
     fetchSizes();
   }, []);
 
-  // useEffect(() => {
-  //   const voucherId = localStorage.getItem('selected_voucher_id');
-  //   if (voucherId) {
-  //     axios
-  //       .get(`http://localhost:3000/api/vouchers/${voucherId}`)
-  //       .then((res) => {
-  //         const voucher = res.data?.data || res.data;
-  //         if (voucher?.code && voucher?.type && voucher?.value !== undefined) {
-  //           setFormData((prev) => ({
-  //             ...prev,
-  //             voucher_code: voucher.code,
-  //             voucher_type: voucher.type,
-  //             voucher_value: voucher.value,
-  //           }));
-  //         }
-  //       })
-  //       .catch((err) => {
-  //         console.error('Không tìm thấy mã giảm giá', err);
-  //       });
-  //   }
-  // }, []);
-
   const cartItems = cartData?.cart_items || [];
   const total = cartData?.total || 0;
   // const shippingFee = 35000;
@@ -384,50 +345,6 @@ const Checkout = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-
-  // const handleSubmit = async () => {
-  //   if (!validate()) return;
-  //   // setIsSubmitting(true);
-  //   const payload = {
-  //     cart_id: cartData.cart_items?.[0]?.cart_id,
-  //     // voucher_code: formData.voucher_code,
-  //     shipping_address: formData.shipping_address,
-  //     full_name: formData.full_name,
-  //     phone: formData.phone,
-  //     payment_method: formData.payment_method,
-  //   };
-
-
-  //   try {
-  //     const token = localStorage.getItem('token');
-  //     const res = await axios.post('http://localhost:3000/api/orders', payload, {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-
-  //     const orderId = res.data?.donHang?._id || res.data?.data?._id;
-
-  //     // Nếu chọn ZaloPay thì redirect sang link thanh toán
-  //     if (formData.payment_method === 'ZALOPAY' && res.data?.redirectUrl) {
-  //       window.location.href = res.data.redirectUrl;
-  //       return;
-  //     }
-
-  //     // Các phương thức khác
-  //     message.success('Đặt hàng thành công!');
-  //     localStorage.setItem('last_order_id', orderId);
-  //     localStorage.removeItem('selected_voucher_id');
-  //     localStorage.removeItem('cart_backup');
-  //     navigate('/checkout/success');
-  //   } catch (err) {
-  //     console.error(err);
-  //     message.error('Đặt hàng thất bại!');
-  //     navigate('/checkout/failed');
-  //   }
-  // };
-
-
-
-
   const token = localStorage.getItem("token");
   // Lấy provinces khi load form
   useEffect(() => {
@@ -438,7 +355,7 @@ const Checkout = () => {
       })
       .then((res) => {
         console.log("API provinces trả về:", res.data);
-        setProvinces(res.data.data); // ✅ phải lấy res.data.data
+        setProvinces(res.data.data);
       })
       .catch((err) => {
         console.error("Lỗi khi gọi API provinces:", err.response?.data || err.message);
@@ -577,35 +494,13 @@ const Checkout = () => {
     }
   };
 
-  const columns: ColumnsType<any> = [
-    {
-      title: "Họ tên",
-      dataIndex: "full_name",
-    },
-    {
-      title: "Số điện thoại",
-      dataIndex: "phone",
-    },
-    {
-      title: "Địa chỉ",
-      dataIndex: "shipping_address",
-    },
-    {
-      title: "Email",
-      dataIndex: "email",
-    },
-    {
-      title: "Ghi chú",
-      dataIndex: "note",
-    },
-  ];
   const [showForm, setShowForm] = useState(false);
 
 
   const [vouchers, setVouchers] = useState<any[]>([]);
   const [showVouchers, setShowVouchers] = useState(false);
   const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
-  // 👉 Toggle hiển thị / tải voucher
+
   const handleToggleVouchers = () => {
     if (!showVouchers && vouchers.length === 0) {
       axios.get("http://localhost:3000/api/vouchers")
@@ -674,8 +569,6 @@ const Checkout = () => {
               }
             >
               {userAddresses && userAddresses.length > 0 && !showForm ? (
-
-
                 <>
                   {/* ✅ Bảng chọn địa chỉ */}
                   <Table
@@ -694,14 +587,11 @@ const Checkout = () => {
                   )}
                 </>
               ) : (
-                // ❌ Không có địa chỉ => hiển thị form nhập
                 <div>
                   {/* Họ tên */}
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Họ tên *"
-                      // value={formData.full_name}
-                      // value= {}
                       onChange={(e) => handleChange("full_name", e.target.value)}
                     />
                     {errors.full_name && <Text type="danger">{errors.full_name}</Text>}
@@ -732,10 +622,6 @@ const Checkout = () => {
                           value={formData.province_id}
                           onChange={(value) => {
                             handleChange("province_id", value);
-
-                            // reset Quận/Huyện và Phường/Xã
-                            // handleChange("district_id", null);
-                            // handleChange("ward_code", null);
                           }}
                           options={provinces.map((p: any) => ({
                             label: p.ProvinceName,
@@ -757,7 +643,6 @@ const Checkout = () => {
                           value={formData.district_id}
                           onChange={(value) => {
                             handleChange("district_id", value);
-                            // handleChange("ward_code", null);
                           }}
                           options={districts.map((d) => ({
                             label: d.DistrictName,
@@ -808,10 +693,6 @@ const Checkout = () => {
                     )}
                   </div>
 
-
-
-
-                  {/* Email (optional) */}
                   <div className="mb-[10px]">
                     <Input
                       placeholder="Email (tuỳ chọn)"
@@ -833,47 +714,38 @@ const Checkout = () => {
                 </div>
               )}
 
-              {/* <div className="mb-[10px]"  >
-                <Select
-                  className="w-full"
-                  value={formData.shipping_type}
-                  onChange={(value) => handleChange('shipping_type', value)}
-                >
-                  <Select.Option value="standard">Giao hàng tiêu chuẩn</Select.Option>
-                  <Select.Option value="fast">Giao hàng nhanh</Select.Option>
-                </Select>
-              </div> */}
-
               <div className="mb-4">
                 <Text strong className="block mb-2">Phương thức thanh toán</Text>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
                     { label: 'Thanh toán khi nhận hàng', value: 'cod', icon: '💰' },
                     {
-                      label: (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <img
-                            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwPynD27LbXlPsbofv1AX-5ZXDn_XMGo-1TA&s"
-                            alt="ZaloPay"
-                            style={{ width: 20, height: 20 }}
-                          />
-                          Thanh toán qua ZaloPay
-                        </span>
+                      label: "Thanh toán qua ZaloPay",
+                      value: "ZALOPAY",
+                      icon: (
+                        <img
+                          src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwPynD27LbXlPsbofv1AX-5ZXDn_XMGo-1TA&s"
+                          alt="ZaloPay"
+                          style={{ width: 40, height: 40 }}
+                        />
                       ),
-                      value: 'ZALOPAY'
-                    }].map((method) => (
-                      <div
-                        key={method.value}
-                        onClick={() => handleChange('payment_method', method.value)}
-                        className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
-                          ? 'border-green-600 bg-green-50'
-                          : 'border-gray-300 hover:border-green-400'
-                          }`}
-                      >
-                        <div className="text-2xl mb-1">{method.icon}</div>
-                        <Text>{method.label}</Text>
-                      </div>
-                    ))}
+                    },
+                  ].map((method) => (
+                    <div
+                      key={method.value}
+                      onClick={() => handleChange("payment_method", method.value)}
+                      className={`cursor-pointer border rounded-xl p-3 text-center transition-all ${formData.payment_method === method.value
+                          ? "border-green-600 bg-green-50"
+                          : "border-gray-300 hover:border-green-400"
+                        }`}
+                    >
+                      {/* Icon nằm trên */}
+                      <div className="mb-2 flex justify-center">{method.icon}</div>
+
+                      {/* Chữ nằm dưới */}
+                      <Text>{method.label}</Text>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -950,7 +822,7 @@ const Checkout = () => {
                       <div className="flex justify-between mt-2">
                         <Text strong className="text-lg">Tổng cộng:</Text>
                         <Text strong className="text-lg text-black">
-                          {(buyNowItem.variant.data.price * buyNowItem.quantity + shippingFee).toLocaleString()} đ
+                          {(buyNowItem.variant.data.price * buyNowItem.quantity + shippingFee).toLocaleString("vi-VN")} đ
                         </Text>
                       </div>
                     </div>
@@ -1003,7 +875,7 @@ const Checkout = () => {
 
                       <div className="flex justify-between">
                         <Text>Tổng tiền:</Text>
-                        <Text>{total.toLocaleString()} $</Text>
+                        <Text>{total.toLocaleString()} đ</Text>
                       </div>
 
                       {formData.voucher_code && (
@@ -1017,7 +889,7 @@ const Checkout = () => {
                         </div>
                       )}
 
-                      <div className="flex justify-between">
+                      <div className="flex justify-between mt-2">
                         <Text>Phí vận chuyển:</Text>
                         <Text>{shippingFee.toLocaleString()} đ</Text>
                       </div>
@@ -1062,9 +934,6 @@ const Checkout = () => {
                     padding: 8,
                     marginTop: 12,
                     background: "#fff",
-
-                    // maxHeight: 250, // chiều cao tối đa (có thể đổi 200, 300 tuỳ ý)
-                    // overflowY: "auto", // bật scroll dọc
                     paddingRight: 8, // tránh che nội dung khi có scrollbar
                   }}
                 >
