@@ -133,11 +133,15 @@ const OrderDetail = () => {
         return {
             name: parts[0] || '',
             phone: parts[1] || '',
-            address: parts.slice(2).join(" - ") || '', 
+            address: parts.slice(2).join(" - ") || '',
         };
     };
 
     const shipping = parseShippingAddress(order?.shipping_address);
+
+    // công thức: tính shipping_fee
+    const shippingFee = (order?.total_price || 0) - (order?.sub_total || 0) + (order?.voucher_discount || 0);
+    const finalPrice = order?.sub_total - order?.voucher_discount;
 
 
     useEffect(() => {
@@ -237,7 +241,25 @@ const OrderDetail = () => {
             render: (_: any, record: any) => (
                 <>{(record.price || 0).toLocaleString('vi-VN')}đ</>
             )
+        },
+        {
+            title: 'Mã giảm giá',
+
+            render: (_: any, record: any) => (
+                console.log("record:", record),
+                <>
+
+                    {order.voucher_discount > 0 ? (
+                        <span className="text-red-600">
+                            -{order.voucher_discount.toLocaleString("vi-VN")}đ
+                        </span>
+                    ) : (
+                        <span>0đ</span>
+                    )}
+                </>
+            )
         }
+
     ];
 
     if (loading) return <Spin size="large" className="mt-20 block mx-auto" />;
@@ -295,6 +317,15 @@ const OrderDetail = () => {
                     rowKey={(r) => r._id}
                     pagination={false}
                 />
+
+                <div className="flex justify-between mt-4">
+                    <Text strong>Giá sau khi giảm:</Text>
+                    <Text>{finalPrice.toLocaleString("vi-VN")}đ</Text>
+                </div>
+                <div className="flex justify-between mt-4">
+                    <Text strong>Phí vận chuyển:</Text>
+                    <Text>{shippingFee.toLocaleString("vi-VN")}đ</Text>
+                </div>
 
                 <div className="flex justify-between mt-6">
                     <Text strong className="text-lg">Tổng thanh toán:</Text>
