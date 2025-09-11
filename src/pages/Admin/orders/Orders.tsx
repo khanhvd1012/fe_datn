@@ -258,6 +258,22 @@ const Orders = () => {
           : "-",
     },
     {
+      title: "Phí vận chuyển",
+      key: "shipping_fee",
+      render: (_: any, record: IOrder) => {
+        const shippingFee =
+          (record?.total_price || 0) -
+          (record?.sub_total || 0) +
+          (record?.voucher_discount || 0);
+
+        return shippingFee.toLocaleString("vi-VN", {
+          style: "currency",
+          currency: "VND",
+        });
+      },
+    },
+
+    {
       title: "Thanh toán",
       dataIndex: "total_price",
       key: "total_price",
@@ -361,7 +377,7 @@ const Orders = () => {
               const statusEng = valueMap[label];
               handleUpdateStatus(order._id!, statusEng);
             }}
-            disabled={order.status === "canceled" }
+            disabled={order.status === "canceled"}
           >
             {Object.entries(labelMap)
               .filter(([key]) => statusOrder[key as IOrder["status"]] > currentStatusIndex)
