@@ -31,6 +31,8 @@ const Checkout = () => {
     voucher_type: '',
     voucher_value: 0,
     voucher_code: null,
+
+
     province_id: null,
     district_id: null,
     ward_code: null,
@@ -526,11 +528,14 @@ const Checkout = () => {
   };
 
   const handleApplyVoucher = (voucher: any) => {
+
     if (selectedVoucherId === voucher._id) {
       setSelectedVoucherId(null);
       setFormData((prev) => ({
         ...prev,
         voucher_code: null, // bỏ chọn thì clear code
+        voucher_type: '',
+        voucher_value: 0,
       }));
       message.info(`Đã bỏ chọn mã: ${voucher.code}`);
     } else {
@@ -538,6 +543,8 @@ const Checkout = () => {
       setFormData((prev) => ({
         ...prev,
         voucher_code: voucher.code, // ✅ lưu voucher_code
+        voucher_type: voucher.type,
+        voucher_value: voucher.value,
       }));
       message.success(`Đã chọn mã: ${voucher.code}`);
     }
@@ -885,7 +892,6 @@ const Checkout = () => {
                           </Text>
                         </div>
                       )}
-
                       <div className="flex justify-between mt-2">
                         <Text>Phí vận chuyển:</Text>
                         <Text>{shippingFee.toLocaleString()} đ</Text>
