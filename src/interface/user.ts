@@ -4,6 +4,11 @@ export interface IShippingAddress {
   phone: string;
   address: string;
   is_default?: boolean;
+  province_name?: string;  
+  district_name?: string;   
+  ward_name?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface IUser {

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getAllUsers, getProfile, toggleBlockUser, updateProfile } from "../service/userAPI";
+import { deleteAddress, getAllUsers, getProfile, setDefaultAddress, toggleBlockUser, updateProfile } from "../service/userAPI";
 import type { IUser } from "../interface/user";
+import { message } from "antd";
 
 // Lấy toàn bộ người dùng (chỉ dùng cho admin)
 export const useUsers = () => {
@@ -51,6 +52,39 @@ export const useToggleBlockUser = () => {
 
       // Làm mới user cụ thể (nếu có query theo id)
       queryClient.invalidateQueries({ queryKey: ["users", variables.userId] });
+    },
+  });
+};
+
+// Hook đặt địa chỉ mặc định
+export const useSetDefaultAddress = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (addressId: string) => setDefaultAddress(addressId),
+    onSuccess: (data) => {
+      message.success(data.message || "Đã đặt địa chỉ mặc định");
+      // Cập nhật lại profile để đồng bộ danh sách địa chỉ
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || "Lỗi khi đặt địa chỉ mặc định");
+    },
+  });
+};
+
+// Hook xóa địa chỉ giao hàng
+export const useDeleteAddress = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (addressId: string) => deleteAddress(addressId),
+    onSuccess: (data) => {
+      message.success(data.message || "Đã xóa địa chỉ");
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+    },
+    onError: (err: any) => {
+      message.error(err?.response?.data?.message || "Lỗi khi xóa địa chỉ");
     },
   });
 };

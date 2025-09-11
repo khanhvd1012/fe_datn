@@ -99,7 +99,7 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
                     <div>
                       <div><strong>Họ tên:</strong> {addr.full_name}</div>
                       <div><strong>SĐT:</strong> {addr.phone}</div>
-                      <div><strong>Địa chỉ:</strong> {addr.address}</div>
+                      <div><strong>Địa chỉ:</strong> {`${addr.address}, ${addr.ward_name}, ${addr.district_name}, ${addr.province_name}`}</div>
                     </div>
                   </Descriptions.Item>
                 ))}
@@ -108,7 +108,7 @@ const DrawerUser = ({ visible, user, onClose, loading }: DrawerUserProps) => {
               <p>Không có địa chỉ nào</p>
             )}
           </div>
-          
+
           {role === "admin" && (
             <Descriptions.Item label="Vai trò">
               <Select

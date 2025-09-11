@@ -1,30 +1,99 @@
-// Profile.tsx
 import { useState } from "react";
-import { Descriptions, Spin, message, Button, Modal, Form, Input } from "antd";
+import { Descriptions, Spin, message, Button, Modal, Form, Input, Table, Tag, Divider, Popconfirm } from "antd";
 import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "../../service/authAPI";
 import type { IUser } from "../../interface/user";
 import UpdateProfileDrawer from "../../components/LayoutClient/UpdateProfileDrawer";
 import { useChangePassword } from "../../hooks/useAuth";
+import { useDeleteAddress, useSetDefaultAddress } from "../../hooks/useUser";
 
 const Profile = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
   const [openChangePassword, setOpenChangePassword] = useState(false);
   const [form] = Form.useForm();
 
-  const { data: user, isLoading, error } = useQuery<IUser, Error>({
+  const { data: user, isLoading } = useQuery<IUser, Error>({
     queryKey: ["profile"],
     queryFn: getProfile,
     retry: false,
   });
 
   const changePasswordMutation = useChangePassword();
+  const setDefaultMutation = useSetDefaultAddress();
+  const deleteMutation = useDeleteAddress();
+
+  const formatAddress = (addr?: any) => {
+    if (!addr) return "Chưa cập nhật";
+    return `${addr.address}, ${addr.ward_name}, ${addr.district_name}, ${addr.province_name}`;
+  };
 
   if (isLoading) return <Spin style={{ marginTop: 40 }} />;
   if (!user) return <div className="text-center mt-10 text-red-500">Bạn chưa đăng nhập.</div>;
 
+  // Sắp xếp địa chỉ: mặc định lên đầu, sau đó theo ngày thêm mới nhất
+  const sortedAddresses = [...(user.shipping_addresses || [])].sort((a, b) => {
+    if (a.is_default && !b.is_default) return -1;
+    if (!a.is_default && b.is_default) return 1;
+    return new Date(b.createdAt || "").getTime() - new Date(a.createdAt || "").getTime();
+  });
+
   const firstAddressObj = user.shipping_addresses?.[0];
-  const passwordLength = user.password?.length || 8; // Dùng độ dài mật khẩu nếu có
+  const passwordLength = user.password?.length || 8;
+
+  // Cấu hình cột cho bảng địa chỉ
+  const addressColumns = [
+    {
+      title: "Họ và tên",
+      dataIndex: "full_name",
+      key: "full_name",
+    },
+    {
+      title: "Số điện thoại",
+      dataIndex: "phone",
+      key: "phone",
+    },
+    {
+      title: "Địa chỉ",
+      key: "address",
+      render: (_: any, record: any) =>
+        `${record.address}, ${record.ward_name}, ${record.district_name}, ${record.province_name}`,
+    },
+    {
+      title: "Mặc định",
+      dataIndex: "is_default",
+      key: "is_default",
+      render: (is_default: boolean) =>
+        is_default ? <Tag color="green">Mặc định</Tag> : <Tag color="blue">Khác</Tag>,
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_: any, record: any) => (
+        <div className="flex gap-2">
+          {!record.is_default && (
+            <Button
+              size="small"
+              type="dashed"
+              onClick={() => setDefaultMutation.mutate(record._id)}
+              loading={setDefaultMutation.isPending}
+            >
+              Đặt mặc định
+            </Button>
+          )}
+          <Popconfirm
+            title="Xác nhận xóa địa chỉ này?"
+            okText="Xóa"
+            cancelText="Hủy"
+            onConfirm={() => deleteMutation.mutate(record._id)}
+          >
+            <Button danger size="small" loading={deleteMutation.isPending}>
+              Xóa
+            </Button>
+          </Popconfirm>
+        </div>
+      ),
+    },
+  ];
 
   return (
     <div className="flex gap-8 max-w-6xl mx-auto mt-10 px-4 mb-20">
@@ -51,7 +120,7 @@ const Profile = () => {
           </Button>
         </div>
 
-        <Descriptions column={1} bordered size="middle">
+        <Descriptions column={1} bordered size="middle" className="mb-6">
           <Descriptions.Item label="Tên">{user.username || "Chưa cập nhật"}</Descriptions.Item>
           <Descriptions.Item label="Họ và tên">{firstAddressObj?.full_name || "Chưa cập nhật"}</Descriptions.Item>
           <Descriptions.Item label="Email">{user.email || "Chưa cập nhật"}</Descriptions.Item>
@@ -61,10 +130,21 @@ const Profile = () => {
               <Button type="link" onClick={() => setOpenChangePassword(true)}>Đổi mật khẩu</Button>
             </div>
           </Descriptions.Item>
-          <Descriptions.Item label="Địa chỉ">{firstAddressObj?.address || "Chưa cập nhật"}</Descriptions.Item>
+          <Descriptions.Item label="Địa chỉ">{formatAddress(firstAddressObj)}</Descriptions.Item>
           <Descriptions.Item label="Điện thoại">{firstAddressObj?.phone || "Chưa cập nhật"}</Descriptions.Item>
           <Descriptions.Item label="Ngày tạo">{user.createdAt ? new Date(user.createdAt).toLocaleDateString("vi-VN") : "Chưa cập nhật"}</Descriptions.Item>
         </Descriptions>
+
+        <Divider />
+
+        {/* Bảng địa chỉ giao hàng */}
+        <h3 className="text-lg font-semibold mb-2">ĐỊA CHỈ GIAO HÀNG ĐÃ LƯU</h3>
+        <Table
+          rowKey="_id"
+          dataSource={sortedAddresses}
+          columns={addressColumns}
+          pagination={{ pageSize: 5 }}
+        />
       </div>
 
       {/* Drawer cập nhật thông tin */}
@@ -82,10 +162,11 @@ const Profile = () => {
           form={form}
           layout="vertical"
           onFinish={(values) =>
-            changePasswordMutation.mutate({
-              oldPassword: values.oldPassword,
-              newPassword: values.newPassword,
-            },
+            changePasswordMutation.mutate(
+              {
+                oldPassword: values.oldPassword,
+                newPassword: values.newPassword,
+              },
               {
                 onSuccess: () => {
                   message.success("Đổi mật khẩu thành công!");
@@ -106,15 +187,15 @@ const Profile = () => {
           <Form.Item
             label="Mật khẩu mới"
             name="newPassword"
-            dependencies={['oldPassword']}
+            dependencies={["oldPassword"]}
             rules={[
               { required: true, message: "Nhập mật khẩu mới", min: 8 },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || value !== getFieldValue('oldPassword')) {
+                  if (!value || value !== getFieldValue("oldPassword")) {
                     return Promise.resolve();
                   }
-                  return Promise.reject(new Error('Mật khẩu mới không được trùng với mật khẩu cũ'));
+                  return Promise.reject(new Error("Mật khẩu mới không được trùng với mật khẩu cũ"));
                 },
               }),
             ]}
@@ -125,13 +206,13 @@ const Profile = () => {
           <Form.Item
             label="Xác nhận mật khẩu mới"
             name="confirmPassword"
-            dependencies={['newPassword']}
+            dependencies={["newPassword"]}
             rules={[
               { required: true, message: "Xác nhận mật khẩu mới" },
               ({ getFieldValue }) => ({
                 validator(_, value) {
-                  if (!value || getFieldValue('newPassword') === value) return Promise.resolve();
-                  return Promise.reject(new Error('Mật khẩu nhập lại không khớp'));
+                  if (!value || getFieldValue("newPassword") === value) return Promise.resolve();
+                  return Promise.reject(new Error("Mật khẩu nhập lại không khớp"));
                 },
               }),
             ]}

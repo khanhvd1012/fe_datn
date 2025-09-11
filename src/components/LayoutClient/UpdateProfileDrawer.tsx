@@ -29,6 +29,9 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                 full_name: address.full_name || "",
                 phone: address.phone || "",
                 address: address.address || "",
+                province_name: address.province_name || "",
+                district_name: address.district_name || "",
+                ward_name: address.ward_name || "",
             });
 
             if (user.image) {
@@ -79,6 +82,9 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
             formData.append("shipping_addresses[0][full_name]", values.full_name);
             formData.append("shipping_addresses[0][phone]", values.phone);
             formData.append("shipping_addresses[0][address]", values.address);
+            formData.append("shipping_addresses[0][province_name]", values.province_name);
+            formData.append("shipping_addresses[0][district_name]", values.district_name);
+            formData.append("shipping_addresses[0][ward_name]", values.ward_name);
             formData.append("shipping_addresses[0][is_default]", "true");
 
             if (file) {
@@ -98,7 +104,7 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
 
             console.log("res.data:", res.data); // DEBUG
 
-         
+
             if (res.data.error || res.status !== 200) {
                 return message.error(res.data.message || "Cập nhật thất bại!");
             }
@@ -140,6 +146,16 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
                 <Form.Item label="Địa chỉ" name="address">
                     <Input />
                 </Form.Item>
+                <Form.Item label="Tỉnh/Thành phố" name="province_name">
+                    <Input />
+                </Form.Item>
+                <Form.Item label="Quận/Huyện" name="district_name">
+                    <Input />
+                </Form.Item>
+                <Form.Item label="Phường/Xã" name="ward_name">
+                    <Input />
+                </Form.Item>
+
                 <Form.Item label="Ảnh đại diện">
                     <ImgCrop aspect={1}>
                         <Upload
