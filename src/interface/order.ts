@@ -1,5 +1,7 @@
+import type { IShippingAddress } from "./user";
+
 export interface IOrder {
-  _id?: string;
+  _id: string;
   user_id: IUser | string;
   cart_id: string;
   voucher_id?: string | null;
@@ -14,15 +16,9 @@ export interface IOrder {
   createdAt?: string;
   updatedAt?: string;
   order_code?: string;
-  shipping_address?: string;
   items?: IOrderItem[];
   trangThai?: string;
-
-  shippingAddress?: {
-    fullName: string;
-    phone: string;
-    address: string;
-  };
+  shipping_address?: IShippingAddress | string;
 }
 
 export interface IOrderItem {

@@ -56,13 +56,16 @@ const Contact = () => {
       onSuccess: () => {
         message.success("Gửi liên hệ thành công!");
         reset();
-        // Cập nhật lại form
         if (user) {
           setValue("username", user.username || "");
           setValue("email", user.email || "");
           const defaultAddr = user.shipping_addresses?.find(addr => addr.is_default);
           setValue("phone", defaultAddr?.phone || "");
-          setValue("address", defaultAddr?.address || "");
+
+          if (defaultAddr) {
+            const fullAddress = `${defaultAddr.address}, ${defaultAddr.ward_name}, ${defaultAddr.district_name}, ${defaultAddr.province_name}`;
+            setValue("address", fullAddress);
+          }
         }
       },
       onError: () => {

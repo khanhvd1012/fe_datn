@@ -1,4 +1,5 @@
 import type { IProduct } from "./product";
+import type { IStock } from "./stock";
 
 export interface IVariant {
     _id?: string;
@@ -21,4 +22,5 @@ export interface IVariant {
     reviewCount?: number;
     createdAt?: Date;
     updatedAt?: Date;
+    stock?: IStock;
 }

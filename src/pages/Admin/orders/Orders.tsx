@@ -1,9 +1,9 @@
 import { Table, Tag, Select, message, Popconfirm, Button, Skeleton, Empty, Modal } from "antd";
 import { DatePicker, Input } from "antd";
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAdminOrders, useCancelOrder, useUpdateOrderStatus } from "../../../hooks/useOrder";
 import { useUsers } from "../../../hooks/useUser";
-import { DeleteOutlined, EditOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import type { IOrder } from "../../../interface/order";
 import { useQueryClient } from "@tanstack/react-query";
 import dayjs from 'dayjs';
@@ -14,7 +14,6 @@ const Orders = () => {
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const { data: orders, isLoading } = useAdminOrders();
-  console.log("Orders data:", orders);
   const { mutate: cancelOrder } = useCancelOrder();
   const { mutate: updateStatus } = useUpdateOrderStatus();
   const { data: users } = useUsers();
@@ -73,8 +72,6 @@ const Orders = () => {
     return true;
   });
 
-
-
   const handleUpdateStatus = (id: string, newStatus: IOrder["status"]) => {
     updateStatus(
       { id, status: newStatus },
@@ -119,8 +116,8 @@ const Orders = () => {
   const columns = [
     {
       title: "Mã đơn",
-      dataIndex: "_id",
-      key: "_id",
+      dataIndex: "order_code",
+      key: "order_code",
       filterDropdown: () => (
         <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
           <Input
@@ -136,7 +133,7 @@ const Orders = () => {
       filterIcon: () => (
         <FilterOutlined style={{ color: filters.orderCode ? "#1890ff" : undefined }} />
       ),
-      render: (id: string) => <Tag color="blue">#{id.slice(-6).toUpperCase()}</Tag>,
+      render: (code: string) => <Tag color="blue">#{code}</Tag>,
     },
     {
       title: "Sản phẩm",
@@ -183,12 +180,17 @@ const Orders = () => {
       ),
       render: (items: any[]) => {
         if (!items || items.length === 0) return "không có";
-        return items.map((item) => item.variant_id?.sku || "không có").join(", ");
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {items.map((item, index) => (
+              <Tag key={index} color="blue">
+                {item.variant_id?.sku || "không có"}
+              </Tag>
+            ))}
+          </div>
+        );
       },
     },
-
-
-
     {
       title: "Người đặt",
       dataIndex: "user_id",
@@ -225,7 +227,7 @@ const Orders = () => {
             placeholder="Chọn ngày"
             format="DD/MM/YYYY"
             value={filters.createdAt ? dayjs(filters.createdAt, "DD/MM/YYYY") : null}
-            onChange={(_, dateString) => handleFilterChange(dateString, "createdAt")}
+            onChange={(_, dateString) => handleFilterChange(dateString as string, "createdAt")}
             allowClear
             style={{ width: "100%" }}
           />
@@ -330,26 +332,21 @@ const Orders = () => {
           returned: 5,
         };
 
-
         const labelMap: Partial<Record<IOrder["status"], string>> = {
           pending: "Chờ xử lý",
           processing: "Đang xử lý",
           shipped: "Đang giao",
           delivered: "Đã giao",
-          // canceled: "Đã hủy",
           returned: "Đã trả hàng",
         };
-
 
         const valueMap: Record<string, IOrder["status"]> = {
           "Chờ xử lý": "pending",
           "Đang xử lý": "processing",
           "Đang giao": "shipped",
           "Đã giao": "delivered",
-          // "Đã hủy": "canceled",
           "Đã trả hàng": "returned",
         };
-
 
         const currentStatusIndex = statusOrder[order.status];
 
@@ -361,7 +358,7 @@ const Orders = () => {
               const statusEng = valueMap[label];
               handleUpdateStatus(order._id!, statusEng);
             }}
-            disabled={order.status === "canceled" }
+            disabled={order.status === "canceled"}
           >
             {Object.entries(labelMap)
               .filter(([key]) => statusOrder[key as IOrder["status"]] > currentStatusIndex)
@@ -425,7 +422,10 @@ const Orders = () => {
       <Table
         rowKey="_id"
         columns={columns}
-        dataSource={[...filteredOrders].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())}
+        dataSource={[...(filteredOrders || [])].sort(
+          (a, b) =>
+            new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()
+        )}
         pagination={{ pageSize: 10 }}
         scroll={{ x: "max-content" }}
       />

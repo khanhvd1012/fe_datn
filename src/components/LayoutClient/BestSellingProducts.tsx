@@ -135,13 +135,29 @@ const BestSellingProducts = () => {
                     <div className="absolute top-2 right-2 z-10"
                       onClick={e => {
                         e.preventDefault();
-
                         if (!isLoggedIn()) {
                           import("antd").then(({ message }) => {
                             message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
                           });
                           return;
                         }
+
+                        const stockQty = variant.stock?.quantity ?? 0;
+
+                        if (stockQty <= 0) {
+                          import("antd").then(({ message }) => {
+                            message.error("Sản phẩm này đã hết hàng!");
+                          });
+                          return;
+                        }
+
+                        if (variant.status === "paused") {
+                          import("antd").then(({ message }) => {
+                            message.warning("Sản phẩm này đang tạm ngưng bán!");
+                          });
+                          return;
+                        }
+
                         addToCart({ variant_id: variant._id!, quantity: 1 });
                       }}
                     >

@@ -309,6 +309,21 @@ const Products = () => {
                               });
                               return;
                             }
+
+                            if (variant.stock?.status === "outOfStock" || (variant.stock?.quantity ?? 0) <= 0) {
+                              import("antd").then(({ message }) => {
+                                message.error("Sản phẩm này đã hết hàng!");
+                              });
+                              return;
+                            }
+
+                            if (variant.status === "paused") {
+                              import("antd").then(({ message }) => {
+                                message.warning("Sản phẩm này đang tạm ngưng bán!");
+                              });
+                              return;
+                            }
+
                             addToCart({ variant_id: variant._id!, quantity: 1 });
                           }}
                           className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"

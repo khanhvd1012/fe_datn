@@ -140,6 +140,21 @@ const RelatedProducts = () => {
                             });
                             return;
                           }
+
+                          if (variant.stock?.status === "outOfStock" || (variant.stock?.quantity ?? 0) <= 0) {
+                            import("antd").then(({ message }) => {
+                              message.error("Sản phẩm này đã hết hàng!");
+                            });
+                            return;
+                          }
+
+                          if (variant.status === "paused") {
+                            import("antd").then(({ message }) => {
+                              message.warning("Sản phẩm này đang tạm ngưng bán!");
+                            });
+                            return;
+                          }
+
                           addToCart({ variant_id: variant._id!, quantity: 1 });
                         }}
                       >

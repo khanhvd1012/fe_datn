@@ -4,7 +4,6 @@ import type { ColumnsType } from 'antd/es/table';
 import { useColors } from '../../../hooks/useColors';
 import { useSizes } from '../../../hooks/useSizes';
 
-
 interface DrawerOrderProps {
   visible: boolean;
   order: IOrder | null;
@@ -12,11 +11,38 @@ interface DrawerOrderProps {
   loading?: boolean;
 }
 
+const parseShippingAddress = (address: string) => {
+  if (!address) return null;
+
+  const [full_name, phone, rawAddress] = address.split(" - ");
+
+  if (!rawAddress) {
+    return {
+      full_name: full_name?.trim() || "",
+      phone: phone?.trim() || "",
+      address: "",
+    };
+  }
+
+  const parts = rawAddress.split(",").map((s) => s.trim());
+
+  return {
+    full_name: full_name?.trim() || "",
+    phone: phone?.trim() || "",
+    address: parts[0] || "",       // số nhà, tên đường
+    ward_name: parts[1] || "",     // phường/xã
+    district_name: parts[2] || "", // quận/huyện
+    province_name: parts[3] || "", // tỉnh/thành phố
+  };
+};
+
 const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => {
-  { console.log("Order data:", order) }
-  // const { data: colors } = useColor();
   const { data: colors } = useColors();
   const { data: sizesData } = useSizes();
+  const shipping =
+    typeof order?.shipping_address === "string"
+      ? parseShippingAddress(order.shipping_address)
+      : order?.shipping_address;
 
   const renderStatus = (status: string) => {
     switch (status) {
@@ -36,8 +62,6 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
         return <Tag color="default">Không rõ</Tag>;
     }
   };
-
-
 
   const columns: ColumnsType<any> = [
     {
@@ -144,22 +168,20 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
           <div className="mb-4">
             <h3 className="text-base font-medium mb-2">Thông tin người đặt</h3>
             <Descriptions column={1} bordered size="small">
-              {/* Tách shipping_address thành Tên - SĐT - Địa chỉ */}
-              {order.shipping_address && (
-                <>
-                  <Descriptions.Item label="Người nhận">
-                    {order.shipping_address.split(" - ")[0] || "---"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Số điện thoại">
-                    {order.shipping_address.split(" - ")[1] || "---"}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Địa chỉ">
-                    {order.shipping_address.split(" - ")[2] || "---"}
-                  </Descriptions.Item>
-                </>
-              )}
+              <Descriptions.Item label="Người nhận">
+                {shipping?.full_name || "---"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Số điện thoại">
+                {shipping?.phone || "---"}
+              </Descriptions.Item>
+              <Descriptions.Item label="Địa chỉ">
+                {[shipping?.address, shipping?.ward_name, shipping?.district_name, shipping?.province_name]
+                  .filter(Boolean)
+                  .join(", ") || "---"}
+              </Descriptions.Item>
             </Descriptions>
           </div>
+
           <Divider />
 
           {/* Danh sách sản phẩm */}
