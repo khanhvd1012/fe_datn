@@ -132,12 +132,31 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
                   ? 'Thanh toán khi nhận hàng'
                   : order.payment_method}
               </Descriptions.Item>
-              <Descriptions.Item label="Tổng tiền">
-                {order.total_price.toLocaleString('vi-VN')} ₫
+              <Descriptions.Item label="Tạm tính">
+                {(order.sub_total || 0).toLocaleString("vi-VN")} ₫
+              </Descriptions.Item>
+
+              {(order?.voucher_discount || 0) > 0 && (
+                <Descriptions.Item label="Mã giảm giá">
+                  -{(order?.voucher_discount || 0).toLocaleString("vi-VN")} ₫
+                </Descriptions.Item>
+              )}
+
+              <Descriptions.Item label="Phí vận chuyển">
+                {(
+                  (order.total_price || 0) -
+                  (order.sub_total || 0) +
+                  (order.voucher_discount || 0)
+                ).toLocaleString("vi-VN")} ₫
+              </Descriptions.Item>
+
+              <Descriptions.Item label="Tổng thanh toán">
+                <strong className="text-green-600">
+                  {(order.total_price || 0).toLocaleString("vi-VN")} ₫
+                </strong>
               </Descriptions.Item>
             </Descriptions>
           </div>
-
           <Divider />
 
           {/* Người đặt hàng */}
