@@ -1,7 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import axios from 'axios';
-import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message } from 'antd';
+import { Input, Select, Button, Card, Image, Row, Col, Typography, Divider, Spin, message, Tag } from 'antd';
+import { DownOutlined, UpOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from "react-router-dom";
 
@@ -26,14 +27,30 @@ const Checkout = () => {
     note: '',
     shipping_type: 'standard',
     payment_method: 'cod',
-    voucher_code: '',
+
     voucher_type: '',
     voucher_value: 0,
-
+    voucher_code: null,
     province_id: null,
     district_id: null,
     ward_code: null,
   });
+
+  interface IShippingAddress {
+    _id: string;
+    full_name: string;
+    phone: string;
+    address: string;
+    province_id: number;
+    province_name: string;
+    district_id: number;
+    district_name: string;
+    ward_code: string;
+    ward_name: string;
+    is_default: boolean;
+    createdAt: string;
+    updatedAt: string;
+  }
   const [userAddresses, setUserAddresses] = useState<any[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
 
@@ -69,6 +86,46 @@ const Checkout = () => {
     }
   }, [variant_id, quantity, size]);
 
+  const [shippingFee, setShippingFee] = useState(0); // phí vận chuyển
+  const [shippingLoading, setShippingLoading] = useState(false);
+
+  // Gọi API tính phí vận chuyển
+  const fetchShippingFee = async () => {
+    console.log("District ID:", formData);
+    if (!formData.province_id || !formData.district_id || !formData.ward_code) return;
+
+    try {
+      setShippingLoading(true);
+
+      const res = await axios.post(
+        "http://localhost:3000/api/shipping/fee", // endpoint ví dụ
+        {
+          cart_id: cartData.cart_items?.[0]?.cart_id,
+          toDistrictId: formData.district_id,
+          toWardCode: formData.ward_code,
+
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      // giả sử API trả về res.data.fee
+      setShippingFee(res.data.fee.service_fee);
+      // console.log(res.data.fee.service_fee);
+
+    } catch (err) {
+      console.error("Lỗi tính phí vận chuyển:", err);
+      setShippingFee(0);
+    } finally {
+      setShippingLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchShippingFee();
+  }, [formData.province_id, formData.district_id, formData.ward_code, formData.shipping_type]);
+
   useEffect(() => {
     const fetchUserProfile = async () => {
       const token = localStorage.getItem('token');
@@ -81,6 +138,8 @@ const Checkout = () => {
 
         const user = res.data.user;
         setUserAddresses(user?.shipping_addresses || []);
+        console.log("🟢 User detail:", user);
+        console.log("🟢 Shipping addresses:", user?.shipping_addresses);
         // // Tìm địa chỉ có updatedAt gần nhất
         // const latestAddress = (user?.shipping_addresses || [])
         //   .slice() // clone mảng tránh thay đổi gốc
@@ -104,10 +163,29 @@ const Checkout = () => {
   }, []);
 
   // Bảng hiển thị địa chỉ
-  const addressColumns: ColumnsType<any> = [
-    { title: "Họ tên", dataIndex: "full_name" },
-    { title: "Số điện thoại", dataIndex: "phone" },
-    { title: "Địa chỉ", dataIndex: "address" },
+  const addressColumns: ColumnsType<IShippingAddress> = [
+    {
+      title: "Họ tên",
+      dataIndex: "full_name",
+      key: "full_name",
+      // width: 150,
+    },
+    {
+      title: "Số điện thoại",
+      dataIndex: "phone",
+      key: "phone",
+      // width: 120,
+    },
+    {
+      title: "Địa chỉ",
+      key: "address",
+      width: 250,
+      render: (_, record) => (
+        <span style={{ display: 'block', whiteSpace: 'normal' }}>
+          {record.address}, {record.ward_name}, {record.district_name}, {record.province_name}
+        </span>
+      ),
+    }
   ];
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
 
@@ -210,31 +288,31 @@ const Checkout = () => {
     fetchSizes();
   }, []);
 
-  useEffect(() => {
-    const voucherId = localStorage.getItem('selected_voucher_id');
-    if (voucherId) {
-      axios
-        .get(`http://localhost:3000/api/vouchers/${voucherId}`)
-        .then((res) => {
-          const voucher = res.data?.data || res.data;
-          if (voucher?.code && voucher?.type && voucher?.value !== undefined) {
-            setFormData((prev) => ({
-              ...prev,
-              voucher_code: voucher.code,
-              voucher_type: voucher.type,
-              voucher_value: voucher.value,
-            }));
-          }
-        })
-        .catch((err) => {
-          console.error('Không tìm thấy mã giảm giá', err);
-        });
-    }
-  }, []);
+  // useEffect(() => {
+  //   const voucherId = localStorage.getItem('selected_voucher_id');
+  //   if (voucherId) {
+  //     axios
+  //       .get(`http://localhost:3000/api/vouchers/${voucherId}`)
+  //       .then((res) => {
+  //         const voucher = res.data?.data || res.data;
+  //         if (voucher?.code && voucher?.type && voucher?.value !== undefined) {
+  //           setFormData((prev) => ({
+  //             ...prev,
+  //             voucher_code: voucher.code,
+  //             voucher_type: voucher.type,
+  //             voucher_value: voucher.value,
+  //           }));
+  //         }
+  //       })
+  //       .catch((err) => {
+  //         console.error('Không tìm thấy mã giảm giá', err);
+  //       });
+  //   }
+  // }, []);
 
   const cartItems = cartData?.cart_items || [];
   const total = cartData?.total || 0;
-  const shippingFee = 35000;
+  // const shippingFee = 35000;
 
   const discountAmount =
     formData.voucher_type === 'percentage'
@@ -443,6 +521,7 @@ const Checkout = () => {
             shipping_address_id: selectedAddressId,
           }),
         payment_method: formData.payment_method,
+        voucher_code: formData.voucher_code || null,
       }
       : {
         cart_id: cartData.cart_items?.[0]?.cart_id,
@@ -459,6 +538,7 @@ const Checkout = () => {
             shipping_address_id: selectedAddressId,
           }),
         payment_method: formData.payment_method,
+        voucher_code: formData.voucher_code || null,
       };
 
     console.log("Payload gửi đi:", payload);
@@ -486,9 +566,14 @@ const Checkout = () => {
       localStorage.removeItem("cart_backup");
       navigate("/checkout/success");
     } catch (err) {
-      console.error(err);
-      message.error("Đặt hàng thất bại!");
-      navigate("/checkout/failed");
+      if (err.response && err.response.data && err.response.data.message) {
+        message.error(err.response.data.message);
+      }
+      else {
+        console.error(err);
+        message.error("Đặt hàng thất bại!");
+        navigate("/checkout/failed");
+      }
     }
   };
 
@@ -515,6 +600,53 @@ const Checkout = () => {
     },
   ];
   const [showForm, setShowForm] = useState(false);
+
+
+  const [vouchers, setVouchers] = useState<any[]>([]);
+  const [showVouchers, setShowVouchers] = useState(false);
+  const [selectedVoucherId, setSelectedVoucherId] = useState<string | null>(null);
+  // 👉 Toggle hiển thị / tải voucher
+  const handleToggleVouchers = () => {
+    if (!showVouchers && vouchers.length === 0) {
+      axios.get("http://localhost:3000/api/vouchers")
+        .then(res => {
+          const allVouchers = res.data || [];
+          const now = new Date();
+          const activeVouchers = allVouchers.filter((voucher: any) =>
+            new Date(voucher.startDate) <= now &&
+            now <= new Date(voucher.endDate) &&
+            voucher.quantity > 0
+          );
+          setVouchers(activeVouchers);
+          setShowVouchers(true);
+        })
+        .catch(() => {
+          message.error("Không thể tải danh sách voucher");
+        });
+    } else {
+      setShowVouchers(!showVouchers);
+    }
+  };
+
+  // 👉 Chọn / bỏ chọn voucher
+  const handleApplyVoucher = (voucher: any) => {
+    if (selectedVoucherId === voucher._id) {
+      setSelectedVoucherId(null);
+      setFormData((prev) => ({
+        ...prev,
+        voucher_code: null, // bỏ chọn thì clear code
+      }));
+      message.info(`Đã bỏ chọn mã: ${voucher.code}`);
+    } else {
+      setSelectedVoucherId(voucher._id);
+      setFormData((prev) => ({
+        ...prev,
+        voucher_code: voucher.code, // ✅ lưu voucher_code
+      }));
+      message.success(`Đã chọn mã: ${voucher.code}`);
+    }
+  };
+
 
 
 
@@ -600,6 +732,7 @@ const Checkout = () => {
                           value={formData.province_id}
                           onChange={(value) => {
                             handleChange("province_id", value);
+
                             // reset Quận/Huyện và Phường/Xã
                             // handleChange("district_id", null);
                             // handleChange("ward_code", null);
@@ -644,7 +777,10 @@ const Checkout = () => {
                           showSearch
                           placeholder="Chọn Phường/Xã *"
                           value={formData.ward_code}
-                          onChange={(value) => handleChange("ward_code", value)}
+                          onChange={(value) => {
+                            handleChange("ward_code", value);
+
+                          }}
                           options={wards.map((w) => ({
                             label: w.WardName,
                             value: w.WardCode,
@@ -697,7 +833,7 @@ const Checkout = () => {
                 </div>
               )}
 
-              <div className="mb-[10px]"  >
+              {/* <div className="mb-[10px]"  >
                 <Select
                   className="w-full"
                   value={formData.shipping_type}
@@ -706,7 +842,7 @@ const Checkout = () => {
                   <Select.Option value="standard">Giao hàng tiêu chuẩn</Select.Option>
                   <Select.Option value="fast">Giao hàng nhanh</Select.Option>
                 </Select>
-              </div>
+              </div> */}
 
               <div className="mb-4">
                 <Text strong className="block mb-2">Phương thức thanh toán</Text>
@@ -889,7 +1025,7 @@ const Checkout = () => {
                       <div className="flex justify-between mt-2">
                         <Text strong className="text-lg">Tổng cộng:</Text>
                         <Text strong className="text-lg text-black">
-                          {finalTotal.toLocaleString()} đ
+                          {shippingLoading ? "Đang tính phí..." : finalTotal.toLocaleString()} đ
                         </Text>
                       </div>
                     </>
@@ -897,10 +1033,125 @@ const Checkout = () => {
                 </>
               )}
             </Card>
+
+            {/* Voucher */}
+            <Card>
+              <div>
+                <Button
+                  type="default"
+                  block
+                  className="block mb-2 dropdown-btn"
+                  style={{
+                    border: "1px solid #d9d9d9",   // màu viền xám nhạt
+                    borderRadius: "8px",           // bo góc
+                  }}
+                  onClick={handleToggleVouchers}
+                >
+                  <span>MÃ GIẢM GIÁ</span>
+                  {showVouchers ? <UpOutlined /> : <DownOutlined />}
+                </Button>
+              </div>
+              {showVouchers && (
+                <div
+                  className="voucher-list"
+                  style={{
+                    maxHeight: 300,           // Giới hạn chiều cao
+                    overflowY: "auto",        // Cuộn dọc
+                    border: "2px solid #f0f0f0", // Viền xám nhạt
+                    borderRadius: 8,          // Bo góc
+                    padding: 8,
+                    marginTop: 12,
+                    background: "#fff",
+
+                    // maxHeight: 250, // chiều cao tối đa (có thể đổi 200, 300 tuỳ ý)
+                    // overflowY: "auto", // bật scroll dọc
+                    paddingRight: 8, // tránh che nội dung khi có scrollbar
+                  }}
+                >
+                  {vouchers.length === 0 ? (
+                    <p>Không có mã giảm giá nào</p>
+                  ) : (
+                    <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                      {vouchers.map((voucher) => {
+                        const end = new Date(voucher.endDate);
+                        const now = new Date();
+                        const diffMs = end.getTime() - now.getTime();
+                        const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                        const diffHours = Math.floor((diffMs / (1000 * 60 * 60)) % 24);
+                        const diffMinutes = Math.floor((diffMs / (1000 * 60)) % 60);
+                        const timeLeft =
+                          diffMs <= 0
+                            ? "Đã hết hạn"
+                            : `${diffDays} ngày ${diffHours} giờ ${diffMinutes} phút`;
+
+                        const isSelected = selectedVoucherId === voucher._id;
+
+                        return (
+                          <li
+                            key={voucher._id}
+                            onClick={() => handleApplyVoucher(voucher)}
+                            style={{ marginBottom: 8 }}
+                          >
+                            <Card
+                              size="small"
+                              bordered
+                              hoverable
+                              bodyStyle={{ padding: "12px" }}
+                              style={{
+                                borderRadius: "10px",
+                                boxShadow: isSelected ? "0 0 0 2px #91caff" : undefined,
+                                backgroundColor: "#FF3300",
+                              }}
+                            >
+                              <Row justify="space-between" align="middle" wrap={false}>
+                                <Col flex="auto" style={{ color: "#FFFFFF" }}>
+                                  <strong>{voucher.code}</strong>
+                                  <br />
+                                  <small>
+                                    Đơn tối thiểu:{" "}
+                                    <strong>
+                                      {voucher.minOrderValue.toLocaleString("vi-VN")}đ
+                                    </strong>
+                                  </small>
+                                  <br />
+                                  <small>Còn lại: {timeLeft}</small>
+                                </Col>
+                                <Col>
+                                  <div
+                                    style={{
+                                      backgroundColor:
+                                        voucher.type === "percentage" ? "#f6ffed" : "#fff1f0",
+                                      color:
+                                        voucher.type === "percentage" ? "#52c41a" : "#cf1322",
+                                      border: "1px solid",
+                                      borderColor:
+                                        voucher.type === "percentage"
+                                          ? "#b7eb8f"
+                                          : "#ffa39e",
+                                      borderRadius: "12px",
+                                      fontWeight: "bold",
+                                      fontSize: "16px",
+                                      padding: "6px 12px",
+                                      textAlign: "center",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {voucher.type === "percentage"
+                                      ? `-${voucher.value}%`
+                                      : `-${voucher.value.toLocaleString("vi-VN")}đ`}
+                                  </div>
+                                </Col>
+                              </Row>
+                            </Card>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </Card>
           </Col>
-
-
-
         </Row>
       </div>
     </>
