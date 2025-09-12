@@ -1,26 +1,17 @@
-import React, { useRef, useEffect, useState, useMemo, useCallback } from 'react';
-import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
-import { useNavigate, Link } from 'react-router-dom';
-
-interface Product {
-  _id: string;
-  name: string;
-  image?: string;
-  price?: number;
-  slug?: string;
-  brand?: string | { _id: string; name: string };
-  category?: string | { _id: string; name: string };
-}
+import React, { useRef, useEffect, useState, useMemo, useCallback } from "react";
+import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
+import { useNavigate, Link } from "react-router-dom";
+import type { IProduct } from "../../interface/product";
 
 interface SearchBoxProps {
   onClose: () => void;
-  products?: Product[];
+  products?: IProduct[];
 }
 
 const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [history, setHistory] = useState<string[]>([]);
   const navigate = useNavigate();
 
@@ -34,6 +25,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
     }
   }, []);
 
+  // Lắng nghe clear history
   useEffect(() => {
     const clearHandler = () => setHistory([]);
     window.addEventListener("clearSearchHistory", clearHandler);
@@ -52,46 +44,72 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
         closeSearchBox();
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [closeSearchBox]);
 
   // Đóng khi scroll
   useEffect(() => {
-    window.addEventListener('scroll', closeSearchBox);
-    return () => window.removeEventListener('scroll', closeSearchBox);
+    window.addEventListener("scroll", closeSearchBox);
+    return () => window.removeEventListener("scroll", closeSearchBox);
   }, [closeSearchBox]);
+
+  const mapGenderKeyword = (gender: string) => {
+    if (!gender) return "";
+    switch (gender.toLowerCase()) {
+      case "male":
+        return "nam";
+      case "female":
+        return "nữ";
+      case "unisex":
+        return "unisex";
+      default:
+        return gender.toLowerCase();
+    }
+  };
+
+  // Hàm filter
+  const matchProduct = (p: IProduct, tokens: string[]) => {
+    const productText = [
+      p.name,
+      typeof p.brand !== "string" ? p.brand?.name : "",
+      typeof p.category !== "string" ? p.category?.name : "",
+      ...p.variants.map((v) => mapGenderKeyword(v.gender)),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+
+    return tokens.every((t) => productText.includes(t));
+  };
 
   // Kết quả tìm kiếm
   const results = useMemo(() => {
     if (!search.trim() || !Array.isArray(products)) return [];
-    const keyword = search.toLowerCase();
-    const tokens = keyword.split(/\s+/).filter(Boolean); // tách theo khoảng trắng
-
-    return products.filter((p) => {
-      const productText = [
-        p.name,
-        typeof p.brand !== "string" ? p.brand?.name : "",
-        typeof p.category !== "string" ? p.category?.name : "",
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-
-      // tất cả token đều phải xuất hiện
-      return tokens.every((t) => productText.includes(t));
-    });
+    const tokens = search.toLowerCase().split(/\s+/).filter(Boolean);
+    return products.filter((p) => matchProduct(p, tokens));
   }, [search, products]);
 
   // Lưu lịch sử
-  const saveHistory = (keyword: string) => {
-    let updated = [keyword, ...history.filter((h) => h !== keyword)];
-    updated = updated.slice(0, 5); // chỉ giữ 5 mục gần nhất
-    setHistory(updated);
-    localStorage.setItem("searchHistory", JSON.stringify(updated));
+  const saveHistory = useCallback(
+    (keyword: string) => {
+      let updated = [keyword, ...history.filter((h) => h !== keyword)];
+      updated = updated.slice(0, 5); // chỉ giữ 5 mục gần nhất
+      setHistory(updated);
+      localStorage.setItem("searchHistory", JSON.stringify(updated));
+    },
+    [history]
+  );
+
+  // helper để map keyword => gender chuẩn
+  const detectGenderFromKeyword = (keyword: string): string | null => {
+    if (keyword.includes("nam") || keyword.includes("male")) return "male";
+    if (keyword.includes("nữ") || keyword.includes("nu") || keyword.includes("female")) return "female";
+    if (keyword.includes("unisex")) return "unisex";
+    return null;
   };
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (!search.trim()) return;
 
     const keyword = search.toLowerCase();
@@ -116,15 +134,19 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
       ).values()
     );
 
-    // tìm category phù hợp nhất (ưu tiên tên dài nhất match trong keyword)
-    const matchedCategory = categories
-      .filter((c) => keyword.includes(c.name.toLowerCase()))
-      .sort((a, b) => b.name.length - a.name.length)[0] || null;
+    // tìm category phù hợp nhất
+    const matchedCategory =
+      categories
+        .filter((c) => keyword.includes(c.name.toLowerCase()))
+        .sort((a, b) => b.name.length - a.name.length)[0] || null;
 
     // tìm brand phù hợp nhất
-    const matchedBrand = brands
-      .filter((b) => keyword.includes(b.name.toLowerCase()))
-      .sort((a, b) => b.name.length - a.name.length)[0] || null;
+    const matchedBrand =
+      brands
+        .filter((b) => keyword.includes(b.name.toLowerCase()))
+        .sort((a, b) => b.name.length - a.name.length)[0] || null;
+
+    const detectedGender = detectGenderFromKeyword(keyword);
 
     saveHistory(search.trim());
 
@@ -134,11 +156,13 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
         categories: matchedCategory ? [matchedCategory._id] : [],
         brands: matchedBrand ? [matchedBrand._id] : [],
         search: search.trim(),
+        gender: detectedGender ? [detectedGender] : [],
       },
     });
 
     closeSearchBox();
-  };
+  }, [search, products, saveHistory, navigate, closeSearchBox]);
+
 
   return (
     <div
@@ -181,33 +205,42 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
               Không tìm thấy sản phẩm phù hợp.
             </div>
           ) : (
-            results.map((product) => (
-              <Link
-                key={product._id}
-                to="/products"
-                state={{
-                  productId: product._id,
-                  brands:
-                    typeof product.brand !== "string" && product.brand
-                      ? [product.brand._id]
-                      : [],
-                  categories:
-                    typeof product.category !== "string" && product.category
-                      ? [product.category._id]
-                      : [],
-                }}
-                onClick={closeSearchBox}
-                className="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-100 transition"
-              >
-                <div>
-                  <div className="font-medium text-sm">{product.name}</div>
-                  <div className="text-xs text-gray-500">
-                    {typeof product.brand !== "string" && product.brand?.name} •{" "}
-                    {typeof product.category !== "string" && product.category?.name}
+            results.map((product) => {
+              const genders = Array.from(
+                new Set(product.variants.map((v) => mapGenderKeyword(v.gender)).filter(Boolean))
+              );
+
+              return (
+                <Link
+                  key={product._id}
+                  to="/products"
+                  state={{
+                    productId: product._id,
+                    brands:
+                      typeof product.brand !== "string" && product.brand
+                        ? [product.brand._id]
+                        : [],
+                    categories:
+                      typeof product.category !== "string" && product.category
+                        ? [product.category._id]
+                        : [],
+                    gender: genders,
+                  }}
+                  onClick={closeSearchBox}
+                  className="flex items-center gap-3 py-2 px-2 rounded hover:bg-gray-100 transition"
+                >
+                  <div>
+                    <div className="font-medium text-sm">{product.name}</div>
+                    <div className="text-xs text-gray-500">
+                      {typeof product.brand !== "string" && product.brand?.name} •{" "}
+                      {typeof product.category !== "string" && product.category?.name} •{" "}
+                      {genders.length > 0 ? genders.join(", ") : "Không rõ giới tính"}
+                    </div>
                   </div>
-                </div>
-              </Link>
-            ))
+                </Link>
+              );
+            })
+
           )}
         </div>
       ) : (
@@ -217,7 +250,10 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
               <div
                 key={idx}
                 className="py-2 px-2 text-sm text-gray-700 cursor-pointer hover:bg-gray-100"
-                onClick={() => setSearch(h)}
+                onClick={() => {
+                  setSearch(h);
+                  handleSearch();
+                }}
               >
                 {h}
               </div>
@@ -225,6 +261,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
           </div>
         )
       )}
+
     </div>
   );
 };

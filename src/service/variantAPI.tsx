@@ -16,7 +16,6 @@ export const getVariants = async (): Promise<IVariant[]> => {
 export const getVariantById = async (id: string) => {
     try {
         const response = await axios.get(`${API_URL}/variants/${id}`);
-        console.log("Fetched variant:", response.data);
         return response.data;
     } catch (error) {
         console.error("Error fetching variant:", error);

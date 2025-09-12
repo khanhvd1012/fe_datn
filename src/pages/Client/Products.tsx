@@ -30,7 +30,7 @@ const Products = () => {
   const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const initialFilters = (location.state as Partial<FilterValues>) || {};
   const [filters, setFilters] = useState<FilterValues>({
-    price: initialFilters.price || [0, 10000000],
+    price: initialFilters.price || [0, 30000000],
     brands: initialFilters.brands || [],
     categories: initialFilters.categories || [],
     colors: initialFilters.colors || [],
@@ -41,7 +41,7 @@ const Products = () => {
   useEffect(() => {
     const newFilters = (location.state as Partial<FilterValues>) || {};
     setFilters({
-      price: newFilters.price || [0, 10000000],
+      price: newFilters.price || [0, 30000000],
       brands: newFilters.brands || [],
       categories: newFilters.categories || [],
       colors: newFilters.colors || [],
@@ -244,7 +244,14 @@ const Products = () => {
                 <div className="bg-white p-4 rounded-lg shadow">
                   <FilterContent
                     onChange={setFilters}
-                    defaultValues={filters}
+                    defaultValues={{
+                      price: initialFilters.price ?? [0, 30000000],
+                      brands: initialFilters.brands ?? [],
+                      categories: initialFilters.categories ?? [],
+                      colors: initialFilters.colors ?? [],
+                      sizes: initialFilters.sizes ?? [],
+                      gender: initialFilters.gender ?? [],
+                    }}
                   />
                 </div>
               }

@@ -41,9 +41,9 @@ export const useCreateReview = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (review: Omit<IReview, '_id' | 'createdAt' | 'updatedAt'>) => createReview(review),
+    mutationFn: (data: { review: FormData; product_id: string }) =>
+      createReview(data.review),
     onSuccess: (_data, variables) => {
-      // Sau khi tạo đánh giá, làm mới dữ liệu reviews của sản phẩm
       queryClient.invalidateQueries({ queryKey: ['reviews', variables.product_id] });
     }
   });
@@ -57,10 +57,11 @@ export const useUpdateReview = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: string; review: Partial<Omit<IReview, '_id' | 'createdAt' | 'updatedAt'>> }) =>
+    mutationFn: (data: { id: string; review: FormData; product_id: string }) =>
       updateReview(data.id, data.review),
     onSuccess: (_data, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['reviews', variables.review.product_id] });
+      // Làm mới danh sách đánh giá của sản phẩm
+      queryClient.invalidateQueries({ queryKey: ['reviews', variables.product_id] });
     }
   });
 };

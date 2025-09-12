@@ -32,10 +32,15 @@ export const getAllReviews = async (): Promise<IReview[]> => {
 
 // Tạo đánh giá mới
 export const createReview = async (
-  review: Omit<IReview, "_id" | "createdAt" | "updatedAt" | "admin_reply">
+  review: FormData
 ) => {
   try {
-    const response = await axios.post(`${API_URL}/reviews`, review);
+    const response = await axios.post(`${API_URL}/reviews`, review, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data"
+      }
+    });
     return response.data.review;
   } catch (error) {
     console.error("Error creating review:", error);
@@ -46,10 +51,15 @@ export const createReview = async (
 // Cập nhật đánh giá
 export const updateReview = async (
   id: string,
-  review: Partial<Omit<IReview, "_id" | "createdAt" | "updatedAt" | "admin_reply">>
+  review: FormData
 ) => {
   try {
-    const response = await axios.put(`${API_URL}/reviews/${id}`, review);
+    const response = await axios.put(`${API_URL}/reviews/${id}`, review, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "multipart/form-data"
+      }
+    });
     return response.data.review;
   } catch (error) {
     console.error("Error updating review:", error);
