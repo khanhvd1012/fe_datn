@@ -217,6 +217,23 @@ const ProductDetail = () => {
     }
   };
 
+  useEffect(() => {
+    if (product?._id) {
+      fetchProductReviews();
+    }
+  }, [product?._id]);
+
+  // Lọc review theo biến thể đang chọn
+  const filteredReviews = selectedVariant
+    ? reviews.filter(r => {
+      const variantId = typeof r.product_variant_id === "string"
+        ? r.product_variant_id
+        : r.product_variant_id?._id;
+
+      return variantId === selectedVariant._id;
+    })
+    : [];
+
   const totalReviews = reviews.length;
 
   const ratingStats = [1, 2, 3, 4, 5].reduce((acc: Record<number, number>, star) => {
@@ -228,7 +245,6 @@ const ProductDetail = () => {
   const avgRating = Number(
     (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
   );
-
 
   const handleBuyNow = () => {
     if (!selectedVariant || !selectedVariant._id) {
@@ -424,7 +440,7 @@ const ProductDetail = () => {
                 style={{
                   margin: 0,
                   padding: "4px 8px",
-                  border: "1px solid orange", 
+                  border: "1px solid orange",
                   borderRadius: 8,
                   color:
                     selectedVariant?.stock?.status === "outOfStock" ||
@@ -626,76 +642,40 @@ const ProductDetail = () => {
         </div>
 
         {/* Danh sách đánh giá */}
-        <div>
-          <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: 16 }}>
-            Đánh giá sản phẩm
-          </h3>
-          {reviews.length === 0 ? (
-            <p style={{ color: '#999' }}>Chưa có đánh giá nào.</p>
-          ) : (
-            reviews.map((review: any) => (
-              <div
-                key={review._id}
-                style={{
-                  marginBottom: '24px',
-                  padding: '16px',
-                  borderRadius: '8px',
-                  backgroundColor: '#fff',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                }}
-              >
-                {/* Người dùng + rating */}
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                  <strong
-                    style={{
-                      fontSize: '16px',
-                      color: '#333',
-                      marginRight: '12px',
-                      whiteSpace: 'nowrap',
-                    }}
-                  >
-                    {review.user_id?.username || 'Ẩn danh'}
-                  </strong>
-                  <Rate value={review.rating} disabled style={{ fontSize: 16 }} />
-                </div>
+        {filteredReviews.map((review) => (
+          <div key={review._id} style={{ marginBottom: 24, padding: 16, background: "#fff", borderRadius: 8 }}>
 
-                {/* Bình luận của user */}
-                <p style={{ margin: '4px 0 8px', color: '#444' }}>{review.comment}</p>
+            {/* User + rating */}
+            <div style={{ display: "flex", alignItems: "center", marginBottom: 8 }}>
+              <strong style={{ marginRight: 12 }}>
+                {typeof review.user_id === "object" ? review.user_id.username : "Ẩn danh"}
+              </strong>
+              <Rate value={review.rating} disabled />
+            </div>
 
-                {/* Ngày tạo */}
-                <div style={{ fontSize: '12px', color: '#999', marginBottom: 8 }}>
-                  {new Date(review.createdAt).toLocaleString('vi-VN')}
-                </div>
+            {/* Comment */}
+            <p style={{ margin: "4px 0 8px" }}>{review.comment}</p>
 
-                {/* Nếu có phản hồi admin thì hiển thị */}
-                {review.admin_reply && (
-                  <div
-                    style={{
-                      marginTop: '12px',
-                      padding: '12px',
-                      borderRadius: '6px',
-                      backgroundColor: '#f6f9ff',
-                      border: '1px solid #d6e4ff',
-                    }}
-                  >
-                    <strong style={{ color: '#1d39c4' }}>Phản hồi từ Admin:</strong>
-                    <p
-                      style={{
-                        margin: '4px 0 0',
-                        color: '#333',
-                        wordWrap: 'break-word',   //  tự động xuống dòng
-                        whiteSpace: 'pre-wrap',   //  giữ format và xuống dòng
-                      }}
-                    >
-                      {review.admin_reply}
-                    </p>
-                  </div>
-                )}
-
+            {/* Ảnh nếu có */}
+            {review.images?.length > 0 && (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                {review.images.map((img, idx) => (
+                  <img
+                    key={idx}
+                    src={img}
+                    alt={`review-${idx}`}
+                    style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 4 }}
+                  />
+                ))}
               </div>
-            ))
-          )}
-        </div>
+            )}
+
+            {/* Ngày */}
+            <div style={{ fontSize: 12, color: "#888" }}>
+              {new Date(review.createdAt || "").toLocaleString("vi-VN")}
+            </div>
+          </div>
+        ))}
 
       </div>
       <RelatedProducts />
