@@ -29,7 +29,8 @@ export interface IDashboardStats {
   totalOrders: number;                   // tổng số đơn hàng
   totalUsers: number;                    // tổng số user
   ordersByDate: IOrdersByDate[];         // thống kê đơn theo ngày
-  monthlyRevenue: number;                // doanh thu tháng hiện tại
+  revenue: number;    
+  revenueByYear: IRevenueByYear[];           
 }
 
 // API Response
@@ -38,4 +39,9 @@ export interface IDashboardResponse {
   data: IDashboardStats;
   message?: string;
   error?: string;
+}
+
+export interface IRevenueByYear {
+  year: number;
+  revenue: number;
 }

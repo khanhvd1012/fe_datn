@@ -5,7 +5,7 @@ import { useStocks, useUpdateStock } from '../../../hooks/useStock';
 import { useEffect } from 'react';
 
 const EditStock = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const navigate = useNavigate();
@@ -16,16 +16,12 @@ const EditStock = () => {
 
   const selectedStock = stock?.find(item => item._id === id);
 
-  const handleSubmit = (values: { quantity: number; reason: string; status?: string }) => {
-    if (!id || !stock) return;
-
-    const selectedStock = stock.find(item => item._id === id);
+  const handleSubmit = (values: { quantity_change: number; reason: string; status?: string }) => {
     if (!selectedStock) return;
 
-    const quantity_change = values.quantity - selectedStock.quantity;
+    const { quantity_change, status, reason } = values;
 
-    // Nếu chỉ đổi trạng thái mà không đổi số lượng
-    if (quantity_change === 0 && values.status === selectedStock.status) {
+    if (quantity_change === 0 && status === selectedStock.status) {
       messageApi.warning('Không có thay đổi nào!');
       return;
     }
@@ -35,11 +31,13 @@ const EditStock = () => {
       return;
     }
 
+    if (!id || !selectedStock) return;
+
     mutate(
-      { id, quantity_change, reason: values.reason, status: values.status },
+      { id, quantity_change, reason, status },
       {
         onSuccess: () => {
-          messageApi.success('Cập nhật tồn kho thành công!');
+          messageApi.success('Cập nhật tồn kho thành công!', 1);
           queryClient.invalidateQueries({ queryKey: ['stocks'] });
           setTimeout(() => {
             navigate('/admin/stocks/stock');
@@ -55,8 +53,8 @@ const EditStock = () => {
   useEffect(() => {
     if (selectedStock) {
       form.setFieldsValue({
-        quantity: selectedStock.quantity,
-        status: selectedStock.status, // set mặc định trạng thái hiện tại
+        quantity_change: 0, // mặc định = 0 (không thay đổi)
+        status: selectedStock.status,
       });
     }
   }, [selectedStock, form]);
@@ -68,31 +66,36 @@ const EditStock = () => {
       {contextHolder}
       <h2 className="text-2xl font-bold mb-4">Cập nhật Tồn Kho</h2>
 
-      <Form form={form} layout="vertical" onFinish={handleSubmit}>
+      <Form form={form} layout="vertical" onFinish={handleSubmit} disabled={isUpdating}>
+        {/* Thông tin sản phẩm */}
         <Form.Item label="Tên sản phẩm">
           <Input value={selectedStock.product_name} disabled style={{ color: 'black' }} />
         </Form.Item>
-
         <Form.Item label="SKU">
           <Input value={selectedStock.sku} disabled style={{ color: 'black' }} />
         </Form.Item>
-
         <Form.Item label="Màu sắc">
           <Input value={selectedStock.color} disabled style={{ color: 'black' }} />
         </Form.Item>
-
         <Form.Item label="Kích cỡ">
           <Input value={selectedStock.size} disabled style={{ color: 'black' }} />
         </Form.Item>
 
-        <Form.Item
-          label="Số lượng"
-          name="quantity"
-          rules={[{ required: true, message: 'Vui lòng nhập số lượng!' }]}
-        >
-          <InputNumber style={{ width: '100%' }} />
+        {/* Số lượng hiện tại */}
+        <Form.Item label="Số lượng hiện tại">
+          <Input value={selectedStock.quantity} disabled style={{ color: 'black' }} />
         </Form.Item>
 
+        {/* Thay đổi số lượng */}
+        <Form.Item
+          label="Thay đổi số lượng "
+          name="quantity_change"
+          rules={[{ required: true, message: 'Vui lòng nhập số thay đổi!' }]}
+        >
+          <InputNumber style={{ width: '100%' }} min={-selectedStock.quantity} />
+        </Form.Item>
+
+        {/* Trạng thái */}
         <Form.Item
           label="Trạng thái"
           name="status"
@@ -107,14 +110,19 @@ const EditStock = () => {
           />
         </Form.Item>
 
+        {/* Lý do */}
         <Form.Item
           label="Lý do"
           name="reason"
-          rules={[{ required: true, message: 'Vui lòng nhập lý do!' }]}
+          rules={[
+            { required: true, message: 'Vui lòng nhập lý do!' },
+            { max: 1000, message: 'Lý do không được vượt quá 1000 ký tự!' },
+          ]}
         >
-          <Input placeholder="Nhập lý do thay đổi" />
+          <Input.TextArea rows={4} placeholder="Nhập lý do" />
         </Form.Item>
 
+        {/* Action buttons */}
         <Form.Item>
           <div className="flex justify-end gap-4">
             <Button onClick={() => navigate('/admin/stocks/stock')}>Hủy</Button>
