@@ -674,6 +674,22 @@ const ProductDetail = () => {
             <div style={{ fontSize: 12, color: "#888" }}>
               {new Date(review.createdAt || "").toLocaleString("vi-VN")}
             </div>
+
+            {/* Admin reply nếu có */}
+            {review.admin_reply && (
+              <div
+                style={{
+                  marginTop: 8,
+                  padding: 12,
+                  background: "#f9f9f9",
+                  borderLeft: "4px solid #1890ff",
+                  borderRadius: 4,
+                }}
+              >
+                <strong>Phản hồi từ Admin:</strong>
+                <p style={{ margin: 4 }}>{review.admin_reply}</p>
+              </div>
+            )}
           </div>
         ))}
 
