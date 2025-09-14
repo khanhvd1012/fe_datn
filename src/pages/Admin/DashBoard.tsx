@@ -1,14 +1,16 @@
-import { Card, Row, Col, Statistic, Table, DatePicker, Spin } from "antd";
+import { Card, Row, Col, Statistic, Table, DatePicker, Spin, Button } from "antd";
 import { Column, Line } from "@ant-design/charts";
 import {
   ShoppingOutlined,
   ShoppingCartOutlined,
   UsergroupAddOutlined,
   DollarOutlined,
+  RightOutlined,
+  LeftOutlined,
 } from "@ant-design/icons";
 import { useState } from "react";
 import dayjs from "dayjs";
-import type { ITopProduct, IRevenueByYear } from "../../interface/dashboard";
+import type { ITopProduct } from "../../interface/dashboard";
 import { useDashboardStats } from "../../hooks/useDasboard";
 
 const { RangePicker } = DatePicker;
@@ -16,14 +18,15 @@ const { RangePicker } = DatePicker;
 const Dashboard = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
 
-  const { data: stats, isLoading } = useDashboardStats(
-    dateRange
-      ? {
-        startDate: dateRange[0].format("YYYY-MM-DD"),
-        endDate: dateRange[1].format("YYYY-MM-DD"),
-      }
-      : {}
-  );
+  const currentYear = new Date().getFullYear();
+  const [yearRange, setYearRange] = useState({ startYear: currentYear - 4, endYear: currentYear });
+
+  const { data: stats, isLoading } = useDashboardStats({
+    startDate: dateRange ? dateRange[0].format("YYYY-MM-DD") : undefined,
+    endDate: dateRange ? dateRange[1].format("YYYY-MM-DD") : undefined,
+    startYear: yearRange.startYear,
+    endYear: yearRange.endYear,
+  });
 
   const columns = [
     {
@@ -149,7 +152,34 @@ const Dashboard = () => {
         </Col>
 
         <Col xs={24} md={12}>
-          <Card title="Doanh thu theo năm">
+          <Card
+            title="Doanh thu theo năm"
+            extra={
+              <div>
+                <Button
+                  icon={<LeftOutlined />}
+                  size="small"
+                  onClick={() =>
+                    setYearRange((prev) => ({
+                      startYear: prev.startYear - 5,
+                      endYear: prev.endYear - 5,
+                    }))
+                  }
+                />
+                <Button
+                  icon={<RightOutlined />}
+                  size="small"
+                  style={{ marginLeft: 8 }}
+                  onClick={() =>
+                    setYearRange((prev) => ({
+                      startYear: prev.startYear + 5,
+                      endYear: prev.endYear + 5,
+                    }))
+                  }
+                />
+              </div>
+            }
+          >
             <Column
               data={stats?.revenueByYear || []}
               xField="year"
@@ -177,9 +207,9 @@ const Dashboard = () => {
           columns={columns}
           dataSource={stats?.topProducts || []}
           pagination={{
-            pageSize: 5, 
-            showSizeChanger: false, 
-          }} 
+            pageSize: 5,
+            showSizeChanger: false,
+          }}
           size="small"
         />
       </Card>
