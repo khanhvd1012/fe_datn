@@ -3,8 +3,9 @@ import { CloseOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb';
 import { useCart, useRemoveFromCart, useUpdateCartItem } from '../../hooks/useCart';
 import { getColorById } from '../../service/colorAPI';
-import { Button, message } from 'antd';
+import { Button, message, Switch } from 'antd';
 import { useNavigate } from 'react-router-dom';
+import { getAutoRestoreSettings, toggleAutoRestore } from '../../service/userAPI';
 
 const Cart = () => {
   const { mutate: updateCartItem } = useUpdateCartItem();
@@ -14,6 +15,9 @@ const Cart = () => {
   const [cartWithColors, setCartWithColors] = useState<any[]>([]);
   const navigate = useNavigate();
   const { mutate: removeFromCart } = useRemoveFromCart();
+
+  // ✅ State cho auto restore
+  const [autoRestore, setAutoRestore] = useState(false);
 
   useEffect(() => {
     const fetchColors = async () => {
@@ -51,6 +55,29 @@ const Cart = () => {
 
     fetchColors();
   }, [cartData]);
+
+  // ✅ Lấy trạng thái auto restore khi vào trang
+  useEffect(() => {
+    const fetchSetting = async () => {
+      try {
+        const res = await getAutoRestoreSettings();
+        setAutoRestore(res.auto_restore_cart);
+      } catch (err) {
+        console.error("Lỗi khi lấy trạng thái auto restore:", err);
+      }
+    };
+    fetchSetting();
+  }, []);
+
+  const handleToggleAutoRestore = async () => {
+    try {
+      const res = await toggleAutoRestore();
+      setAutoRestore(res.auto_restore_cart);
+      message.success(res.message);
+    } catch (err) {
+      message.error("Không thể thay đổi trạng thái khôi phục giỏ hàng");
+    }
+  };
 
   const total = cart.reduce(
     (sum, item) => sum + item.quantity * item.variant_id.price,
@@ -166,6 +193,12 @@ const Cart = () => {
 
           <div className="w-full md:w-[340px] shrink-0">
             <div className="bg-gray-50 border rounded-lg p-6 sticky top-24">
+              {/* ✅ Công tắc auto restore */}
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm font-medium">Khôi phục giỏ hàng tự động</span>
+                <Switch checked={autoRestore} onChange={handleToggleAutoRestore} />
+              </div>
+
               <div className="flex justify-between mb-4 text-base font-semibold">
                 <span>Tổng cộng</span>
                 <span>{total.toLocaleString('vi-VN')} ₫</span>

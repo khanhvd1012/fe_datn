@@ -120,10 +120,38 @@ export const toggleBlockUser = async (userId: string, reason?: string): Promise<
             }
         );
 
-        // backend trả { message, data: user }
         return response.data.data as IUser;
     } catch (error) {
         console.error(`Error toggling block for user ID ${userId}:`, error);
         throw error;
     }
 };
+
+// ✅ Lấy trạng thái khôi phục giỏ hàng tự động
+export const getAutoRestoreSettings = async () => {
+    const token = localStorage.getItem("token");
+    try {
+        const response = await axios.get(`${API_URL}/auth/restore`, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data; // { auto_restore_cart: boolean }
+    } catch (error) {
+        console.error("Error fetching auto restore settings:", error);
+        throw error;
+    }
+};
+
+// ✅ Bật / tắt khôi phục giỏ hàng tự động
+export const toggleAutoRestore = async () => {
+    const token = localStorage.getItem("token");
+    try {
+        const response = await axios.patch(`${API_URL}/auth/auto-restore`, {}, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+        return response.data; // { message, auto_restore_cart }
+    } catch (error) {
+        console.error("Error toggling auto restore setting:", error);
+        throw error;
+    }
+};
+
