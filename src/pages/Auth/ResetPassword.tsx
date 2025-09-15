@@ -12,15 +12,17 @@ const ResetPassword = () => {
     const { mutate: resetPassword, isPending } = useResetPassword();
 
     const handleFinish = (values: any) => {
-        resetPassword(values, {
-            onSuccess: () => {
-                message.success("Đặt lại mật khẩu thành công!");
-                navigate("/login"); // chuyển về trang login
-            },
-            onError: (err: any) => {
-                message.error(err?.response?.data?.message || "Đặt lại mật khẩu thất bại");
-            },
-        });
+        resetPassword(
+            { ...values, email }, 
+            {
+                onSuccess: () => {
+                    navigate("/login");
+                },
+                onError: (err: any) => {
+                    message.error(err?.response?.data?.message || "Đặt lại mật khẩu thất bại");
+                },
+            }
+        );
     };
 
     return (

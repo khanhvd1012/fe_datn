@@ -12,7 +12,6 @@ const ForgotPassword = () => {
   const handleFinish = (values: { email: string }) => {
     forgotPassword(values, {
       onSuccess: () => {
-        message.success("Gửi OTP thành công, vui lòng kiểm tra email!");
         navigate("/reset-password", { state: { email: values.email } });
       },
       onError: (err: any) => {
@@ -59,7 +58,6 @@ const ForgotPassword = () => {
             name="email"
             rules={[
               { required: true, message: "Vui lòng nhập email của bạn" },
-              { type: "email", message: "Email không hợp lệ" },
             ]}
           >
             <Input placeholder="example@email.com" size="large" />
