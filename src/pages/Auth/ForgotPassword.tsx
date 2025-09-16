@@ -14,9 +14,6 @@ const ForgotPassword = () => {
       onSuccess: () => {
         navigate("/reset-password", { state: { email: values.email } });
       },
-      onError: (err: any) => {
-        message.error(err?.response?.data?.message || "Gửi OTP thất bại");
-      },
     });
   };
 

@@ -13,13 +13,10 @@ const ResetPassword = () => {
 
     const handleFinish = (values: any) => {
         resetPassword(
-            { ...values, email }, 
+            { ...values, email },
             {
                 onSuccess: () => {
                     navigate("/login");
-                },
-                onError: (err: any) => {
-                    message.error(err?.response?.data?.message || "Đặt lại mật khẩu thất bại");
                 },
             }
         );
