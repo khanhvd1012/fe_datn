@@ -55,28 +55,54 @@ const ProductReview = () => {
 
   const handleEditStart = (review: any) => {
     setEditingReviewId(review._id);
-    setEditForm({ rating: review.rating, comment: review.comment });
+    setEditForm({
+      rating: review.rating,
+      comment: review.comment,
+      oldImages: review.images || [], // 👈 gán ảnh cũ vào state
+      newImages: [],
+    });
   };
+
 
   const handleEditSubmit = async (reviewId: string) => {
     try {
       const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      formData.append("rating", editForm.rating.toString());
+      formData.append("comment", editForm.comment);
+
+      // gửi lại danh sách ảnh cũ còn giữ
+      editForm.oldImages.forEach((url) => {
+        formData.append("existingImages", url);
+      });
+
+      // Gửi ảnh mới
+      editForm.newImages.forEach((file: File) => {
+        formData.append("images", file);
+      });
+
       await axios.put(
         `http://localhost:3000/api/reviews/${reviewId}`,
+        formData,
         {
-          rating: editForm.rating,
-          comment: editForm.comment,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
       message.success("Cập nhật đánh giá thành công!");
       setEditingReviewId(null);
       fetchUserReviews(); // reload danh sách
     } catch (err) {
+      console.error("Lỗi cập nhật:", err);
       message.error("Cập nhật thất bại!");
     }
   };
+
+
 
   const handleDeleteReview = async (reviewId: string) => {
     try {
@@ -486,7 +512,6 @@ const ProductReview = () => {
                       <br />
                       {editingReviewId === review._id ? (
                         <>
-
                           <Rate
                             value={editForm.rating}
                             onChange={(value) => setEditForm({ ...editForm, rating: value })}
@@ -497,13 +522,15 @@ const ProductReview = () => {
                             onChange={(e) => setEditForm({ ...editForm, comment: e.target.value })}
                             style={{ marginTop: 8 }}
                           />
+
                           {/* Ảnh cũ */}
-                          {review.images && review.images.length > 0 && (
+                          {editForm.oldImages && editForm.oldImages.length > 0 && (
                             <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
-                              {review.images.map((img: string, idx: number) => (
+                              {editForm.oldImages.map((img: string, idx: number) => (
                                 <div
                                   key={idx}
                                   style={{
+                                    position: "relative",
                                     width: 90,
                                     height: 90,
                                     borderRadius: 8,
@@ -519,11 +546,28 @@ const ProductReview = () => {
                                       width: "100%",
                                       height: "100%",
                                       objectFit: "cover",
-                                      transition: "transform 0.3s",
                                     }}
-                                    onMouseOver={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-                                    onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
                                   />
+                                  <button
+                                    onClick={() => {
+                                      const updated = editForm.oldImages.filter((_, i) => i !== idx);
+                                      setEditForm({ ...editForm, oldImages: updated });
+                                    }}
+                                    style={{
+                                      position: "absolute",
+                                      top: 4,
+                                      right: 4,
+                                      background: "rgba(0,0,0,0.6)",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "50%",
+                                      width: 20,
+                                      height: 20,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
                                 </div>
                               ))}
                             </div>
@@ -541,7 +585,7 @@ const ProductReview = () => {
                                 cursor: "pointer",
                               }}
                             >
-                              Chọn ảnh mới
+                              Thêm ảnh mới
                               <input
                                 type="file"
                                 accept="image/*"
@@ -550,7 +594,10 @@ const ProductReview = () => {
                                 onChange={(e) =>
                                   setEditForm({
                                     ...editForm,
-                                    newImages: Array.from(e.target.files || []),
+                                    newImages: [
+                                      ...(editForm.newImages || []),
+                                      ...Array.from(e.target.files || []),
+                                    ],
                                   })
                                 }
                               />
@@ -564,6 +611,7 @@ const ProductReview = () => {
                                 <div
                                   key={idx}
                                   style={{
+                                    position: "relative",
                                     width: 90,
                                     height: 90,
                                     borderRadius: 8,
@@ -581,6 +629,26 @@ const ProductReview = () => {
                                       objectFit: "cover",
                                     }}
                                   />
+                                  <button
+                                    onClick={() => {
+                                      const updated = editForm.newImages.filter((_, i) => i !== idx);
+                                      setEditForm({ ...editForm, newImages: updated });
+                                    }}
+                                    style={{
+                                      position: "absolute",
+                                      top: 4,
+                                      right: 4,
+                                      background: "rgba(0,0,0,0.6)",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "50%",
+                                      width: 20,
+                                      height: 20,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
                                 </div>
                               ))}
                             </div>
@@ -615,7 +683,7 @@ const ProductReview = () => {
                                     marginRight: 8,
                                     marginTop: 8,
                                     borderRadius: 6,
-                                    border: "1px solid #f0f0f0"
+                                    border: "1px solid #f0f0f0",
                                   }}
                                 />
                               ))}
@@ -645,6 +713,7 @@ const ProductReview = () => {
                           </div>
                         </>
                       )}
+
                     </div>
 
 
@@ -721,9 +790,14 @@ const ProductReview = () => {
                     accept="image/*"
                     beforeUpload={() => false} // để không auto upload
                     onChange={({ fileList }) => handleImageChange(item.orderItemId, fileList)}
+                    showUploadList={{
+                      showPreviewIcon: false, 
+                      showRemoveIcon: true,   
+                    }}
                   >
                     <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
                   </Upload>
+
                   <TextArea
                     rows={3}
                     placeholder="Nhập nhận xét..."
