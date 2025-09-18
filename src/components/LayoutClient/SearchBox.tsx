@@ -200,11 +200,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
       {/* Kết quả tìm kiếm hoặc lịch sử */}
       {search ? (
         <div className="max-h-60 overflow-y-auto">
-          {results.length === 0 ? (
-            <div className="text-gray-500 text-sm text-center py-4">
-              Không tìm thấy sản phẩm phù hợp.
-            </div>
-          ) : (
+          {results.length > 0 &&
             results.map((product) => {
               const genders = Array.from(
                 new Set(product.variants.map((v) => mapGenderKeyword(v.gender)).filter(Boolean))
@@ -233,15 +229,12 @@ const SearchBox: React.FC<SearchBoxProps> = ({ onClose, products = [] }) => {
                     <div className="font-medium text-sm">{product.name}</div>
                     <div className="text-xs text-gray-500">
                       {typeof product.brand !== "string" && product.brand?.name} •{" "}
-                      {typeof product.category !== "string" && product.category?.name} •{" "}
-                      {genders.length > 0 ? genders.join(", ") : "Không rõ giới tính"}
+                      {typeof product.category !== "string" && product.category?.name}
                     </div>
                   </div>
                 </Link>
               );
-            })
-
-          )}
+            })}
         </div>
       ) : (
         history.length > 0 && (

@@ -10,6 +10,7 @@ export interface ChatMessage {
   content: string;
   type: 'text' | 'image' | 'file' | 'system';
   isEdited?: boolean;
+  isTemp?: boolean;
   createdAt: string;
   updatedAt: string;
 }

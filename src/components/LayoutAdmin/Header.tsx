@@ -26,15 +26,18 @@ const Headers = () => {
   const { data: lowStockNotis } = useLowStockNotifications();
   const { mutate: markAsRead } = useMarkNotificationAsRead();
 
+  const unreadCount = (notis || []).filter((n) => !n.read).length;
+
+  // chuyển sang dạng "10+"
+  const displayUnreadCount = unreadCount > 10 ? '10+' : unreadCount;
+
   const allNotis = [...(lowStockNotis || []), ...(notis || [])]
     .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
     .slice(0, 5);
 
-  const unreadCount = allNotis.filter((n) => !n.read).length;
-
   const handleLogout = () => {
     localStorage.clear();
-    queryClient.removeQueries({ queryKey: ['profile'] });
+    queryClient.removeQueries();
     navigate('/');
   };
 
@@ -100,7 +103,19 @@ const Headers = () => {
           open={visible}
           onOpenChange={(open) => setVisible(open)}
         >
-          <Badge count={unreadCount} offset={[-4, 4]} style={{ cursor: 'pointer' }}>
+          <Badge
+            count={displayUnreadCount}
+            offset={[-4, 4]}
+            style={{
+              borderRadius: '50%',
+              minWidth: 15,
+              height: 15,
+              lineHeight: '15px',
+              textAlign: 'center',
+              padding: 0,
+              fontSize: 9,
+            }}
+          >
             <BellOutlined
               style={{ padding: 10 }}
               onClick={() => setVisible(!visible)}

@@ -1,8 +1,24 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
+import {
+  PhoneOutlined,
+  MailOutlined,
+  EnvironmentOutlined,
+  FacebookOutlined,
+  InstagramOutlined,
+  StarOutlined,
+  BulbOutlined,
+  LikeOutlined,
+  RocketOutlined,
+} from '@ant-design/icons'
 import Breadcrumb from '../../components/LayoutClient/Breadcrumb'
 import SidebarMenu from '../../components/LayoutClient/SideBarMenu'
 
-const Counter = ({ target, duration }) => {
+interface CounterProps {
+  target: string
+  duration: number
+}
+
+const Counter: React.FC<CounterProps> = ({ target, duration }) => {
   const [count, setCount] = useState(0)
 
   useEffect(() => {
@@ -47,16 +63,6 @@ const About = () => {
           {/* Sidebar */}
           <div style={{ flex: '1' }}>
             <SidebarMenu />
-            <img
-              src="https://static.nike.com/a/images/c_limit,w_592,f_auto/t_product_v1/f0c05bf3-780c-4547-93ea-b444109877ec/NIKE+GATO+LV8.png"
-              alt="Quảng cáo"
-              style={{
-                width: '100%',
-                border: '1px solid #eee',
-                borderRadius: '8px',
-                marginTop: '24px',
-              }}
-            />
           </div>
 
           {/* Nội dung chính */}
@@ -71,7 +77,7 @@ const About = () => {
               }}
             >
               <img
-                src="https://static.nike.com/a/images/f_auto,cs_srgb/w_1536,c_limit/5e2817c7-b316-49c3-a36c-0d7c62a5b88c/nike-just-do-it.jpg"
+                src="https://file.hstatic.net/200000174405/collection/19238246_1997064527179566_5473797071884482645_o_ff15685be80c4d21973dcb914398e04f.jpg"
                 alt="Giới thiệu"
                 style={{ width: '100%', height: '280px', objectFit: 'cover' }}
               />
@@ -82,7 +88,8 @@ const About = () => {
                   left: 0,
                   width: '100%',
                   height: '100%',
-                  background: 'rgba(0,0,0,0.4)',
+                  background:
+                    'linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.2))',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -91,7 +98,7 @@ const About = () => {
                 <h1
                   style={{
                     color: '#fff',
-                    fontSize: '28px',
+                    fontSize: '32px',
                     fontWeight: '700',
                     textTransform: 'uppercase',
                     letterSpacing: '1px',
@@ -102,16 +109,37 @@ const About = () => {
               </div>
             </div>
 
-            {/* Câu chuyện */}
+            {/* Giới thiệu về SneakerTrend */}
             <section style={{ marginBottom: '32px' }}>
               <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
-                Câu chuyện của chúng tôi
+                Giới thiệu về SneakerTrend
               </h2>
               <p>
-                Chào mừng bạn đến với <strong>SNEAKERTREND</strong> – nơi mang đến những sản phẩm chất lượng,
-                phong cách hiện đại và dịch vụ tận tâm. Được thành lập từ năm 2020, chúng tôi không ngừng đổi
-                mới để mang đến trải nghiệm mua sắm tuyệt vời nhất.
-                <p>Hơn 5 năm phát triển, <strong>SNEAKERTREND</strong> luôn mang đến những mẫu giày chất lượng tốt nhất với giá cả hợp lí nhất đến tay người tiêu dùng với hệ thống cửa hàng Số 1 Hà Nội và bán online khắp Việt Nam.</p>
+                - <strong>SneakerTrend</strong> được thành lập với sứ mệnh mang đến cho cộng đồng yêu giày
+                sneaker tại Việt Nam một điểm đến đáng tin cậy, nơi mỗi khách hàng đều có thể tìm thấy
+                những sản phẩm chất lượng, chính hãng và hợp xu hướng nhất. Chúng tôi hiểu rằng sneaker
+                không chỉ là một đôi giày, mà còn là cách để mỗi người thể hiện cá tính, phong cách
+                và niềm đam mê của mình.
+              </p>
+              <br />
+              <p>
+                - Từ năm 2020, <strong>SneakerTrend</strong> bắt đầu hành trình của mình với khát vọng tạo ra
+                một không gian mua sắm trực tuyến hiện đại, minh bạch và thân thiện. Trong suốt hơn 5 năm,
+                chúng tôi đã không ngừng mở rộng, xây dựng hệ thống dịch vụ chuyên nghiệp và phục vụ
+                hàng ngàn khách hàng trên khắp cả nước.
+              </p>
+              <br />
+              <p>
+                - Website <strong>SneakerTrend</strong> không chỉ là nơi cung cấp giày sneaker từ các thương
+                hiệu nổi tiếng như Nike, Adidas, Puma hay Converse, mà còn là một cộng đồng nơi những tín đồ
+                thời trang có thể kết nối, chia sẻ xu hướng và lan tỏa cảm hứng sống năng động, tích cực.
+              </p>
+              <br />
+
+              <p>
+                - Với đội ngũ trẻ trung, nhiệt huyết cùng cam kết đặt khách hàng làm trung tâm, chúng tôi
+                tin rằng <strong>SneakerTrend</strong> sẽ không chỉ đồng hành cùng bạn trên từng bước chân,
+                mà còn là người bạn truyền cảm hứng, giúp bạn tự tin khẳng định bản thân mỗi ngày.
               </p>
             </section>
 
@@ -128,10 +156,26 @@ const About = () => {
                 }}
               >
                 {[
-                  { title: 'Chất lượng', desc: 'Sản phẩm đạt tiêu chuẩn cao nhất.' },
-                  { title: 'Phong cách', desc: 'Luôn bắt kịp xu hướng thời trang.' },
-                  { title: 'Tin cậy', desc: 'Luôn minh bạch, đặt khách hàng lên hàng đầu.' },
-                  { title: 'Đổi mới', desc: 'Không ngừng sáng tạo, cải tiến.' },
+                  {
+                    title: 'Chất lượng',
+                    desc: 'Sản phẩm đạt tiêu chuẩn cao nhất.',
+                    icon: <StarOutlined style={{ fontSize: '22px', color: '#ff9800' }} />,
+                  },
+                  {
+                    title: 'Phong cách',
+                    desc: 'Luôn bắt kịp xu hướng thời trang.',
+                    icon: <LikeOutlined style={{ fontSize: '22px', color: '#2196f3' }} />,
+                  },
+                  {
+                    title: 'Tin cậy',
+                    desc: 'Luôn minh bạch, đặt khách hàng lên hàng đầu.',
+                    icon: <BulbOutlined style={{ fontSize: '22px', color: '#4caf50' }} />,
+                  },
+                  {
+                    title: 'Đổi mới',
+                    desc: 'Không ngừng sáng tạo, cải tiến.',
+                    icon: <RocketOutlined style={{ fontSize: '22px', color: '#e91e63' }} />,
+                  },
                 ].map((item, index) => (
                   <div
                     key={index}
@@ -143,6 +187,7 @@ const About = () => {
                       boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
                     }}
                   >
+                    <div style={{ marginBottom: '8px' }}>{item.icon}</div>
                     <h3 style={{ fontWeight: '600', marginBottom: '8px' }}>{item.title}</h3>
                     <p style={{ fontSize: '14px', color: '#666' }}>{item.desc}</p>
                   </div>
@@ -155,7 +200,6 @@ const About = () => {
               style={{
                 marginBottom: '32px',
                 background: '#fff',
-                color: '#000',
                 borderRadius: '12px',
                 padding: '32px',
                 display: 'grid',
@@ -170,7 +214,9 @@ const About = () => {
                 { number: '5', label: 'Năm kinh nghiệm' },
               ].map((stat, index) => (
                 <div key={index}>
-                  <h3 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+                  <h3
+                    style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}
+                  >
                     <Counter target={stat.number} duration={2000} />
                   </h3>
                   <p style={{ fontSize: '14px', color: '#000' }}>{stat.label}</p>
@@ -180,13 +226,22 @@ const About = () => {
 
             {/* Liên hệ */}
             <section>
-              <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>Liên hệ</h2>
+              <h2 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '12px' }}>
+                Liên hệ
+              </h2>
               <p>
-                📍 Địa chỉ: Số XX Lê Quang Đạo, Nam Từ Liêm, Hà Nội <br />
-                📞 Hotline: +84 (024) 12345678 <br />
-                📧 Email: contact@datn.com <br />
-                🌐 Facebook: <a href="[link]" style={{ color: '#007BFF' }}>Facebook Page</a> <br />
-                📸 Instagram: <a href="[link]" style={{ color: '#007BFF' }}>Instagram</a>
+                <EnvironmentOutlined /> Địa chỉ: Số XX Lê Quang Đạo, Nam Từ Liêm, Hà Nội <br />
+                <PhoneOutlined /> Hotline: +84 (024) 12345678 <br />
+                <MailOutlined /> Email: contact@datn.com <br />
+                <FacebookOutlined />{' '}
+                <a href="[link]" style={{ color: '#007BFF' }}>
+                  Facebook Page
+                </a>{' '}
+                <br />
+                <InstagramOutlined />{' '}
+                <a href="[link]" style={{ color: '#007BFF' }}>
+                  Instagram
+                </a>
               </p>
             </section>
           </div>

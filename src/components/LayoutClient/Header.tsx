@@ -28,7 +28,7 @@ import { useCart } from '../../hooks/useCart.ts';
 import { useMarkNotificationAsRead, useNotifications } from '../../hooks/useNotification.ts';
 import dayjs from 'dayjs';
 import Text from 'antd/es/typography/Text';
-import type { IProduct } from '../../interface/order.ts';
+import type { IProduct } from '../../interface/product.ts';
 
 const Header = () => {
   const token = localStorage.getItem('token');
@@ -55,11 +55,15 @@ const Header = () => {
     retry: false,
   });
 
+  // lấy toàn bộ chưa đọc
+  const unreadCount = (notis || []).filter((n) => !n.read).length;
+
+  // chuyển sang dạng "10+"
+  const displayUnreadCount = unreadCount > 10 ? '10+' : unreadCount;
+
   const allNotis = [...(notis || [])]
     .sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf())
     .slice(0, 5);
-
-  const unreadCount = allNotis.filter((n) => !n.read).length;
 
   const [visible, setVisible] = useState(false);
 
@@ -216,10 +220,20 @@ const Header = () => {
             open={visible}
             onOpenChange={(open) => setVisible(open)}
           >
-            <Badge count={token ? unreadCount : 0} offset={[6, 0]} size="small">
+            <Badge count={token ? displayUnreadCount : 0} offset={[6, 0]} size="small"
+              style={{
+                borderRadius: '50%',   
+                minWidth: 15,          
+                height: 15,
+                lineHeight: '15px',
+                textAlign: 'center',
+                padding: 0,          
+                fontSize: 9,
+              }}
+            >
               <span
                 style={{
-                  fontSize: 20, // kích thước icon
+                  fontSize: 20, 
                   lineHeight: '20px',
                   display: 'inline-flex',
                   alignItems: 'center',

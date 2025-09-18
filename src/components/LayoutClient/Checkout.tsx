@@ -207,10 +207,7 @@ const Checkout = () => {
     type: "radio" as const,
     selectedRowKeys,
     onChange: (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
-      console.log("👉 Selected Row Keys:", newSelectedRowKeys);
-
       const selected = selectedRows[0];
-      console.log("👉 Selected Row Data:", selected);
       setSelectedRowKeys(newSelectedRowKeys);
       setSelectedAddressId(selected._id);
       setFormData((prev) => ({
@@ -320,7 +317,6 @@ const Checkout = () => {
     setFormData({ ...formData, [field]: value });
     setErrors({ ...errors, [field]: '' });
   };
-
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -920,7 +916,7 @@ const Checkout = () => {
                       </div>
 
                       {formData.voucher_code && (
-                        <div className="flex justify-between">
+                        <div className="flex justify-between mt-2">
                           <Text>Mã giảm giá:</Text>
                           <Text className="text-red-600">
                             {formData.voucher_type === "percentage"

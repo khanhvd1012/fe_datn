@@ -23,9 +23,9 @@ const BackToTop = () => {
         style={{
           position: 'fixed',
           right: 20,
-          bottom: 30,
-          width: 40,
-          height: 40,
+          bottom: 90,
+          width: 60,
+          height: 60,
           borderRadius: '50%',
           backgroundColor: 'white',
           color: 'black',

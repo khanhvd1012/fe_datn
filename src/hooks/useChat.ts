@@ -9,7 +9,6 @@ export const useChat = () => {
   const [aiActive, setAiActive] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pollingInterval = useRef<number>();
   const lastPollTime = useRef<number>(0);
   const POLL_INTERVAL = 3000; // 3 seconds
   const POLL_COOLDOWN = 1500; // 1.5 seconds cooldown
@@ -123,7 +122,6 @@ export const useAdminChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const pollingInterval = useRef<number>();
   const lastPollTime = useRef<number>(0);
   const POLL_INTERVAL = 3000;
   const POLL_COOLDOWN = 1500;

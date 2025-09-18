@@ -23,9 +23,7 @@ const Login = () => {
         localStorage.setItem("role", res.data.user.role || "user");
         localStorage.setItem("userName", res.data.user.username || "User");
         localStorage.setItem("user", JSON.stringify(res.data.user));
-        queryClient.invalidateQueries({ queryKey: ["profile"] });
-        queryClient.invalidateQueries({ queryKey: ["cart"] });
-        queryClient.invalidateQueries({ queryKey: ["notifications"] });
+        queryClient.removeQueries(); 
         message.success("Đăng nhập thành công!");
         navigate("/");
       } else {

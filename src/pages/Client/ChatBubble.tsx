@@ -219,7 +219,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
                 <ArrowDown size={20} />
               </button>
             )}
-            
+
             {isLoading ? (
               <div className="chat-loading"><div className="loading-spinner" /><span>Đang tải tin nhắn...</span></div>
             ) : error ? (
@@ -251,8 +251,8 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
                   ))}
                 </div>
               ))
-            )}  
-            
+            )}
+
             <div ref={messagesEndRef} />
           </div>
 
@@ -272,7 +272,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
                 <button
                   type="submit"
                   className="chat-send-btn"
-                  disabled={!messageValue?.trim() || (error && error.includes('Gửi quá nhanh'))}
+                  disabled={Boolean(!messageValue?.trim() || (error && error.includes('Gửi quá nhanh')))}
                 >
                   <Send size={20} />
                 </button>
