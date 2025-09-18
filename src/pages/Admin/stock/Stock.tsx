@@ -1,4 +1,4 @@
-import { Button, Empty, Input, message, Skeleton, Table, Tag } from "antd";
+import { Button, Empty, Input, message, Select, Skeleton, Table, Tag } from "antd";
 import { Link } from "react-router-dom";
 import { EditOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import { useStocks } from "../../../hooks/useStock";
@@ -14,6 +14,7 @@ const Stock = () => {
     product_name: '',
     color: '',
     size: '',
+    status: ''
   });
   const role = useRole()
 
@@ -40,6 +41,10 @@ const Stock = () => {
       filters.size &&
       !normalize(item.size).includes(filters.size.toLowerCase())
     ) return false;
+
+    if (filters.status && item.status?.toLowerCase() !== filters.status.toLowerCase()) {
+      return false;
+    }
 
     return true;
   });
@@ -130,6 +135,22 @@ const Stock = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Select
+            style={{ width: '200px' }}
+            placeholder="Chọn trạng thái"
+            allowClear
+            value={filters.status}
+            onChange={(value) => handleFilterChange(value || '', 'status')}
+          >
+            <Select.Option value="inStock">Còn hàng</Select.Option>
+            <Select.Option value="outOfStock">Hết hàng</Select.Option>
+            <Select.Option value="paused">Tạm dừng</Select.Option>
+          </Select>
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.status ? '#1890ff' : undefined }} />,
       render: (status: string) => {
         switch (status) {
           case "inStock":

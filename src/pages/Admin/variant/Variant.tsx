@@ -23,6 +23,7 @@ const Variant = () => {
     gender: '',
     priceMin: '',
     priceMax: '',
+    status: ''
   });
   const role = useRole()
 
@@ -64,6 +65,10 @@ const Variant = () => {
       (filters.priceMin && Number(variant.price) < Number(filters.priceMin)) ||
       (filters.priceMax && Number(variant.price) > Number(filters.priceMax))
     ) {
+      return false;
+    }
+
+    if (filters.status && variant.status?.toLowerCase() !== filters.status.toLowerCase()) {
       return false;
     }
 
@@ -260,18 +265,34 @@ const Variant = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
+          <Select
+            style={{ width: '200px' }}
+            placeholder="Chọn trạng thái"
+            allowClear
+            value={filters.status}
+            onChange={(value) => handleFilterChange(value || '', 'status')}
+          >
+            <Select.Option value="inStock">Còn hàng</Select.Option>
+            <Select.Option value="outOfStock">Hết hàng</Select.Option>
+            <Select.Option value="paused">Tạm dừng</Select.Option>
+          </Select>
+        </div>
+      ),
+      filterIcon: () => <FilterOutlined style={{ color: filters.status ? '#1890ff' : undefined }} />,
       render: (status: string) => {
         switch (status) {
           case "inStock":
             return <Tag color="success">Còn hàng</Tag>;
           case "outOfStock":
-            return <Tag color="red">Hết hàng</Tag>;
+            return <Tag color="error">Hết hàng</Tag>;
           case "paused":
-            return <Tag color="orange">Tạm dừng</Tag>;
+            return <Tag color="warning">Tạm dừng</Tag>;
           default:
             return <Tag color="default">Không rõ</Tag>;
         }
-      },
+      }
     },
     {
       title: "Thao tác",
