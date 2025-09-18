@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, useLocation, useMatch } from 'react-router-dom';
+import { useState } from 'react';
 import Header from './Header';
 import Footer from './Footer';
 import Slideshow from './SlideShow';
@@ -26,6 +27,7 @@ import BackToTop from './BackToTop';
 import ForgotPassword from '../../pages/Auth/ForgotPassword';
 import ResetPassword from '../../pages/Auth/ResetPassword';
 import CheckoutResult from './CheckoutResult';
+import ChatBubble from '../../pages/Client/ChatBubble';
 
 const IndexClient = () => {
   const location = useLocation();
@@ -33,6 +35,7 @@ const IndexClient = () => {
   const matchCollectionPage = useMatch('/collection/:slug');
   const matchOrderDetailPage = useMatch('/OrderDetail/:id');
   const matchBlogDetailPage = useMatch('/blog/:id');
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Kiểm tra các trang cần ẩn slideshow
   const isNoSlidePage =
@@ -83,6 +86,10 @@ const IndexClient = () => {
       <Gallery />
       <Footer />
       <BackToTop />
+      <ChatBubble 
+        isOpen={isChatOpen} 
+        onToggle={() => setIsChatOpen(!isChatOpen)} 
+      />
     </div>
   );
 };

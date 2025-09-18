@@ -80,8 +80,10 @@ const Orders = () => {
           messageApi.success("Cập nhật trạng thái thành công");
           queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
         },
-        onError: () => {
-          messageApi.error("Cập nhật trạng thái thất bại");
+        onError: (err: any) => {
+          const errorMessage =
+            err?.response?.data?.message || "Cập nhật trạng thái thất bại";
+          messageApi.warning(errorMessage);
         },
       }
     );
@@ -366,6 +368,11 @@ const Orders = () => {
 
         const currentStatusIndex = statusOrder[order.status];
 
+        // ✅ Điều kiện hoàn hàng
+        const canReturn =
+          order.status === "delivered" && // phải đã giao
+          dayjs().diff(dayjs(order.updatedAt), "day") <= 7; // trong 7 ngày
+
         return (
           <Select
             defaultValue={labelMap[order.status]}
@@ -377,7 +384,12 @@ const Orders = () => {
             disabled={order.status === "canceled"}
           >
             {Object.entries(labelMap)
-              .filter(([key]) => statusOrder[key as IOrder["status"]] > currentStatusIndex)
+              .filter(([key]) => {
+                const statusIdx = statusOrder[key as IOrder["status"]];
+                if (statusIdx <= currentStatusIndex) return false; // chỉ cho phép tăng tiến
+                if (key === "returned" && !canReturn) return false; // ẩn "Đã trả hàng" nếu chưa đủ điều kiện
+                return true;
+              })
               .map(([key, label]) => (
                 <Select.Option key={label} value={label}>
                   {label}

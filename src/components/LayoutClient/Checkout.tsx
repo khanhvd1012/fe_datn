@@ -19,7 +19,26 @@ const Checkout = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const cartItemIdsRef = useRef<string[]>([]);
   const [itemColors, setItemColors] = useState<Record<string, { name: string; code: string }>>({});
-  const [formData, setFormData] = useState({
+  // const [formData, setFormData] = useState({
+  //   full_name: '',
+  //   phone: '',
+  //   shipping_address: '',
+  //   email: '',
+  //   note: '',
+  //   shipping_type: 'standard',
+  //   payment_method: 'cod',
+
+  //   voucher_type: '',
+  //   voucher_value: 0,
+  //   voucher_code: null,
+
+
+  //   province_id: null,
+  //   district_id: null,
+  //   ward_code: null,
+  // });
+
+  const initialFormData = {
     full_name: '',
     phone: '',
     shipping_address: '',
@@ -32,11 +51,12 @@ const Checkout = () => {
     voucher_value: 0,
     voucher_code: null,
 
-
     province_id: null,
     district_id: null,
     ward_code: null,
-  });
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
 
   interface IShippingAddress {
     _id: string;
@@ -187,7 +207,10 @@ const Checkout = () => {
     type: "radio" as const,
     selectedRowKeys,
     onChange: (newSelectedRowKeys: React.Key[], selectedRows: any[]) => {
+      console.log("👉 Selected Row Keys:", newSelectedRowKeys);
+
       const selected = selectedRows[0];
+      console.log("👉 Selected Row Data:", selected);
       setSelectedRowKeys(newSelectedRowKeys);
       setSelectedAddressId(selected._id);
       setFormData((prev) => ({
@@ -195,8 +218,12 @@ const Checkout = () => {
         shipping_address: selected._id, // lưu ID
         full_name: selected.full_name,
         phone: selected.phone,
+        province_id: selected.province_id,
+        district_id: selected.district_id,
+        ward_code: selected.ward_code,
       }));
     },
+
   };
 
   useEffect(() => {
@@ -564,9 +591,19 @@ const Checkout = () => {
 
                 userAddresses && userAddresses.length > 0 ? (
                   showForm ? (
-                    <Button onClick={() => setShowForm(false)}>Quay lại</Button>
+                    <Button onClick={() => {
+                      setFormData(initialFormData); // reset lại toàn bộ form
+                      setSelectedRowKeys([]);
+                      setShowForm(false);            // mở form
+                    }}>
+                      Quay lại
+                    </Button>
                   ) : (
-                    <Button type="primary" onClick={() => setShowForm(true)}>
+                    <Button type="primary" onClick={() => {
+                      setFormData(initialFormData); // reset lại toàn bộ form
+                      setSelectedRowKeys([]);
+                      setShowForm(true);            // mở form
+                    }}>
                       Thêm thông tin người nhận
                     </Button>
                   )

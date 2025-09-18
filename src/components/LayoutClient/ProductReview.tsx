@@ -14,8 +14,12 @@ import {
   Button,
   message,
   Input,
+  Upload,
 } from 'antd';
-import { LikeOutlined } from '@ant-design/icons';
+import { LikeOutlined, UploadOutlined } from '@ant-design/icons';
+
+import type { UploadFile } from "antd";
+
 
 const { Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -30,36 +34,75 @@ const ProductReview = () => {
   const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{ rating: number; comment: string }>({ rating: 0, comment: "" });
 
+  const [imageFiles, setImageFiles] = useState<Record<string, File[]>>({});
+
 
   useEffect(() => {
     fetchUnreviewedProducts();
     fetchUserReviews();
   }, []);
 
+  const handleImageChange = (orderItemId: string, fileList: UploadFile<any>[]) => {
+    const files = fileList
+      .map((file) => file.originFileObj)
+      .filter(Boolean) as File[];
+
+    setImageFiles((prev) => ({
+      ...prev,
+      [orderItemId]: files,
+    }));
+  };
+
   const handleEditStart = (review: any) => {
     setEditingReviewId(review._id);
-    setEditForm({ rating: review.rating, comment: review.comment });
+    setEditForm({
+      rating: review.rating,
+      comment: review.comment,
+      oldImages: review.images || [], // 👈 gán ảnh cũ vào state
+      newImages: [],
+    });
   };
+
 
   const handleEditSubmit = async (reviewId: string) => {
     try {
       const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      formData.append("rating", editForm.rating.toString());
+      formData.append("comment", editForm.comment);
+
+      // gửi lại danh sách ảnh cũ còn giữ
+      editForm.oldImages.forEach((url) => {
+        formData.append("existingImages", url);
+      });
+
+      // Gửi ảnh mới
+      editForm.newImages.forEach((file: File) => {
+        formData.append("images", file);
+      });
+
       await axios.put(
         `http://localhost:3000/api/reviews/${reviewId}`,
+        formData,
         {
-          rating: editForm.rating,
-          comment: editForm.comment,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
+        }
       );
 
       message.success("Cập nhật đánh giá thành công!");
       setEditingReviewId(null);
       fetchUserReviews(); // reload danh sách
     } catch (err) {
+      console.error("Lỗi cập nhật:", err);
       message.error("Cập nhật thất bại!");
     }
   };
+
+
 
   const handleDeleteReview = async (reviewId: string) => {
     try {
@@ -312,6 +355,41 @@ const ProductReview = () => {
     }));
   };
 
+  // const handleSubmitReview = async (item: any) => {
+  //   const review = reviewStates[item.orderItemId];
+  //   if (!review?.rating || !review?.comment) {
+  //     return message.warning('Vui lòng nhập đầy đủ đánh giá và bình luận.');
+  //   }
+
+  //   try {
+  //     setReviewStates(prev => ({ ...prev, [item.orderItemId]: { ...prev[item.orderItemId], loading: true } }));
+  //     const token = localStorage.getItem('token');
+  //     await axios.post(
+  //       'http://localhost:3000/api/reviews',
+  //       {
+  //         product_id: item.product_id,          // backend yêu cầu
+  //         product_variant_id: item.product_variant_id, // backend yêu cầu
+  //         order_id: item.orderId,
+  //         rating: review.rating,
+  //         comment: review.comment,
+  //       },
+  //       {
+  //         headers: { Authorization: `Bearer ${token}` },
+  //       }
+  //     );
+
+  //     message.success('Đánh giá thành công!');
+  //     // Optional: reload list or remove the item from list
+  //     setTimeout(() => {
+  //       window.location.reload();
+  //     }, 3000);
+  //   } catch (err) {
+  //     message.error('Gửi đánh giá thất bại!');
+  //   } finally {
+  //     setReviewStates(prev => ({ ...prev, [item.orderItemId]: { ...prev[item.orderItemId], loading: false } }));
+  //   }
+  // };
+
   const handleSubmitReview = async (item: any) => {
     const review = reviewStates[item.orderItemId];
     if (!review?.rating || !review?.comment) {
@@ -319,99 +397,83 @@ const ProductReview = () => {
     }
 
     try {
-      setReviewStates(prev => ({ ...prev, [item.orderItemId]: { ...prev[item.orderItemId], loading: true } }));
+      setReviewStates(prev => ({
+        ...prev,
+        [item.orderItemId]: { ...prev[item.orderItemId], loading: true }
+      }));
+
       const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append("product_id", item.product_id);
+      formData.append("product_variant_id", item.product_variant_id);
+      formData.append("order_id", item.orderId);
+      formData.append("rating", review.rating.toString());
+      formData.append("comment", review.comment);
+
+      // thêm ảnh
+      if (imageFiles[item.orderItemId]) {
+        imageFiles[item.orderItemId].forEach((file) => {
+          formData.append("images", file); // backend req.files.images
+        });
+      }
+
+      console.log(
+        "Ảnh gửi đi:",
+        imageFiles[item.orderItemId].length,
+        imageFiles[item.orderItemId].map((f) => f.name)
+      );
+
       await axios.post(
         'http://localhost:3000/api/reviews',
+        formData,
         {
-          product_id: item.product_id,          // backend yêu cầu
-          product_variant_id: item.product_variant_id, // backend yêu cầu
-          order_id: item.orderId,
-          rating: review.rating,
-          comment: review.comment,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 
       message.success('Đánh giá thành công!');
-      // Optional: reload list or remove the item from list
       setTimeout(() => {
         window.location.reload();
-      }, 3000);
+      }, 2000);
     } catch (err) {
       message.error('Gửi đánh giá thất bại!');
     } finally {
       setReviewStates(prev => ({ ...prev, [item.orderItemId]: { ...prev[item.orderItemId], loading: false } }));
     }
   };
+
   ///
 
-  const renderStats = () => (
-    <Row gutter={[16, 16]} justify="center">
-      <Col>
-        <Text strong>{stats.total}</Text>
-        <br />Đánh giá
-      </Col>
-      <Col>
-        <Text strong>0</Text>
-        <br />Xu đã nhận
-      </Col>
-      <Col>
-        <Text strong>0</Text>
-        <br />Lượt thích
-      </Col>
-      <Col>
-        <Text strong>0</Text>
-        <br />Lượt xem
-      </Col>
-    </Row>
-  );
+  // const renderStats = () => (
+  //   <Row gutter={[16, 16]} justify="center">
+  //     <Col>
+  //       <Text strong>{stats.total}</Text>
+  //       <br />Đánh giá
+  //     </Col>
+  //     <Col>
+  //       <Text strong>0</Text>
+  //       <br />Xu đã nhận
+  //     </Col>
+  //     <Col>
+  //       <Text strong>0</Text>
+  //       <br />Lượt thích
+  //     </Col>
+  //     <Col>
+  //       <Text strong>0</Text>
+  //       <br />Lượt xem
+  //     </Col>
+  //   </Row>
+  // );
 
   return (
     <div style={{ background: '#fff', padding: 16, borderRadius: 8 }}>
-      {renderStats()}
+      {/* {renderStats()} */}
       <Divider />
       <Tabs defaultActiveKey="1">
-        {/* <TabPane tab="Đã đánh giá" key="1">
-          {reviews.length === 0 ? (
-            <Text>Chưa có đánh giá nào.</Text>
-          ) : (
-            // reviews.map((review: any, index: number) => (
-            //   <Card key={index} style={{ marginBottom: 16 }}>
-            //     <Row align="middle">
-            //       <Avatar size="large" src={review.user_id?.avatar || ''} />
-            //       <div style={{ marginLeft: 12 }}>
-            //         <strong style={{ fontSize: '18px' }}>
-            //           {review.user_id?.username || 'Ẩn danh'}
-            //         </strong>
-            //         <br />
-            //         <Rate value={review.rating} disabled />
-            //       </div>
-            //     </Row>
-            //     <div style={{ marginTop: 8 }}>
-            //       <Tag color="blue">
-            //         Phân loại: {review.variant_name || 'Không rõ'}
-            //       </Tag>
-            //       <Text type="secondary">
-            //         {new Date(review.createdAt).toLocaleString('vi-VN')}
-            //       </Text>
-            //     </div>
-            //     <div style={{ marginTop: 12 }}>
-            //       {review.image && <Image src={review.image} alt="review" width={80} />}
-            //       <p>{review.content}</p>
-            //     </div>
-            //     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            //       <Text type="secondary">
-            //         <LikeOutlined /> Hữu ích
-            //       </Text>
-            //       <Text type="secondary">Sửa</Text>
-            //     </div>
-            //   </Card>
-            // ))
-          )}
-        </TabPane> */}
+
         <TabPane tab="Đã đánh giá" key="1">
           {reviews.length === 0 ? (
             <Text>Chưa có đánh giá nào.</Text>
@@ -450,7 +512,6 @@ const ProductReview = () => {
                       <br />
                       {editingReviewId === review._id ? (
                         <>
-
                           <Rate
                             value={editForm.rating}
                             onChange={(value) => setEditForm({ ...editForm, rating: value })}
@@ -461,6 +522,138 @@ const ProductReview = () => {
                             onChange={(e) => setEditForm({ ...editForm, comment: e.target.value })}
                             style={{ marginTop: 8 }}
                           />
+
+                          {/* Ảnh cũ */}
+                          {editForm.oldImages && editForm.oldImages.length > 0 && (
+                            <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                              {editForm.oldImages.map((img: string, idx: number) => (
+                                <div
+                                  key={idx}
+                                  style={{
+                                    position: "relative",
+                                    width: 90,
+                                    height: 90,
+                                    borderRadius: 8,
+                                    overflow: "hidden",
+                                    border: "1px solid #e0e0e0",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                                  }}
+                                >
+                                  <img
+                                    src={img}
+                                    alt={`Ảnh cũ ${idx + 1}`}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const updated = editForm.oldImages.filter((_, i) => i !== idx);
+                                      setEditForm({ ...editForm, oldImages: updated });
+                                    }}
+                                    style={{
+                                      position: "absolute",
+                                      top: 4,
+                                      right: 4,
+                                      background: "rgba(0,0,0,0.6)",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "50%",
+                                      width: 20,
+                                      height: 20,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Chọn ảnh mới */}
+                          <div style={{ marginTop: 12 }}>
+                            <label
+                              style={{
+                                display: "inline-block",
+                                padding: "6px 12px",
+                                background: "#1677ff",
+                                color: "#fff",
+                                borderRadius: 6,
+                                cursor: "pointer",
+                              }}
+                            >
+                              Thêm ảnh mới
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                style={{ display: "none" }}
+                                onChange={(e) =>
+                                  setEditForm({
+                                    ...editForm,
+                                    newImages: [
+                                      ...(editForm.newImages || []),
+                                      ...Array.from(e.target.files || []),
+                                    ],
+                                  })
+                                }
+                              />
+                            </label>
+                          </div>
+
+                          {/* Preview ảnh mới */}
+                          {editForm.newImages && editForm.newImages.length > 0 && (
+                            <div style={{ marginTop: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                              {editForm.newImages.map((file: File, idx: number) => (
+                                <div
+                                  key={idx}
+                                  style={{
+                                    position: "relative",
+                                    width: 90,
+                                    height: 90,
+                                    borderRadius: 8,
+                                    overflow: "hidden",
+                                    border: "1px solid #e0e0e0",
+                                    boxShadow: "0 2px 6px rgba(0,0,0,0.05)",
+                                  }}
+                                >
+                                  <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Ảnh mới ${idx + 1}`}
+                                    style={{
+                                      width: "100%",
+                                      height: "100%",
+                                      objectFit: "cover",
+                                    }}
+                                  />
+                                  <button
+                                    onClick={() => {
+                                      const updated = editForm.newImages.filter((_, i) => i !== idx);
+                                      setEditForm({ ...editForm, newImages: updated });
+                                    }}
+                                    style={{
+                                      position: "absolute",
+                                      top: 4,
+                                      right: 4,
+                                      background: "rgba(0,0,0,0.6)",
+                                      color: "#fff",
+                                      border: "none",
+                                      borderRadius: "50%",
+                                      width: 20,
+                                      height: 20,
+                                      cursor: "pointer",
+                                    }}
+                                  >
+                                    ✕
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+
                           <div style={{ marginTop: 8 }}>
                             <Button
                               type="primary"
@@ -476,9 +669,31 @@ const ProductReview = () => {
                         <>
                           <Rate value={review.rating} disabled />
                           <p style={{ marginTop: 4 }}>{review.comment}</p>
+                          {review.images && review.images.length > 0 && (
+                            <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap" }}>
+                              {review.images.map((img: string, idx: number) => (
+                                <img
+                                  key={idx}
+                                  src={img}
+                                  alt={`Ảnh đánh giá ${idx + 1}`}
+                                  style={{
+                                    width: 80,
+                                    height: 80,
+                                    objectFit: "cover",
+                                    marginRight: 8,
+                                    marginTop: 8,
+                                    borderRadius: 6,
+                                    border: "1px solid #f0f0f0",
+                                  }}
+                                />
+                              ))}
+                            </div>
+                          )}
+
                           <Text type="secondary">
                             {new Date(review.createdAt).toLocaleString("vi-VN")}
                           </Text>
+
                           <div style={{ marginTop: 8 }}>
                             <Button
                               type="link"
@@ -498,6 +713,7 @@ const ProductReview = () => {
                           </div>
                         </>
                       )}
+
                     </div>
 
 
@@ -551,14 +767,6 @@ const ProductReview = () => {
                     </Tag>
                   </Text>
                   <br />
-                  {/* <Text>ID sản phẩm: {item.product_id}</Text>
-                  <br />
-                  <Text>Sản phẩm: {item.productName}</Text>
-                  <br />
-                  <Text>Variant ID: {item.variantId}</Text>
-                  <br />
-                  <Text>OrderItem ID: {item.orderItemId}</Text>
-                  <br /> */}
 
                   {/* THÔNG TIN BIẾN THỂ */}
                   <Text>
@@ -575,6 +783,21 @@ const ProductReview = () => {
                     value={review.rating}
                     onChange={(value) => handleReviewChange(item.orderItemId, 'rating', value)}
                   />
+                  <br />
+                  <Upload
+                    multiple
+                    listType="picture-card"
+                    accept="image/*"
+                    beforeUpload={() => false} // để không auto upload
+                    onChange={({ fileList }) => handleImageChange(item.orderItemId, fileList)}
+                    showUploadList={{
+                      showPreviewIcon: false, 
+                      showRemoveIcon: true,   
+                    }}
+                  >
+                    <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+                  </Upload>
+
                   <TextArea
                     rows={3}
                     placeholder="Nhập nhận xét..."
