@@ -248,10 +248,6 @@ const SideCart = ({ onClose }: { onClose: () => void }) => {
           </Link>
 
         </div>
-
-        <button className="bg-blue-700 hover:bg-blue-800 text-white text-sm py-2 w-full">
-          CLICK NHẬN MÃ GIẢM GIÁ NGAY!
-        </button>
       </div>
 
       <style>{`
