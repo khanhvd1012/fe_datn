@@ -198,9 +198,25 @@ const Products = () => {
     return total / relatedReviews.length;
   };
 
+  // Lọc: chỉ giữ một biến thể cho mỗi cặp sản phẩm + màu
+  const uniqueVariantsMap = new Map<string, IVariant>();
+  filteredVariantsByProduct.forEach(variant => {
+    const productId = typeof variant.product_id === 'object' ? variant.product_id._id : variant.product_id;
+    const colorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
+    const key = `${productId}_${colorId}`;
+    // Nếu chưa có hoặc biến thể này mới hơn thì thay thế
+    if (
+      !uniqueVariantsMap.has(key) ||
+      new Date(variant.createdAt ?? 0).getTime() > new Date(uniqueVariantsMap.get(key)?.createdAt ?? 0).getTime()
+    ) {
+      uniqueVariantsMap.set(key, variant);
+    }
+  });
+  const uniqueVariants = Array.from(uniqueVariantsMap.values());
+
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedVariants = filteredVariantsByProduct.slice(startIndex, endIndex);
+  const paginatedVariants = uniqueVariants.slice(startIndex, endIndex);
 
   if (loadingReviews) {
     return (
