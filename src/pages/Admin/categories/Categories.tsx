@@ -16,6 +16,7 @@ const Categories = () => {
   const [drawerLoading, setDrawerLoading] = useState(false);
   const { mutate } = useDeleteCategory();
   const { data, isLoading } = useCategories();
+
   const role = useRole();
 
   const [filters, setFilters] = useState({ name: '' });
@@ -43,7 +44,15 @@ const Categories = () => {
             queryKey: ["categories"],
           });
         },
-        onError: () => messageApi.error("Lỗi khi xóa danh mục"),
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            message.error(backendErrors[0].message);
+          } else {
+            message.error(error?.response?.data?.message || "Lỗi khi xóa danh mục.");
+          }
+        }
       });
     } catch (error) {
       console.error("Error deleting category:", error);

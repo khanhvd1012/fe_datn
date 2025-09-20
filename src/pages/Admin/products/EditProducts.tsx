@@ -37,8 +37,16 @@ const EditProducts = () => {
             navigate("/admin/products");
           }, 1000);
         },
-        onError: () => {
-          messageApi.error('Cập nhật sản phẩm thất bại!');
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            messageApi.error(backendErrors[0].message);
+          } else if (error?.response?.data?.message?.includes("E11000")) {
+            messageApi.error("Slug đã tồn tại, vui lòng đổi tên sản phẩm!");
+          } else {
+            messageApi.error(error?.response?.data?.message || "Lỗi khi cập nhật sản phẩm.");
+          }
         },
       }
     );

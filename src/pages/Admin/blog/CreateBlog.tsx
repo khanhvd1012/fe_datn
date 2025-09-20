@@ -42,8 +42,14 @@ const CreateBlog = () => {
         queryClient.invalidateQueries({ queryKey: ['news'] });
         setTimeout(() => navigate("/admin/blogs"), 1000);
       },
-      onError: () => {
-        messageApi.error("Thêm tin tức thất bại!");
+      onError: (error: any) => {
+        const backendErrors = error?.response?.data?.errors;
+
+        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+          message.error(backendErrors[0].message);
+        } else {
+          message.error(error?.response?.data?.message || "Lỗi khi thêm tin tức.");
+        }
       },
     });
   };

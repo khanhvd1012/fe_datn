@@ -28,8 +28,14 @@ const CreateProduct = () => {
           navigate('/admin/products');
         }, 1000);
       },
-      onError: () => {
-        messageApi.error('Thêm sản phẩm thất bại!');
+      onError: (error: any) => {
+        const backendErrors = error?.response?.data?.errors;
+
+        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+          message.error(backendErrors[0].message);
+        } else {
+          message.error(error?.response?.data?.message || "Lỗi khi thêm sản phẩm.");
+        }
       },
     });
   };

@@ -55,7 +55,15 @@ const Products = () => {
             queryKey: ["products"],
           });
         },
-        onError: () => messageApi.error("Lỗi khi xóa sản phẩm"),
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            message.error(backendErrors[0].message);
+          } else {
+            message.error(error?.response?.data?.message || "Lỗi khi xóa sản phẩm.");
+          }
+        },
       });
     } catch (error) {
       console.error("Error deleting product:", error);

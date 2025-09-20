@@ -61,7 +61,15 @@ const Colors = () => {
                         queryKey: ["colors"],
                     });
                 },
-                onError: () => messageApi.error("Lỗi khi xóa màu sắc"),
+                onError: (error: any) => {
+                    const backendErrors = error?.response?.data?.errors;
+
+                    if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+                        message.error(backendErrors[0].message);
+                    } else {
+                        message.error(error?.response?.data?.message || "Lỗi khi xóa màu sắc.");
+                    }
+                }
             });
         } catch (error) {
             console.error("Lỗi khi xóa màu sắc:", error);
@@ -182,7 +190,7 @@ const Colors = () => {
                 columns={columns}
                 dataSource={filteredData}
                 rowKey="_id"
-                pagination={{   
+                pagination={{
                     total: filteredData?.length,
                     pageSize: 10,
                     showSizeChanger: true,

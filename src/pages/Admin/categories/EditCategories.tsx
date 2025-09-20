@@ -70,7 +70,7 @@ const EditCategories = () => {
     formData.append("description", values.description);
     if (values.brand && Array.isArray(values.brand)) {
       values.brand.forEach((id: string) => {
-        formData.append("brand", id); 
+        formData.append("brand", id);
       });
     }
     if (logoFile) {
@@ -88,8 +88,16 @@ const EditCategories = () => {
           messageApi.success("Cập nhật danh mục thành công");
           setTimeout(() => navigate('/admin/categories'), 1000);
         },
-        onError: () => {
-          messageApi.error("Cập nhật danh mục thất bại");
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            // hiện message đầu tiên
+            message.error(backendErrors[0].message);
+          } else {
+            // fallback nếu không có errors
+            message.error(error?.response?.data?.message || "Lỗi khi cập nhật danh mục.");
+          }
         },
       }
     );

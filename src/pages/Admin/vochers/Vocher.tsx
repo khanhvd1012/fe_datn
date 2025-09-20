@@ -82,9 +82,16 @@ const Vouchers = () => {
                 messageApi.success("Xóa voucher thành công");
                 queryClient.invalidateQueries({ queryKey: ["vouchers"] });
             },
-            onError: () => {
-                messageApi.error("Xóa voucher thất bại");
-            },
+            onError: (error: any) => {
+                const backendErrors = error?.response?.data?.errors;
+
+                if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+                    message.error(backendErrors[0].message);
+                } else {
+                    message.error(error?.response?.data?.message || "Lỗi khi xóa voucher.");
+                }
+                console.error("Lỗi khi xóa voucher:", error);
+            }
         });
     };
 
@@ -310,7 +317,7 @@ const Vouchers = () => {
                     showQuickJumper: true,
                     showTotal: (total) => `Tổng ${total} voucher`,
                 }}
-                 scroll={{ x: "max-content" }}
+                scroll={{ x: "max-content" }}
             />
 
             <DrawerVoucher

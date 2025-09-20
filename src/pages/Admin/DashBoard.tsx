@@ -100,7 +100,7 @@ const Dashboard = () => {
         <Col xs={12} md={6}>
           <Card>
             <Statistic
-              title="Doanh thu tháng"
+              title="Doanh thu theo ngày"
               value={stats?.revenue || 0}
               prefix={<DollarOutlined style={{ color: "#faad14" }} />}
               suffix="đ"

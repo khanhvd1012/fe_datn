@@ -43,8 +43,14 @@ const EditStock = () => {
             navigate('/admin/stocks/stock');
           }, 1000);
         },
-        onError: () => {
-          messageApi.error('Cập nhật tồn kho thất bại!');
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            message.error(backendErrors[0].message);
+          } else {
+            message.error(error?.response?.data?.message || "Lỗi khi cập nhật tồn kho.");
+          }
         },
       }
     );

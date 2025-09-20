@@ -45,8 +45,14 @@ const StockHistory = () => {
         messageApi.success("Xóa lịch sử thành công");
         queryClient.invalidateQueries({ queryKey: ["stock-history"] });
       },
-      onError: () => {
-        messageApi.error("Lỗi khi xóa bản ghi");
+      onError: (error: any) => {
+        const backendErrors = error?.response?.data?.errors;
+
+        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+          message.error(backendErrors[0].message);
+        } else {
+          message.error(error?.response?.data?.message || "Lỗi khi xóa lịch sử tồn kho.");
+        }
       },
     });
   };
@@ -98,7 +104,7 @@ const StockHistory = () => {
       key: "updated_by",
       render: (updated_by: any) => {
         if (!updated_by) return "Không rõ";
-        if (typeof updated_by === "string") return updated_by; 
+        if (typeof updated_by === "string") return updated_by;
         return updated_by.username || "Không rõ";
       },
     },
@@ -111,22 +117,22 @@ const StockHistory = () => {
     ...(role === "admin"
       ? [
         {
-      title: "Thao tác",
-      key: "actions",
-      render: (_: any, record: IStockHistory) => (
-        <div style={{ display: 'flex', gap: '8px' }}>
-          <Popconfirm
-            title="Xác nhận xóa"
-            description="Bạn có chắc muốn xóa bản ghi này?"
-            onConfirm={() => handleDelete(record._id!)}
-            okText="Xóa"
-            cancelText="Hủy"
-          >
-            <Button type="primary" danger icon={<DeleteOutlined />} />
-          </Popconfirm>
-        </div>
-      )
-    },
+          title: "Thao tác",
+          key: "actions",
+          render: (_: any, record: IStockHistory) => (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Popconfirm
+                title="Xác nhận xóa"
+                description="Bạn có chắc muốn xóa bản ghi này?"
+                onConfirm={() => handleDelete(record._id!)}
+                okText="Xóa"
+                cancelText="Hủy"
+              >
+                <Button type="primary" danger icon={<DeleteOutlined />} />
+              </Popconfirm>
+            </div>
+          )
+        },
       ] : []),
   ];
 

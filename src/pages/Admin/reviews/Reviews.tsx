@@ -17,7 +17,6 @@ import { FilterOutlined, SearchOutlined } from "@ant-design/icons";
 const Reviews = () => {
   const [messageApi, contextHolder] = message.useMessage();
   const { data: review, isLoading, refetch } = useReviews(); // thêm refetch để reload
-  console.log("📌 Review data:", review);
 
   const [filters, setFilters] = useState({
     product_id: "",
@@ -183,26 +182,26 @@ const Reviews = () => {
         <Button
           size="small"
           type="primary"
-          onClick={() => openReplyModal(record._id)}
+          onClick={() => openReplyModal(record._id!)}
           disabled={!!record.admin_reply}
         >
           {record.admin_reply ? "Đã phản hồi" : "Phản hồi"}
         </Button>
       ),
     },
-  {
-  title: "Trả lời (Admin)",
-  dataIndex: "admin_reply",
-  key: "admin_reply",
-  render: (reply: string) =>
-    reply ? (
-      <div style={{ maxWidth: 250, whiteSpace: "normal", wordBreak: "break-word" }}>
-        {reply}
-      </div>
-    ) : (
-      <Tag color="red">Chưa</Tag>
-    ),
-},
+    {
+      title: "Trả lời (Admin)",
+      dataIndex: "admin_reply",
+      key: "admin_reply",
+      render: (reply: string) =>
+        reply ? (
+          <div style={{ maxWidth: 250, whiteSpace: "normal", wordBreak: "break-word" }}>
+            {reply}
+          </div>
+        ) : (
+          <Tag color="red">Chưa</Tag>
+        ),
+    },
 
 
 

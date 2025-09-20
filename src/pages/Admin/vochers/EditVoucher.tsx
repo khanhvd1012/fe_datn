@@ -14,7 +14,6 @@ const EditVoucher = () => {
     const navigate = useNavigate();
     const [form] = Form.useForm();
 
-
     const { data: voucherData, isLoading } = useVoucher(id!);
     const { mutate, isPending: isUpdating } = useUpdateVoucher();
 
@@ -48,11 +47,18 @@ const EditVoucher = () => {
                     queryClient.invalidateQueries({ queryKey: ['vouchers'] });
                     setTimeout(() => {
                         navigate('/admin/vouchers');
-                    },1000)
+                    }, 1000)
                 },
-                onError: () => {
-                    messageApi.error('Cập nhật voucher thất bại!');
-                },
+                onError: (error: any) => {
+                    const backendErrors = error?.response?.data?.errors;
+
+                    if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+                        message.error(backendErrors[0].message);
+                    } else {
+                        message.error(error?.response?.data?.message || "Lỗi khi cập nhật voucher.");
+                    }
+                    console.error("Lỗi khi cập nhật voucher:", error);
+                }
             }
         );
     };

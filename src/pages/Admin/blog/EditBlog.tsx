@@ -80,9 +80,14 @@ const EditBlogs = () => {
           queryClient.invalidateQueries({ queryKey: ['news'] });
           setTimeout(() => navigate('/admin/blogs'), 1000);
         },
-        onError: (err: any) => {
-          const errorMsg = err?.response?.data?.message || 'Cập nhật thất bại!';
-          messageApi.error(errorMsg);
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            message.error(backendErrors[0].message);
+          } else {
+            message.error(error?.response?.data?.message || "cập nhật tin tức.");
+          }
         },
       }
     );

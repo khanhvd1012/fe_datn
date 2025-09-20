@@ -54,7 +54,15 @@ const Sizes = () => {
             queryKey: ["sizes"],
           });
         },
-        onError: () => messageApi.error("Lỗi khi xóa kích thước"),
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            message.error(backendErrors[0].message);
+          } else {
+            message.error(error?.response?.data?.message || "Lỗi khi xóa kích thước.");
+          }
+        },
       });
     } catch (error) {
       console.error("Lỗi khi xóa kích thước:", error);

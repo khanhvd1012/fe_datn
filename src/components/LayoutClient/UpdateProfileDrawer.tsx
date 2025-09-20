@@ -1,4 +1,3 @@
-// src/components/UpdateProfileDrawer.tsx
 import { Drawer, Form, Input, Button, message, Upload, Col, Select, Row } from "antd";
 import ImgCrop from "antd-img-crop";
 import { UploadOutlined } from "@ant-design/icons";
@@ -29,9 +28,12 @@ const UpdateProfileDrawer: React.FC<Props> = ({ open, onClose, user }) => {
         {};
 
     // gọi hooks để lấy dữ liệu tỉnh/huyện/xã
+    const provinceId = Form.useWatch("province_id", form);
+    const districtId = Form.useWatch("district_id", form);
+
     const { data: provinces = [] } = useProvinces();
-    const { data: districts = [] } = useDistricts(form.getFieldValue("province_id"));
-    const { data: wards = [] } = useWards(form.getFieldValue("district_id"));
+    const { data: districts = [] } = useDistricts(provinceId ? Number(provinceId) : undefined);
+    const { data: wards = [] } = useWards(districtId ? Number(districtId) : undefined);
 
     useEffect(() => {
         if (open && user) {

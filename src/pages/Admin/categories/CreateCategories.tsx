@@ -28,7 +28,7 @@ const CreateCategories = () => {
 
     if (values.brand && Array.isArray(values.brand)) {
       values.brand.forEach((brandId: string) => {
-        formData.append("brand", brandId); 
+        formData.append("brand", brandId);
       });
     }
 
@@ -40,7 +40,15 @@ const CreateCategories = () => {
       },
       onError: (error: any) => {
         console.error("Lỗi khi tạo danh mục:", error);
-        messageApi.error("Lỗi khi tạo danh mục");
+        const backendErrors = error?.response?.data?.errors;
+
+        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+          // hiện message đầu tiên
+          message.error(backendErrors[0].message);
+        } else {
+          // fallback nếu không có errors
+          message.error(error?.response?.data?.message || "Lỗi khi tạo danh mục.");
+        }
       }
     });
   };

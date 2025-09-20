@@ -1,5 +1,3 @@
-// src/pages/admin/Banners.tsx
-
 import { useState } from 'react';
 import {
   Button,
@@ -49,8 +47,8 @@ const Banners = () => {
       onSuccess: () => {
         messageApi.success('Cập nhật trạng thái thành công');
       },
-      onError: () => {
-        messageApi.error('Lỗi khi cập nhật trạng thái');
+      onError: (error: any) => {
+        message.error(error?.response?.data?.message || "Lỗi cập nhật trạng thái.")
       }
     });
   };

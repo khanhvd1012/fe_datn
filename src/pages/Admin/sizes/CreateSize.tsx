@@ -1,13 +1,10 @@
-import React from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, Input, Select, message, Card, InputNumber } from 'antd';
+import { Button, Form, message, InputNumber } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import type { ISize } from '../../../interface/size';
 import { useAddSize } from '../../../hooks/useSizes';
 
-const { TextArea } = Input;
-
-const CreateSize: React.FC = () => {
+const CreateSize = () => {
     const queryClient = useQueryClient();
     const [messageApi, contextHolder] = message.useMessage();
     const navigate = useNavigate();

@@ -60,9 +60,15 @@ const CreateVariant = () => {
         queryClient.invalidateQueries({ queryKey: ['variants'] });
         setTimeout(() => navigate("/admin/variants"), 1000);
       },
-      onError: (err: any) => {
-        messageApi.error("Thêm biến thể thất bại!");
-        console.error("Lỗi khi thêm biến thể:", err);
+      onError: (error: any) => {
+        const backendErrors = error?.response?.data?.errors;
+
+        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+          message.error(backendErrors[0].message);
+        } else {
+          message.error(error?.response?.data?.message || "Lỗi khi thêm biến thể.");
+        }
+        console.error("Lỗi khi thêm biến thể:", error);
       }
     });
   };
@@ -152,12 +158,11 @@ const CreateVariant = () => {
           <InputNumber style={{ width: '100%' }} placeholder="Nhập giá nhập" />
         </Form.Item>
 
-        <Form.Item label="Thông số vận chuyển">
-          <Row gutter={12}>
+        <Form.Item label="Thông số vận chuyển" style={{ marginBottom: 0 }}>
+          <Row gutter={12} >
             <Col span={6}>
               <Form.Item
                 name="weight"
-                noStyle
                 rules={[{ required: true, message: 'Nhập trọng lượng!' }]}
               >
                 <InputNumber style={{ width: '100%' }} placeholder="Trọng lượng (g)" />
@@ -166,8 +171,7 @@ const CreateVariant = () => {
             <Col span={6}>
               <Form.Item
                 name="length"
-                noStyle
-                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều dài không hợp lệ'); return Promise.resolve(); } }]}
+                rules={[{ required: true, message: 'Nhập chiều dài!' }]}
               >
                 <InputNumber style={{ width: '100%' }} placeholder="Dài (cm)" />
               </Form.Item>
@@ -175,8 +179,7 @@ const CreateVariant = () => {
             <Col span={6}>
               <Form.Item
                 name="width"
-                noStyle
-                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều rộng không hợp lệ'); return Promise.resolve(); } }]}
+                rules={[{ required: true, message: 'Nhập chiều rộng!' }]}
               >
                 <InputNumber style={{ width: '100%' }} placeholder="Rộng (cm)" />
               </Form.Item>
@@ -184,8 +187,7 @@ const CreateVariant = () => {
             <Col span={6}>
               <Form.Item
                 name="height"
-                noStyle
-                rules={[{ validator(_, v) { if (v < 0) return Promise.reject('Chiều cao không hợp lệ'); return Promise.resolve(); } }]}
+                rules={[{ required: true, message: 'Nhập chiều cao!' }]}
               >
                 <InputNumber style={{ width: '100%' }} placeholder="Cao (cm)" />
               </Form.Item>

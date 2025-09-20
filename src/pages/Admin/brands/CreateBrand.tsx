@@ -36,7 +36,16 @@ const CreateBrand = () => {
       },
       onError: (error: any) => {
         console.error("Lỗi khi tạo thương hiệu:", error);
-        messageApi.error("Lỗi khi tạo thương hiệu");
+
+        const backendErrors = error?.response?.data?.errors;
+
+        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+          // hiện message đầu tiên
+          message.error(backendErrors[0].message);
+        } else {
+          // fallback nếu không có errors
+          message.error(error?.response?.data?.message || "Lỗi khi tạo thương hiệu.");
+        }
       }
     });
   };

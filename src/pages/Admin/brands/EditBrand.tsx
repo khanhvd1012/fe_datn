@@ -73,8 +73,16 @@ const EditBrand = () => {
           messageApi.success("Cập nhật thương hiệu thành công");
           setTimeout(() => navigate('/admin/brands'), 1000);
         },
-        onError: () => {
-          messageApi.error("Cập nhật thương hiệu thất bại");
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            // hiện message đầu tiên
+            message.error(backendErrors[0].message);
+          } else {
+            // fallback nếu không có errors
+            message.error(error?.response?.data?.message || "Lỗi khi cập nhật thương hiệu.");
+          }
         },
       }
     );

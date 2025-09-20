@@ -37,7 +37,14 @@ const CreateBanner = () => {
       },
       onError: (error: any) => {
         console.error("Lỗi khi tạo banner:", error);
-        messageApi.error("Lỗi khi tạo banner");
+        
+        const backendErrors = error?.response?.data?.errors;
+
+        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+          message.error(backendErrors[0].message);
+        } else {
+          message.error(error?.response?.data?.message || "Lỗi khi tạo banner.");
+        }
       }
     });
   };

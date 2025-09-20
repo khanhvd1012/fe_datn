@@ -149,123 +149,135 @@ const CollectionPage = () => {
               gap: '20px',
             }}
           >
-            {variants.map((variant) => {
-              const product = products.find(
-                (p) => Array.isArray(p.variants) && p.variants.includes(variant._id)
-              );
-              if (!product) return null;
-
-              const currentColorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
-
-              const sameProductVariants = variants.filter((v) => {
-                const pid = typeof v.product_id === 'object' ? v.product_id._id : v.product_id;
-                const cid = typeof v.color === 'object' ? v.color._id : v.color;
-                return pid === product._id && cid;
+            {products.flatMap(product => {
+              // Lấy toàn bộ biến thể của product hiện tại
+              const productVariants = variants.filter(v => {
+                const pid = typeof v.product_id === "object" ? v.product_id._id : v.product_id;
+                return pid === product._id;
               });
 
-              const sortedByCurrentFirst = [
-                ...sameProductVariants.filter((v) => {
-                  const cid = typeof v.color === 'object' ? v.color._id : v.color;
-                  return cid === currentColorId;
-                }),
-                ...sameProductVariants.filter((v) => {
-                  const cid = typeof v.color === 'object' ? v.color._id : v.color;
-                  return cid !== currentColorId;
-                }),
-              ];
+              // Sắp xếp mới nhất trước
+              const sortedVariants = productVariants
+                .slice()
+                .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
 
-              const rating = getAverageRatingForVariant(variant._id!, reviews);
+              // Giữ duy nhất 1 biến thể cho mỗi màu (ưu tiên mới nhất)
+              const uniqueVariants = sortedVariants.filter((v, i, self) => {
+                const colorId = typeof v.color === "object" ? v.color._id : v.color;
+                return i === self.findIndex(t => {
+                  const tColorId = typeof t.color === "object" ? t.color._id : t.color;
+                  return tColorId === colorId;
+                });
+              });
 
-              return (
-                <div
-                  key={variant._id}
-                  style={{
-                    flex: '0 0 10%',
-                    padding: '0 10px',
-                    minWidth: 250,
-                    marginBottom: 20,
-                  }}
-                >
-                  <Link
-                    to={`/products/${product.slug}`}
-                    state={{ variantId: variant._id }}
-                    className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
+              return uniqueVariants.map(variant => {
+                const currentColorId = typeof variant.color === "object" ? variant.color._id : variant.color;
+
+                const colorOptions = [
+                  // Màu hiện tại
+                  ...uniqueVariants
+                    .filter(v => {
+                      const cid = typeof v.color === "object" ? v.color._id : v.color;
+                      return cid === currentColorId;
+                    })
+                    .map(v => ({
+                      id: typeof v.color === "object" ? v.color._id : v.color,
+                      code: typeof v.color === "object" ? v.color.code : "#ccc",
+                      name: typeof v.color === "object" ? v.color.name : "Màu",
+                    })),
+                  // Các màu khác
+                  ...uniqueVariants
+                    .filter(v => {
+                      const cid = typeof v.color === "object" ? v.color._id : v.color;
+                      return cid !== currentColorId;
+                    })
+                    .map(v => ({
+                      id: typeof v.color === "object" ? v.color._id : v.color,
+                      code: typeof v.color === "object" ? v.color.code : "#ccc",
+                      name: typeof v.color === "object" ? v.color.name : "Màu",
+                    })),
+                ];
+
+                const rating = getAverageRatingForVariant(variant._id!, reviews);
+
+                return (
+                  <div
+                    key={variant._id}
+                    style={{
+                      flex: "0 0 10%",
+                      padding: "0 10px",
+                      minWidth: 250,
+                      marginBottom: 20,
+                    }}
                   >
-                    <div className="relative">
-                      <img
-                        src={variant.image_url?.[0] || 'https://picsum.photos/200'}
-                        alt={product.name}
-                        className="w-full h-48 object-cover rounded-md"
-                      />
-
-                      <div className="absolute top-2 right-2 z-10">
-                        <div
-                          onClick={e => {
-                            e.preventDefault();
-
-                            if (!isLoggedIn()) {
-                              import("antd").then(({ message }) => {
-                                message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
-                              });
-                              return;
-                            }
-
-                            if (variant.stock?.status === "outOfStock" || (variant.stock?.quantity ?? 0) <= 0) {
-                              import("antd").then(({ message }) => {
-                                message.error("Sản phẩm này đã hết hàng!");
-                              });
-                              return;
-                            }
-
-                            if (variant.status === "paused") {
-                              import("antd").then(({ message }) => {
-                                message.warning("Sản phẩm này đang tạm ngưng bán!");
-                              });
-                              return;
-                            }
-
-                            addToCart({ variant_id: variant._id!, quantity: 1 });
-                          }}
-                          className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
-                        >
-                          <ShoppingCartOutlined />
+                    <Link
+                      to={`/products/${product.slug}`}
+                      state={{ variantId: variant._id }}
+                      className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
+                    >
+                      {/* Ảnh */}
+                      <div className="relative">
+                        <img
+                          src={variant.image_url?.[0] || "https://picsum.photos/200"}
+                          alt={product.name}
+                          className="w-full h-48 object-cover rounded-md"
+                        />
+                        {/* Nút giỏ hàng */}
+                        <div className="absolute top-2 right-2 z-10">
+                          <div
+                            onClick={e => {
+                              e.preventDefault();
+                              if (!isLoggedIn()) {
+                                import("antd").then(({ message }) => {
+                                  message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
+                                });
+                                return;
+                              }
+                              if (variant.stock?.status === "outOfStock" || (variant.stock?.quantity ?? 0) <= 0) {
+                                import("antd").then(({ message }) => {
+                                  message.error("Sản phẩm này đã hết hàng!");
+                                });
+                                return;
+                              }
+                              if (variant.status === "paused") {
+                                import("antd").then(({ message }) => {
+                                  message.warning("Sản phẩm này đang tạm ngưng bán!");
+                                });
+                                return;
+                              }
+                              addToCart({ variant_id: variant._id!, quantity: 1 });
+                            }}
+                            className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition"
+                          >
+                            <ShoppingCartOutlined />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
-                      {sortedByCurrentFirst.map((v, idx) => {
-                        const colorObj = typeof v.color === 'object' ? v.color : null;
-                        return (
+
+                      {/* Chấm màu */}
+                      <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                        {colorOptions.map(c => (
                           <div
-                            key={idx}
+                            key={c.id}
                             className="w-4 h-4 rounded-full border"
                             style={{
-                              backgroundColor: colorObj?.code || '#ccc',
-                              borderColor: colorObj?._id === currentColorId ? 'black' : '#ccc',
+                              backgroundColor: c.code,
+                              borderColor: c.id === currentColorId ? "black" : "#ccc",
                             }}
+                            title={c.name}
                           />
-                        );
-                      })}
-                    </div>
-                    <div className="mt-3 pt-[9px]">
-                      <Text strong>{product.name}</Text>
-                    </div>
-                    <div className="mt-1 pt-[4px]">
-                      <Text style={{ color: 'black' }}>
-                        {variant.price?.toLocaleString('vi-VN')}đ
-                      </Text>
-                    </div>
-                    <div className="mt-1 pt-[6px] flex justify-center items-center gap-1 h-5">
-                      <Rate
-                        disabled
-                        allowHalf
-                        value={rating}
-                        style={{ fontSize: 14 }}
-                      />
-                    </div>
-                  </Link>
-                </div>
-              );
+                        ))}
+                      </div>
+
+                      <div className="mt-3 pt-[9px]"><Text strong>{product.name}</Text></div>
+                      <div className="mt-1 pt-[4px]"><Text>{variant.price?.toLocaleString("vi-VN")}đ</Text></div>
+                      <div className="mt-1 pt-[6px] flex justify-center items-center gap-1 h-5">
+                        <Rate disabled allowHalf value={rating} style={{ fontSize: 14 }} />
+                      </div>
+                    </Link>
+                  </div>
+                );
+              });
             })}
           </div>
         )}

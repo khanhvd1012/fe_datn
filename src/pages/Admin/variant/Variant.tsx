@@ -89,7 +89,15 @@ const Variant = () => {
           messageApi.success("Xóa biến thể thành công");
           queryClient.invalidateQueries({ queryKey: ["variants"] });
         },
-        onError: () => messageApi.error("Lỗi khi xóa biến thể"),
+        onError: (error: any) => {
+          const backendErrors = error?.response?.data?.errors;
+
+          if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+            message.error(backendErrors[0].message);
+          } else {
+            message.error(error?.response?.data?.message || "Lỗi khi xóa biến thể.");
+          }
+        }
       });
     } catch (error) {
       console.error("Error deleting variant:", error);

@@ -114,13 +114,26 @@ const BestSellingProducts = () => {
             const sameProductVariants = variants.filter(v =>
               (typeof v.product_id === 'string' ? v.product_id : v.product_id?._id) === product._id
             );
-            const uniqueColors = sameProductVariants.filter((v, i, self) => {
-              const colorId = typeof v.color === 'object' ? v.color._id : v.color;
-              return i === self.findIndex(t => (typeof t.color === 'object' ? t.color._id : t.color) === colorId);
-            });
+
+            const latestVariantsByColor = Object.values(
+              sameProductVariants.reduce((acc, v) => {
+                const colorId = typeof v.color === 'object' ? v.color._id : v.color;
+                if (!acc[colorId] || new Date(v.createdAt!).getTime() > new Date(acc[colorId].createdAt!).getTime()) {
+                  acc[colorId] = v;
+                }
+                return acc;
+              }, {} as Record<string, typeof variant>)
+            );
+
             const sortedColors = [
-              ...uniqueColors.filter(v => (typeof v.color === 'object' ? v.color._id : v.color) === currentColorId),
-              ...uniqueColors.filter(v => (typeof v.color === 'object' ? v.color._id : v.color) !== currentColorId),
+              ...latestVariantsByColor.filter(v => {
+                const cid = typeof v.color === 'object' ? v.color._id : v.color;
+                return cid === currentColorId;
+              }),
+              ...latestVariantsByColor.filter(v => {
+                const cid = typeof v.color === 'object' ? v.color._id : v.color;
+                return cid !== currentColorId;
+              }),
             ];
 
             return (

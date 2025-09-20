@@ -1,11 +1,9 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Empty, Form, Input, Select, message, Skeleton, Card, Spin, InputNumber } from 'antd';
+import { Button, Empty, Form, message, Skeleton, Spin, InputNumber } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import type { ISize } from '../../../interface/size';
 import { useSize, useUpdateSize } from '../../../hooks/useSizes';
 import { useEffect } from 'react';
-
-const { TextArea } = Input;
 
 const EditSize = () => {
     const { id } = useParams();

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Typography, Spin, message, Rate, Button } from 'antd';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
@@ -82,6 +82,22 @@ const NewProducts = () => {
     [variants]
   );
 
+  const uniqueColorVariants = useMemo(() => {
+    const map = new Map<string, any>();
+
+    // sortedVariants đã được sort từ mới nhất -> cũ nhất
+    for (const v of sortedVariants) {
+      const key = `${getId(v.product_id)}-${getId(v.color)}`;
+
+      // nếu chưa có thì lưu (giữ biến thể mới nhất)
+      if (!map.has(key)) {
+        map.set(key, v);
+      }
+    }
+
+    return Array.from(map.values());
+  }, [sortedVariants]);
+
   if (loadingReviews) return <div className="text-center py-10"><Spin /></div>;
 
   return (
@@ -122,7 +138,7 @@ const NewProducts = () => {
             style={{ position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)', zIndex: 2 }}
           />
           <div ref={sliderRef} style={{ display: 'flex', overflowX: 'hidden', scrollBehavior: 'smooth' }}>
-            {sortedVariants.slice(0, 10).map(variant => {
+            {uniqueColorVariants.slice(0, 10).map(variant => {
               const currentColorId = getId(variant.color);
               const sameProductVariants = variants.filter(v => getId(v.product_id) === getId(variant.product_id));
               const sortedByCurrentFirst = [
@@ -177,13 +193,22 @@ const NewProducts = () => {
                     </div>
 
                     <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
-                      {sortedByCurrentFirst.map((v, idx) => {
+                      {Object.values(
+                        sortedByCurrentFirst.reduce<Record<string, (typeof sortedByCurrentFirst)[number]>>(
+                          (acc, v) => {
+                            const colorId = getId(v.color);
+                            acc[colorId] = v; // luôn ghi đè → giữ biến thể cuối cùng (mới nhất)
+                            return acc;
+                          },
+                          {}
+                        )
+                      ).map((v, idx) => {
                         const colorObj = typeof v.color === 'object' ? v.color : null;
                         return (
                           <div key={idx} className="w-4 h-4 rounded-full border"
                             style={{
                               backgroundColor: colorObj?.code || '#ccc',
-                              borderColor: colorObj?._id === currentColorId ? 'black' : '#ccc',
+                              borderColor: colorObj?._id === getId(variant.color) ? 'black' : '#ccc',
                             }}
                           />
                         );

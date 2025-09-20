@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { Button, DatePicker, Form, Input, InputNumber, message, Select } from "antd";
 import { useNavigate } from "react-router-dom";
-import { useAddVoucher } from "../../../hooks/useVouchers"; 
+import { useAddVoucher } from "../../../hooks/useVouchers";
 
 const { Option } = Select;
 
@@ -29,9 +29,16 @@ const CreateVoucher = () => {
         queryClient.invalidateQueries({ queryKey: ["vouchers"] });
         navigate("/admin/vouchers");
       },
-      onError: () => {
-        messageApi.error("Thêm voucher thất bại!");
-      },
+      onError: (error: any) => {
+        const backendErrors = error?.response?.data?.errors;
+
+        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
+          message.error(backendErrors[0].message);
+        } else {
+          message.error(error?.response?.data?.message || "Lỗi khi thêm voucher.");
+        }
+        console.error("Lỗi khi thêm voucher:", error);
+      }
     });
   };
 

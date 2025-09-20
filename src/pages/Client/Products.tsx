@@ -277,15 +277,29 @@ const Products = () => {
                 // Các biến thể cùng sản phẩm
                 const variantsOfSameProduct = productId ? variantsByProduct[productId] || [] : [];
 
-                // Đưa biến thể hiện tại lên đầu
+                // Lấy biến thể mới nhất cho mỗi màu
+                const latestVariantsByColor = Object.values(
+                  (variantsOfSameProduct || []).reduce((acc, v) => {
+                    const colorId = typeof v.color === 'object' ? v.color._id : v.color;
+                    if (
+                      !acc[colorId] ||
+                      new Date(v.createdAt ?? 0).getTime() > new Date(acc[colorId].createdAt ?? 0).getTime()
+                    ) {
+                      acc[colorId] = v;
+                    }
+                    return acc;
+                  }, {} as Record<string, IVariant>)
+                );
+
+                // Sắp xếp: màu hiện tại trước, sau đó tới các màu khác
                 const sortedByCurrentFirst = [
-                  ...variantsOfSameProduct.filter(v => {
-                    const colorId = typeof v.color === 'object' ? v.color._id : v.color;
-                    return colorId === currentColorId;
+                  ...latestVariantsByColor.filter(v => {
+                    const cid = typeof v.color === 'object' ? v.color._id : v.color;
+                    return cid === currentColorId;
                   }),
-                  ...variantsOfSameProduct.filter(v => {
-                    const colorId = typeof v.color === 'object' ? v.color._id : v.color;
-                    return colorId !== currentColorId;
+                  ...latestVariantsByColor.filter(v => {
+                    const cid = typeof v.color === 'object' ? v.color._id : v.color;
+                    return cid !== currentColorId;
                   }),
                 ];
 

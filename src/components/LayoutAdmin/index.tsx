@@ -19,7 +19,6 @@ import Orders from '../../pages/Admin/orders/Orders';
 import CreateProducts from '../../pages/Admin/products/CreateProducts';
 import EditProducts from '../../pages/Admin/products/EditProducts';
 import Products from '../../pages/Admin/products/Products';
-import EditReviews from '../../pages/Admin/reviews/EditReviews';
 import Reviews from '../../pages/Admin/reviews/Reviews';
 import Admin from '../../pages/Admin/users/admin/Admin';
 import Customers from '../../pages/Admin/users/customer/Customers';
@@ -310,7 +309,6 @@ const IndexAdmin = () => {
                 <Route path="reviews">
                   <Route path="" element={<Reviews />} />
                   <Route path="create" element={<CreateBrand />} />
-                  <Route path="edit/:id" element={<EditReviews />} />
                 </Route>
                 <Route path="stocks">
                   <Route path="stock">
