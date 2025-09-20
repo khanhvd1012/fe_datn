@@ -355,7 +355,7 @@ const Products = () => {
                     </div>
 
                     {/* Danh sách các màu */}
-                    <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                    <div className="flex justify-center items-center gap-1 mt-2 pt-[4px]">
                       {sortedByCurrentFirst.map((v, idx) => {
                         const colorObj = typeof v.color === 'object' ? v.color : null;
                         return (
@@ -371,17 +371,17 @@ const Products = () => {
                       })}
                     </div>
 
-                    <div className="mt-3 pt-[6px]">
+                    <div className="mt-2 pt-[4px]">
                       <Text strong>{product.name}</Text>
                     </div>
-                    <div className="mt-1 pt-[9px]">
+                    <div className="mt-1 pt-[4px]">
                       <Text type="secondary" style={{ color: 'black' }}>
                         {typeof variant.price === 'number'
                           ? variant.price.toLocaleString('vi-VN', { minimumFractionDigits: 0 }) + 'đ'
                           : 'Giá đang cập nhật'}
                       </Text>
                     </div>
-                    <div className="mt-1 pt-[6px] flex justify-center items-center gap-1">
+                    <div className="mt-1 pt-[4px] flex justify-center items-center gap-1">
                       <Rate
                         disabled
                         allowHalf

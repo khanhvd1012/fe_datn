@@ -192,7 +192,7 @@ const NewProducts = () => {
                       </div>
                     </div>
 
-                    <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                    <div className="flex justify-center items-center gap-1 mt-2 pt-[4px]">
                       {Object.values(
                         sortedByCurrentFirst.reduce<Record<string, (typeof sortedByCurrentFirst)[number]>>(
                           (acc, v) => {
@@ -215,7 +215,7 @@ const NewProducts = () => {
                       })}
                     </div>
 
-                    <div className="mt-3 pt-[9px]"><Text strong>{product.name}</Text></div>
+                    <div className="mt-2 pt-[4px]"><Text strong>{product.name}</Text></div>
                     <div className="mt-1 pt-[4px]">
                       <Text type="secondary" style={{ color: 'black' }}>
                         {typeof variant.price === 'number'
@@ -223,7 +223,7 @@ const NewProducts = () => {
                           : 'Giá đang cập nhật'}
                       </Text>
                     </div>
-                    <div className="mt-1 pt-[6px] flex justify-center items-center gap-1 h-5">
+                    <div className="mt-1 pt-[4px] flex justify-center items-center gap-1 h-5">
                       <Rate disabled allowHalf value={ratingsMap[variant._id!] || 0} style={{ fontSize: 14 }} />
                     </div>
                   </Link>

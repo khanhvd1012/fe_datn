@@ -170,80 +170,6 @@ const ProductReview = () => {
     }
   };
 
-
-  // const fetchUnreviewedProducts = async () => {
-  //   try {
-  //     const token = localStorage.getItem('token');
-  //     if (!token) return;
-
-  //     const orderRes = await axios.get('http://localhost:3000/api/orders/user', {
-  //       headers: { Authorization: `Bearer ${token}` },
-  //     });
-
-  //     const orders = orderRes.data;
-  //     console.log("🟢 Orders user:", orders);
-  //     const deliveredOrders = orders.filter((order: any) => order.status === 'delivered');
-
-  //     const deliveredOrderDetails = await Promise.all(
-  //       deliveredOrders.map(async (order: any) => {
-  //         const res = await axios.get(`http://localhost:3000/api/orders/${order._id}`, {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         });
-  //         return res.data;
-  //       })
-  //     );
-  //     const productInfos: {
-  //       orderId: string;
-  //       orderItemId: string;
-  //       product_id: string;
-  //       productName: string;
-  //       variantId: string;
-  //     }[] = [];
-
-  //     deliveredOrderDetails.forEach((order) => {
-  //       order.items.forEach((item: any) => {
-  //         productInfos.push({
-  //           orderId: order._id,
-  //           orderItemId: item._id,
-  //           product_id: item.product_id?._id,
-  //           productName: item.product_id?.name,
-  //           variantId: item.variant_id?._id
-  //         });
-  //       });
-  //     });
-
-
-
-  //     const isReviewed = async (product_id: string, orderItemId: string, token: string,) => {
-  //       try {
-  //         const reviewRes = await axios.get(`http://localhost:3000/api/reviews/${product_id}`, {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         });
-
-  //         const productReviews = reviewRes.data.reviews;
-  //         return productReviews.some((r: any) => r.order_item === orderItemId);
-  //       } catch (err) {
-  //         console.error('Lỗi kiểm tra review:', err);
-  //         return false;
-  //       }
-  //     };
-
-  //     const unreviewedProductsMap = new Map();
-
-  //     for (const info of productInfos) {
-  //       const reviewed = await isReviewed(info.product_id, info.orderItemId, token);
-  //       if (!reviewed && !unreviewedProductsMap.has(info.orderItemId)) {
-  //         unreviewedProductsMap.set(info.orderItemId, info);
-  //       }
-  //     }
-
-  //     const unreviewedList = Array.from(unreviewedProductsMap.values());
-  //     setUnreviewedProducts(unreviewedList);
-  //   } catch (error) {
-  //     console.error('Lỗi khi lấy sản phẩm chưa đánh giá:', error);
-  //   }
-  // };
-
   const fetchUnreviewedProducts = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -355,41 +281,6 @@ const ProductReview = () => {
     }));
   };
 
-  // const handleSubmitReview = async (item: any) => {
-  //   const review = reviewStates[item.orderItemId];
-  //   if (!review?.rating || !review?.comment) {
-  //     return message.warning('Vui lòng nhập đầy đủ đánh giá và bình luận.');
-  //   }
-
-  //   try {
-  //     setReviewStates(prev => ({ ...prev, [item.orderItemId]: { ...prev[item.orderItemId], loading: true } }));
-  //     const token = localStorage.getItem('token');
-  //     await axios.post(
-  //       'http://localhost:3000/api/reviews',
-  //       {
-  //         product_id: item.product_id,          // backend yêu cầu
-  //         product_variant_id: item.product_variant_id, // backend yêu cầu
-  //         order_id: item.orderId,
-  //         rating: review.rating,
-  //         comment: review.comment,
-  //       },
-  //       {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       }
-  //     );
-
-  //     message.success('Đánh giá thành công!');
-  //     // Optional: reload list or remove the item from list
-  //     setTimeout(() => {
-  //       window.location.reload();
-  //     }, 3000);
-  //   } catch (err) {
-  //     message.error('Gửi đánh giá thất bại!');
-  //   } finally {
-  //     setReviewStates(prev => ({ ...prev, [item.orderItemId]: { ...prev[item.orderItemId], loading: false } }));
-  //   }
-  // };
-
   const handleSubmitReview = async (item: any) => {
     const review = reviewStates[item.orderItemId];
     if (!review?.rating || !review?.comment) {
@@ -444,29 +335,6 @@ const ProductReview = () => {
       setReviewStates(prev => ({ ...prev, [item.orderItemId]: { ...prev[item.orderItemId], loading: false } }));
     }
   };
-
-  ///
-
-  // const renderStats = () => (
-  //   <Row gutter={[16, 16]} justify="center">
-  //     <Col>
-  //       <Text strong>{stats.total}</Text>
-  //       <br />Đánh giá
-  //     </Col>
-  //     <Col>
-  //       <Text strong>0</Text>
-  //       <br />Xu đã nhận
-  //     </Col>
-  //     <Col>
-  //       <Text strong>0</Text>
-  //       <br />Lượt thích
-  //     </Col>
-  //     <Col>
-  //       <Text strong>0</Text>
-  //       <br />Lượt xem
-  //     </Col>
-  //   </Row>
-  // );
 
   return (
     <div style={{ background: '#fff', padding: 16, borderRadius: 8 }}>

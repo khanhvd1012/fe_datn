@@ -255,7 +255,7 @@ const CollectionPage = () => {
                       </div>
 
                       {/* Chấm màu */}
-                      <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                      <div className="flex justify-center items-center gap-1 mt-2 pt-[4px]">
                         {colorOptions.map(c => (
                           <div
                             key={c.id}
@@ -269,9 +269,9 @@ const CollectionPage = () => {
                         ))}
                       </div>
 
-                      <div className="mt-3 pt-[9px]"><Text strong>{product.name}</Text></div>
+                      <div className="mt-2 pt-[4px]"><Text strong>{product.name}</Text></div>
                       <div className="mt-1 pt-[4px]"><Text>{variant.price?.toLocaleString("vi-VN")}đ</Text></div>
-                      <div className="mt-1 pt-[6px] flex justify-center items-center gap-1 h-5">
+                      <div className="mt-1 pt-[4px] flex justify-center items-center gap-1 h-5">
                         <Rate disabled allowHalf value={rating} style={{ fontSize: 14 }} />
                       </div>
                     </Link>

@@ -185,7 +185,7 @@ const RelatedProducts = () => {
                     </div>
 
                     {/* Chấm màu */}
-                    <div className="flex justify-center items-center gap-1 mt-2 pt-[7px]">
+                    <div className="flex justify-center items-center gap-1 mt-2 pt-[4px]">
                       {colorOptions.map(c => (
                         <div
                           key={c.id}
@@ -200,11 +200,11 @@ const RelatedProducts = () => {
                     </div>
 
                     {/* Tên, giá, rating */}
-                    <div className="mt-3 pt-[9px]"><Text strong>{product.name}</Text></div>
+                    <div className="mt-2 pt-[4px]"><Text strong>{product.name}</Text></div>
                     <div className="mt-1 pt-[4px]">
                       <Text>{variant.price?.toLocaleString("vi-VN")}đ</Text>
                     </div>
-                    <div className="mt-1 flex justify-center pt-[6px]">
+                    <div className="mt-1 flex justify-center pt-[4px]">
                       <Rate
                         disabled
                         allowHalf

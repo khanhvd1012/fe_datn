@@ -179,7 +179,7 @@ const BestSellingProducts = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex justify-center items-center gap-1 mt-2 pt-[9px]">
+                  <div className="flex justify-center items-center gap-1 mt-2 pt-[4px]">
                     {sortedColors.map((v, idx) => {
                       const colorObj = typeof v.color === 'object' ? v.color : null;
                       return (
@@ -191,9 +191,9 @@ const BestSellingProducts = () => {
                       );
                     })}
                   </div>
-                  <div className="mt-3 pt-[9px]"><Text strong>{product.name}</Text></div>
+                  <div className="mt-2 pt-[4px]"><Text strong>{product.name}</Text></div>
                   <div className="mt-1 pt-[4px]"><Text>{variant.price?.toLocaleString('vi-VN') + 'đ'}</Text></div>
-                  <div className="mt-1 flex justify-center pt-[6px]"><Rate disabled allowHalf value={getAverageRatingForVariant(variant._id!)} style={{ fontSize: 14 }} /></div>
+                  <div className="mt-1 flex justify-center pt-[4px]"><Rate disabled allowHalf value={getAverageRatingForVariant(variant._id!)} style={{ fontSize: 14 }} /></div>
                 </Link>
               </div>
             );
