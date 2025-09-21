@@ -57,6 +57,40 @@ const OrderHistory = () => {
     };
   };
 
+  // hoàn đơn hàng
+  const handleReturn = (orderId: string) => {
+    Modal.confirm({
+      title: 'Xác nhận hoàn đơn hàng',
+      content: <p>Bạn có chắc chắn muốn hoàn (trả) đơn hàng này không?</p>,
+      okText: 'Xác nhận',
+      cancelText: 'Thoát',
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          await axios.put(
+            `http://localhost:3000/api/orders/${orderId}/return`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+          message.success('Hoàn đơn hàng thành công');
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        } catch (error) {
+          console.error('Hoàn đơn hàng thất bại:', error);
+          message.error('Hoàn đơn hàng thất bại');
+          return Promise.reject();
+        }
+      },
+    });
+  };
+
+
   const handleCancel = (orderId: string) => {
     let cancelReason = '';
 
@@ -284,6 +318,14 @@ const OrderHistory = () => {
                             onClick={() => handleCancel(order._id)}
                           >
                             Hủy đơn
+                          </Button>
+                        )}
+                        {order.status === "delivered" && (
+                          <Button
+                            size="small"
+                            onClick={() => handleReturn(order._id)}
+                          >
+                            Hoàn đơn
                           </Button>
                         )}
                       </div>

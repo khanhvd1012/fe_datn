@@ -106,6 +106,7 @@ const Checkout = () => {
       axios.get(`http://localhost:3000/api/variants/${variant_id}`)
         .then(res => {
           const item = {
+            variant_id: res.data.data._id,
             variant: res.data,
             quantity,
             size
@@ -122,24 +123,28 @@ const Checkout = () => {
 
   // Gọi API tính phí vận chuyển
   const fetchShippingFee = async () => {
-    console.log("District ID:", formData);
+    console.log("Form Data:", formData);
+
     if (!formData.province_id || !formData.district_id || !formData.ward_code) return;
 
     try {
       setShippingLoading(true);
 
-      const res = await axios.post(
-        "http://localhost:3000/api/shipping/fee",
-        {
-          cart_id: cartData.cart_items?.[0]?.cart_id,
-          toDistrictId: formData.district_id,
-          toWardCode: formData.ward_code,
+      const body: any = {
+        toDistrictId: formData.district_id,
+        toWardCode: formData.ward_code,
+      };
 
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      if (buyNowItem) {
+        body.variant_id = buyNowItem.variant_id;
+        body.quantity = buyNowItem.quantity;
+      } else {
+        body.cart_id = cartData.cart_items[0].cart_id;
+      }
+
+      const res = await axios.post("http://localhost:3000/api/shipping/fee", body, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       setShippingFee(res.data.fee.service_fee);
 
@@ -855,6 +860,16 @@ const Checkout = () => {
                         <Text>Phí vận chuyển:</Text>
                         <Text>{shippingFee.toLocaleString()} đ</Text>
                       </div>
+                      {formData.voucher_code && (
+                        <div className="flex justify-between mt-2">
+                          <Text>Mã giảm giá:</Text>
+                          <Text className="text-red-600">
+                            {formData.voucher_type === "percentage"
+                              ? `- ${formData.voucher_value}%`
+                              : `- ${formData.voucher_value?.toLocaleString()} đ`}
+                          </Text>
+                        </div>
+                      )}
 
                       <div className="flex justify-between mt-2">
                         <Text strong className="text-lg">Tổng cộng:</Text>

@@ -35,6 +35,38 @@ const OrderDetail = () => {
     const [variantMap, setVariantMap] = useState<Record<string, any>>({});
     const [colorMap, setColorMap] = useState<Record<string, any>>({});
 
+    const handleReturn = async () => {
+        Modal.confirm({
+            title: "Xác nhận trả hàng",
+            content: "Bạn có chắc chắn muốn trả lại đơn hàng này không?",
+            okText: "Xác nhận",
+            cancelText: "Thoát",
+            onOk: async () => {
+                try {
+                    const token = localStorage.getItem("token");
+
+                    await axios.put(
+                        `http://localhost:3000/api/orders/${order._id}/return`,
+                        {},
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
+
+                    message.success("Yêu cầu trả hàng thành công");
+                    window.location.reload();
+                } catch (error) {
+                    console.error("Lỗi khi trả hàng:", error);
+                    message.error("Trả hàng thất bại");
+                }
+            },
+        });
+    };
+
+
     const handleCancel = () => {
         let cancelReason = "";
 
@@ -342,6 +374,12 @@ const OrderDetail = () => {
                     {order.status === 'pending' && (
                         <Button danger onClick={handleCancel}>
                             Hủy đơn hàng
+                        </Button>
+                    )}
+
+                    {order.status === 'delivered' && (
+                        <Button danger onClick={handleReturn}>
+                            Hoàn đơn
                         </Button>
                     )}
                 </div>
