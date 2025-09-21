@@ -37,39 +37,44 @@ const CreateVariant = () => {
       return;
     }
 
-    const formData = new FormData();
-    formData.append("product_id", values.product_id);
-    formData.append("size", values.size);
-    formData.append("color", values.color);
-    formData.append("price", values.price);
-    formData.append("import_price", values.import_price);
-    formData.append("gender", values.gender);
-    formData.append("initial_stock", values.initial_stock);
-    formData.append("weight", values.weight);
-    formData.append("length", values.length);
-    formData.append("width", values.width);
-    formData.append("height", values.height);
+    // Nếu chọn nhiều size, tạo biến thể cho từng size
+    const sizesArr = Array.isArray(values.size) ? values.size : [values.size];
+    let successCount = 0;
+    let failCount = 0;
 
-    imageFiles.forEach((file: File) => {
-      formData.append("images", file);
-    });
+    sizesArr.forEach((sizeId: string, idx: number) => {
+      const formData = new FormData();
+      formData.append("product_id", values.product_id);
+      formData.append("size", sizeId);
+      formData.append("color", values.color);
+      formData.append("price", values.price);
+      formData.append("import_price", values.import_price);
+      formData.append("gender", values.gender);
+      formData.append("initial_stock", values.initial_stock);
+      formData.append("weight", values.weight);
+      formData.append("length", values.length);
+      formData.append("width", values.width);
+      formData.append("height", values.height);
 
-    mutate(formData, {
-      onSuccess: () => {
-        messageApi.success("Thêm biến thể thành công!");
-        queryClient.invalidateQueries({ queryKey: ['variants'] });
-        setTimeout(() => navigate("/admin/variants"), 1000);
-      },
-      onError: (error: any) => {
-        const backendErrors = error?.response?.data?.errors;
+      imageFiles.forEach((file: File) => {
+        formData.append("images", file);
+      });
 
-        if (Array.isArray(backendErrors) && backendErrors.length > 0) {
-          message.error(backendErrors[0].message);
-        } else {
-          message.error(error?.response?.data?.message || "Lỗi khi thêm biến thể.");
+      mutate(formData, {
+        onSuccess: () => {
+          successCount++;
+          if (successCount + failCount === sizesArr.length) {
+            messageApi.success(`Thêm ${successCount} biến thể thành công!`);
+            queryClient.invalidateQueries({ queryKey: ['variants'] });
+            setTimeout(() => navigate("/admin/variants"), 1000);
+          }
+        },
+        onError: (err: any) => {
+          failCount++;
+          messageApi.error("Thêm biến thể thất bại!");
+          console.error("Lỗi khi thêm biến thể:", err);
         }
-        console.error("Lỗi khi thêm biến thể:", error);
-      }
+      });
     });
   };
 
@@ -109,7 +114,10 @@ const CreateVariant = () => {
           name="size"
           rules={[{ required: true, message: 'Vui lòng chọn ít nhất một kích thước!' }]}
         >
-          <Select placeholder="Chọn kích thước">
+          <Select
+            mode="multiple" // Cho phép chọn nhiều size
+            placeholder="Chọn kích thước"
+          >
             {sizes?.map((size: any) => (
               <Select.Option key={size._id} value={size._id}>
                 {size.size}

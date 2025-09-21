@@ -66,7 +66,23 @@ const BestSellingProducts = () => {
     return <div className="text-center py-10"><Spin /></div>;
   }
 
-  const sortedVariants = [...variants]
+  // Lọc: chỉ giữ một biến thể cho mỗi cặp sản phẩm + màu
+  const uniqueVariantsMap = new Map<string, typeof variants[0]>();
+  variants.forEach(variant => {
+    const productId = typeof variant.product_id === 'object' ? variant.product_id._id : variant.product_id;
+    const colorId = typeof variant.color === 'object' ? variant.color._id : variant.color;
+    const key = `${productId}_${colorId}`;
+    // Nếu chưa có hoặc biến thể này mới hơn thì thay thế
+    if (
+      !uniqueVariantsMap.has(key) ||
+      new Date(variant.createdAt ?? 0).getTime() > new Date(uniqueVariantsMap.get(key)?.createdAt ?? 0).getTime()
+    ) {
+      uniqueVariantsMap.set(key, variant);
+    }
+  });
+  const uniqueVariants = Array.from(uniqueVariantsMap.values());
+
+  const sortedVariants = [...uniqueVariants]
     .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
     .slice(0, 10);
 
