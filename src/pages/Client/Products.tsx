@@ -198,9 +198,27 @@ const Products = () => {
     return total / relatedReviews.length;
   };
 
+  // Nhóm biến thể theo product + color, chỉ lấy mới nhất
+  const uniqueVariants = Object.values(
+    filteredVariantsByProduct.reduce((acc, v) => {
+      const productId = typeof v.product_id === 'object' ? v.product_id._id : v.product_id;
+      const colorId = typeof v.color === 'object' ? v.color._id : v.color;
+      const key = `${productId}-${colorId}`;
+
+      if (
+        !acc[key] ||
+        new Date(v.createdAt ?? 0).getTime() > new Date(acc[key].createdAt ?? 0).getTime()
+      ) {
+        acc[key] = v;
+      }
+      return acc;
+    }, {} as Record<string, IVariant>)
+  );
+
+  // Phân trang trên danh sách đã gộp
   const startIndex = (currentPage - 1) * pageSize;
   const endIndex = startIndex + pageSize;
-  const paginatedVariants = filteredVariantsByProduct.slice(startIndex, endIndex);
+  const paginatedVariants = uniqueVariants.slice(startIndex, endIndex);
 
   if (loadingReviews) {
     return (
@@ -398,7 +416,7 @@ const Products = () => {
               <Pagination
                 current={currentPage}
                 pageSize={pageSize}
-                total={filteredVariants.length}
+                total={uniqueVariants.length}
                 onChange={(page) => setCurrentPage(page)}
                 showSizeChanger={false}
               />
