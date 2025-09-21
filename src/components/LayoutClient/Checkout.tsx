@@ -860,6 +860,16 @@ const Checkout = () => {
                         <Text>Phí vận chuyển:</Text>
                         <Text>{shippingFee.toLocaleString()} đ</Text>
                       </div>
+                      {formData.voucher_code && (
+                        <div className="flex justify-between mt-2">
+                          <Text>Mã giảm giá:</Text>
+                          <Text className="text-red-600">
+                            {formData.voucher_type === "percentage"
+                              ? `- ${formData.voucher_value}%`
+                              : `- ${formData.voucher_value?.toLocaleString()} đ`}
+                          </Text>
+                        </div>
+                      )}
 
                       <div className="flex justify-between mt-2">
                         <Text strong className="text-lg">Tổng cộng:</Text>
