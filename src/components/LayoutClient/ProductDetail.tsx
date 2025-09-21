@@ -237,14 +237,19 @@ const ProductDetail = () => {
   const totalReviews = reviews.length;
 
   const ratingStats = [1, 2, 3, 4, 5].reduce((acc: Record<number, number>, star) => {
-    const count = reviews.filter((r) => r.rating === star).length;
+    const count = filteredReviews.filter((r) => r.rating === star).length;
     acc[star] = count;
     return acc;
   }, {} as Record<number, number>);
 
-  const avgRating = Number(
-    (reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
-  );
+  // Điểm trung bình của biến thể
+  const avgRating = totalReviews
+    ? Number(
+      (
+        filteredReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews
+      ).toFixed(1)
+    )
+    : 0;
 
   const handleBuyNow = () => {
     if (!selectedVariant || !selectedVariant._id) {
