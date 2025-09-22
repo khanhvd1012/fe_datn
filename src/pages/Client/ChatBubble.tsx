@@ -252,21 +252,25 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
                       className={`message-item ${message.sender_id.role === 'user' ? 'message-right' : 'message-left'}`}
                     >
                       <div className="message-content">
-                        {message.images && message.images.length > 0 ? (
-                          <div className="message-images">
-                            {message.images.map((img, i) => (
-                              <img key={i} src={img} alt="chat-img" className="chat-image" />
-                            ))}
-                          </div>
-                        ) : (
+                        {message.content && (
                           <div className="message-text">{message.content}</div>
                         )}
+
+                        {message.images && message.images.length > 0 && (
+                          <div className="message-images">
+                            {message.images.map((img, i) => (
+                              <img key={i} src={img} alt="chat-img" className="chat-image" style={{ width: 200 }} />
+                            ))}
+                          </div>
+                        )}
+
                         <div className="message-meta">
                           <span className="message-sender">{message.sender_id.username}</span>
                           <span className="message-time">{formatTime(message.createdAt)}</span>
                           {message.isEdited && <span className="message-edited">(đã chỉnh sửa)</span>}
                         </div>
                       </div>
+
                     </div>
                   ))}
                 </div>
