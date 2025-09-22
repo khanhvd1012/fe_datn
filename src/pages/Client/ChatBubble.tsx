@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useForm } from 'react-hook-form';
 import {
   MessageCircle,
   X,
@@ -20,7 +19,7 @@ interface ChatBubbleProps {
 }
 
 const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
-  const { messages, chatRoom, aiActive, isLoading, error, form, sendMessage } = useChat();
+  const { messages, chatRoom, isLoading, error, form, sendMessage } = useChat();
   const [isMinimized, setIsMinimized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -28,6 +27,13 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
   const messageValue = watch('message');
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files));
+    }
+  };
 
   // Theo dõi sự kiện cuộn để hiển thị nút mũi tên
   useEffect(() => {
@@ -92,8 +98,15 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
 
   // Gửi tin nhắn
   const handleSendMessage = async (data: ChatFormData) => {
-    if (!data.message.trim() || !chatRoom) return;
+    if (!data.message.trim() && selectedFiles.length === 0) return;
 
+    const formData = new FormData();
+    formData.append("content", data.message.trim());
+    selectedFiles.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    // Thêm tin nhắn tạm (local)
     const tempMessage: ChatMessage = {
       _id: `temp-${Date.now()}`,
       chatRoom_id: chatRoom._id,
@@ -103,26 +116,27 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
         role: 'user',
       },
       content: data.message.trim(),
-      type: 'text',
+      images: selectedFiles.map(file => URL.createObjectURL(file)),
+      type: selectedFiles.length > 0 ? 'image' : 'text',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isTemp: true,
     };
-
     setLocalMessages(prev => [...prev, tempMessage]);
-    reset();
 
-    // Sau khi gửi → chờ 1s rồi auto scroll
-    setTimeout(() => {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-      setShowScrollBtn(false);
-    }, 1000);
+    reset();
+    setSelectedFiles([]);
 
     try {
-      const response = await sendMessage(data);
+      // chỉ gọi 1 lần để lấy kết quả từ server
+      const response = await sendMessage(formData);
+
       if (response && response.data) {
         setLocalMessages(prev => {
+          // Xoá tin nhắn tạm trước đó
           const updatedMessages = prev.filter(msg => !msg.isTemp);
+
+          // Chuẩn hoá tin nhắn từ server
           const fixedMessages = response.data.map((msg: ChatMessage) => ({
             ...msg,
             sender_id: {
@@ -130,13 +144,11 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
               role: msg.sender_id?.role || 'user',
             },
           }));
+
           return [...updatedMessages, ...fixedMessages];
         });
       }
-    } catch (err: any) {
-      setLocalMessages(prev =>
-        prev.filter(msg => !msg.isTemp || msg._id !== tempMessage._id)
-      );
+    } catch (err) {
       console.error('Error sending message:', err);
     }
   };
@@ -240,7 +252,15 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
                       className={`message-item ${message.sender_id.role === 'user' ? 'message-right' : 'message-left'}`}
                     >
                       <div className="message-content">
-                        <div className="message-text">{message.content}</div>
+                        {message.images && message.images.length > 0 ? (
+                          <div className="message-images">
+                            {message.images.map((img, i) => (
+                              <img key={i} src={img} alt="chat-img" className="chat-image" />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="message-text">{message.content}</div>
+                        )}
                         <div className="message-meta">
                           <span className="message-sender">{message.sender_id.username}</span>
                           <span className="message-time">{formatTime(message.createdAt)}</span>
@@ -258,9 +278,40 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ isOpen, onToggle }) => {
 
           {/* Input Form */}
           <div className="chat-input-container">
+            {selectedFiles.length > 0 && (
+              <div className="chat-preview-images">
+                {selectedFiles.map((file, index) => (
+                  <div key={index} className="chat-preview-item">
+                    <img
+                      src={URL.createObjectURL(file)}
+                      alt={`preview-${index}`}
+                      className="chat-preview-img"
+                    />
+                    <button
+                      type="button"
+                      className="remove-img-btn"
+                      onClick={() =>
+                        setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+                      }
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
             <form onSubmit={handleSubmit(handleSendMessage)} className="chat-form">
               <div className="chat-input-wrapper">
-                <button type="button" className="chat-input-btn"><Paperclip size={20} /></button>
+                <label className="chat-input-btn">
+                  <Paperclip size={20} />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    hidden
+                    onChange={(e) => handleFileChange(e)}
+                  />
+                </label>
                 <input
                   {...register('message', { required: 'Vui lòng nhập tin nhắn' })}
                   type="text"

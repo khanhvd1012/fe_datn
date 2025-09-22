@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   MessageCircle,
   Users,
@@ -16,7 +16,7 @@ import { useAdminChat } from '../../hooks/useChat';
 import type { ChatRoom, ChatMessage } from '../../interface/chat';
 import '../../components/css/Chat_Page.css';
 
-const ChatPage: React.FC = () => {
+const ChatPage = () => {
   const {
     rooms,
     selectedRoom,
@@ -24,9 +24,9 @@ const ChatPage: React.FC = () => {
     isLoading,
     error,
     form,
-    onSubmit,
     fetchRooms,
     selectRoom,
+    sendMessage
   } = useAdminChat();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -39,6 +39,8 @@ const ChatPage: React.FC = () => {
   const [shouldScrollOnRoomChange, setShouldScrollOnRoomChange] = useState(false);
   const [shouldScrollOnSend, setShouldScrollOnSend] = useState(false);
   const [showScrollBtn, setShowScrollBtn] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Fetch rooms ban đầu
   useEffect(() => {
@@ -65,7 +67,7 @@ const ChatPage: React.FC = () => {
     if (!messages || messages.length === 0) return;
 
     const lastMsg = messages[messages.length - 1];
-    
+
     // Chỉ tăng unread count khi tin nhắn từ phòng khác và từ user
     if (lastMsg.chatRoom_id !== selectedRoom?._id && lastMsg.sender_id.role === 'user') {
       setUnreadCounts(prev => ({
@@ -126,30 +128,42 @@ const ChatPage: React.FC = () => {
   };
 
   // Xử lý gửi tin nhắn
-  const handleSendMessage = async (data: { message: string }) => {
-    if (data.message.trim() && selectedRoom) {
-      console.log('Sending message...'); // Debug log
-      setShouldScrollOnSend(true); // Set flag để scroll sau khi tin nhắn được thêm
-      
-      try {
-        await onSubmit(); // Gửi tin nhắn
-        reset(); // Reset form
-        console.log('Message sent successfully'); // Debug log
-        
-        // Scroll sau 2-3 giây
-        setTimeout(() => {
-          if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-            console.log('Delayed scroll executed after 2.5 seconds'); // Debug log
-          }
-          setShouldScrollOnSend(false);
-        }, 2500); // 2.5 giây
-      } catch (error) {
-        console.error('Error sending message:', error);
-        setShouldScrollOnSend(false);
+  // Xử lý gửi tin nhắn
+  const handlee = async (data: { message: string }) => {
+    if (!data.message.trim() && selectedFiles.length === 0) return;
+    if (!selectedRoom) return;
+
+    try {
+      const formData = new FormData();
+
+      // Nếu có text
+      if (data.message.trim()) {
+        formData.append("content", data.message.trim());
       }
+
+      // Nếu có ảnh
+      selectedFiles.forEach((file) => {
+        formData.append("images", file);
+      });
+
+      await sendMessage(formData); // gửi FormData thay vì gọi onSubmit()
+
+      reset(); // reset input text
+      setSelectedFiles([]); // clear ảnh đã chọn
+      setShouldScrollOnSend(true);
+
+      setTimeout(() => {
+        if (messagesEndRef.current) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+        setShouldScrollOnSend(false);
+      }, 800);
+    } catch (error) {
+      console.error("Error sending message:", error);
+      setShouldScrollOnSend(false);
     }
   };
+
 
   const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -295,6 +309,13 @@ const ChatPage: React.FC = () => {
                               {message.sender_id.username} ({message.sender_id.role})
                             </div>
                             <div className="message-text">{message.content}</div>
+                            {message.images && message.images.length > 0 && (
+                              <div className="message-images">
+                                {message.images.map((img, i) => (
+                                  <img key={i} src={img} alt="chat-img" className="chat-message-img" style={{ width: 300 }} />
+                                ))}
+                              </div>
+                            )}
                             <div className="message-meta">
                               <span className="message-time">{formatTime(message.createdAt)}</span>
                               {message.isEdited && <span className="message-edited">(đã chỉnh sửa)</span>}
@@ -352,25 +373,71 @@ const ChatPage: React.FC = () => {
 
               {/* Input */}
               <div className="chat-page-input-container">
-                <form onSubmit={handleSubmit(handleSendMessage)} className="chat-page-form">
+                <form onSubmit={handleSubmit(handlee)} className="chat-page-form">
+                  {/* Preview ảnh */}
+                  {selectedFiles.length > 0 && (
+                    <div className="chat-preview-images">
+                      {selectedFiles.map((file, index) => (
+                        <div key={index} className="chat-preview-item">
+                          <img
+                            src={URL.createObjectURL(file)}
+                            alt={`preview-${index}`}
+                            className="chat-preview-img"
+                          />
+                          <button
+                            type="button"
+                            className="remove-img-btn"
+                            onClick={() =>
+                              setSelectedFiles(prev => prev.filter((_, i) => i !== index))
+                            }
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   <div className="chat-page-input-wrapper">
+                    {/* Nút chọn ảnh */}
+                    <label className="upload-btn">
+                      📎
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        hidden
+                        onChange={(e) => {
+                          if (e.target.files) {
+                            setIsUploading(true); // vừa chọn ảnh → disable nút gửi
+                            const newFiles = Array.from(e.target.files);
+                            setSelectedFiles(prev => [...prev, ...newFiles]);
+
+                            // giả sử cần delay nhỏ để state update xong rồi mới cho gửi
+                            setTimeout(() => {
+                              setIsUploading(false);
+                            }, 300); // 0.3s là đủ mượt
+                          }
+                        }}
+                      />
+                    </label>
+
                     <input
-                      {...register('message', { required: 'Vui lòng nhập tin nhắn' })}
+                      {...register('message')}
                       type="text"
                       placeholder="Nhập tin nhắn..."
                       className="chat-page-input"
                     />
-                    <button type="submit" className="chat-page-send-btn" disabled={!messageValue?.trim()}>
+
+                    <button
+                      type="submit"
+                      className="chat-page-send-btn"
+                      disabled={isUploading || !messageValue?.trim()}
+                    >
                       <Send size={20} />
                     </button>
                   </div>
                 </form>
-                {error && (
-                  <div className="chat-page-disconnected">
-                    <AlertCircle size={16} />
-                    <span>{error}</span>
-                  </div>
-                )}
               </div>
             </>
           ) : (

@@ -8,6 +8,7 @@ export interface ChatMessage {
   };
   receiver_id?: string | null;
   content: string;
+  images: string[];
   type: 'text' | 'image' | 'file' | 'system';
   isEdited?: boolean;
   isTemp?: boolean;

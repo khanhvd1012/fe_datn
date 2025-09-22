@@ -1,5 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Form, InputNumber, message, Select, Skeleton, Upload, Typography, Row, Col } from 'antd';
+import { Button, Form, InputNumber, message, Select, Skeleton, Upload, Row, Col } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useUpdateVariant, useVariant } from '../../../hooks/useVariants';

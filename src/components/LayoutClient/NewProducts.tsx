@@ -25,7 +25,7 @@ const NewProducts = () => {
     (async () => {
       try {
         const [prodRes, varRes] = await Promise.all([
-          axios.get('http://localhost:3000/api/products?limit=4'),
+          axios.get('http://localhost:3000/api/products'),
           axios.get('http://localhost:3000/api/variants'),
         ]);
         setProducts(prodRes.data?.data?.products || []);
@@ -138,7 +138,7 @@ const NewProducts = () => {
             style={{ position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)', zIndex: 2 }}
           />
           <div ref={sliderRef} style={{ display: 'flex', overflowX: 'hidden', scrollBehavior: 'smooth' }}>
-            {uniqueColorVariants.slice(0, 10).map(variant => {
+            {uniqueColorVariants.slice(0, 12).map(variant => {
               const currentColorId = getId(variant.color);
               const sameProductVariants = variants.filter(v => getId(v.product_id) === getId(variant.product_id));
               const sortedByCurrentFirst = [

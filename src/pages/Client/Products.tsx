@@ -83,7 +83,7 @@ const Products = () => {
   const rawVariants = (() => {
     if (sortOption === 'top-selling') {
       return topSelling
-        .map(item => allVariants.find(v => v._id === item._id)) // dùng _id trực tiếp
+        .map(item => allVariants.find(v => v._id === item._id)) 
         .filter(Boolean) as IVariant[];
     }
     if (sortOption === 'top-rated') {
@@ -95,7 +95,12 @@ const Products = () => {
   })();
 
   const sortedVariants = [...rawVariants].sort((a, b) => {
-    if (sortOption === 'top-selling' || sortOption === 'top-rated') return 0;
+    if (sortOption === 'top-selling') {
+      return (b.totalSold ?? 0) - (a.totalSold ?? 0);
+    }
+    if (sortOption === 'top-rated') {
+      return (b.averageRating ?? 0) - (a.averageRating ?? 0);
+    }
 
     const aPrice = a.price ?? 0;
     const bPrice = b.price ?? 0;

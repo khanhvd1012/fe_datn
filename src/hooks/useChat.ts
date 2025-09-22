@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { chatAPI } from '../service/chatAPI';
 import type { ChatMessage, ChatRoom, ChatFormData } from '../interface/chat';
 
+export type SendMessagePayload = ChatFormData | FormData;
+
 export const useChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [chatRoom, setChatRoom] = useState<ChatRoom | null>(null);
@@ -78,23 +80,31 @@ export const useChat = () => {
     }
   }, []);
 
-  // Gửi tin nhắn
-  const sendMessage = useCallback(async (data: ChatFormData) => {
-    if (!data.message.trim()) {
-      setError('Tin nhắn không được để trống');
-      return;
-    }
-
+  // useChat.ts
+  const sendMessage = useCallback(async (payload: SendMessagePayload) => {
     try {
       setError(null);
-      const response = await chatAPI.sendMessage({
-        content: data.message.trim(),
-        messageType: 'text',
-      });
+
+      let formData: FormData;
+      if (payload instanceof FormData) {
+        // Nếu đã truyền vào FormData (text + ảnh) thì dùng luôn
+        formData = payload;
+      } else {
+        // Nếu chỉ có text thì tự tạo FormData
+        formData = new FormData();
+        if (payload.message.trim()) {
+          formData.append("content", payload.message.trim());
+        }
+      }
+
+      const response = await chatAPI.sendMessage(formData);
+
       setMessages(response.chatHistory || []);
       setChatRoom(response.chatRoom || null);
       setAiActive(response.aiActive || false);
+
       form.reset();
+      return response;
     } catch (err: any) {
       handleError(err);
     }
@@ -205,26 +215,29 @@ export const useAdminChat = () => {
   }, [fetchRoomMessages]);
 
   // Gửi tin nhắn từ admin
-  const sendMessage = useCallback(async (data: ChatFormData) => {
-    if (!data.message.trim() || !selectedRoom) {
-      setError('Vui lòng chọn phòng chat và nhập tin nhắn');
+  const sendMessage = useCallback(async (payload: SendMessagePayload) => {
+    if (!selectedRoom) {
+      setError('Vui lòng chọn phòng chat');
       return;
     }
 
     try {
       setError(null);
-      const messageData = {
-        content: data.message.trim(),
-        messageType: 'text' as const,
-      };
 
-      // Gửi qua API
-      await chatAPI.sendAdminMessage(selectedRoom._id, messageData);
+      let formData: FormData;
+      if (payload instanceof FormData) {
+        formData = payload;
+      } else {
+        formData = new FormData();
+        if (payload.message.trim()) {
+          formData.append("content", payload.message.trim());
+        }
+      }
 
-      // Refresh messages
+      await chatAPI.sendAdminMessage(selectedRoom._id, formData);
+
+      // Refresh messages sau khi gửi
       await pollRoomMessages();
-
-      // Reset form
       form.reset();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Lỗi khi gửi tin nhắn');

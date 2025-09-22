@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { ChatMessage, ChatRoom, SendMessageRequest } from '../interface/chat';
+import type { SendMessageRequest } from '../interface/chat';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -31,18 +31,22 @@ export const chatAPI = {
 
     const axiosInstance = createAxiosInstance();
     const response = await axiosInstance.get('/user/history');
-    
+
     // Update cache
     cache.data = response.data;
     cache.timestamp = now;
-    
+
     return response.data; // Trả về toàn bộ response.data
   },
 
-  sendMessage: async (data: SendMessageRequest) => {
+  sendMessage: async (data: FormData) => {
     const axiosInstance = createAxiosInstance();
-    const response = await axiosInstance.post('/user/send', data);
-    return response.data; // Trả về toàn bộ response.data
+    const response = await axiosInstance.post('/user/send', data, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    });
+    return response.data;
   },
 
   // Admin APIs
@@ -58,9 +62,13 @@ export const chatAPI = {
     return response.data;
   },
 
-  sendAdminMessage: async (chatRoomId: string, data: SendMessageRequest) => {
+  sendAdminMessage: async (chatRoomId: string, data: FormData) => {
     const axiosInstance = createAxiosInstance();
-    const response = await axiosInstance.post(`/admin/send/${chatRoomId}`, data);
+    const response = await axiosInstance.post(`/admin/send/${chatRoomId}`, data, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    });
     return response.data.newMessage;
   },
 

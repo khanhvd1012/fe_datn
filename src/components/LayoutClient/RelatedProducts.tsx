@@ -14,14 +14,14 @@ const RelatedProducts = () => {
   const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const sliderRef = useRef<HTMLDivElement>(null);
   const { mutate: addToCart } = useAddToCart();
-  const isLoggedIn = () => {
-    return !!localStorage.getItem("token");
-  };
+
+  const isLoggedIn = () => !!localStorage.getItem("token");
+
   // Tính rating trung bình cho variant
   const getAverageRatingForVariant = (variantId: string) => {
     const related = reviews.filter(r => {
       const variant = r.order_item?.variant_id;
-      return (typeof variant === 'string' ? variant : variant?._id) === variantId;
+      return (typeof variant === "string" ? variant : variant?._id) === variantId;
     });
     return related.length
       ? related.reduce((sum, r) => sum + r.rating, 0) / related.length
@@ -31,29 +31,35 @@ const RelatedProducts = () => {
   // Auto scroll
   useEffect(() => {
     let interval: NodeJS.Timeout;
+
     const startScroll = () => {
       interval = setInterval(() => {
         if (sliderRef.current) {
           const { offsetWidth, scrollLeft, scrollWidth } = sliderRef.current;
           if (scrollLeft + offsetWidth >= scrollWidth) {
-            sliderRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+            sliderRef.current.scrollTo({ left: 0, behavior: "smooth" });
           } else {
-            sliderRef.current.scrollBy({ left: offsetWidth, behavior: 'smooth' });
+            sliderRef.current.scrollBy({ left: offsetWidth, behavior: "smooth" });
           }
         }
       }, 3000);
     };
+
+    const stopScroll = () => clearInterval(interval);
+
     const container = sliderRef.current;
     if (container) {
-      container.addEventListener('mouseenter', () => clearInterval(interval));
-      container.addEventListener('mouseleave', startScroll);
+      container.addEventListener("mouseenter", stopScroll);
+      container.addEventListener("mouseleave", startScroll);
     }
+
     startScroll();
+
     return () => {
       clearInterval(interval);
       if (container) {
-        container.removeEventListener('mouseenter', () => clearInterval(interval));
-        container.removeEventListener('mouseleave', startScroll);
+        container.removeEventListener("mouseenter", stopScroll);
+        container.removeEventListener("mouseleave", startScroll);
       }
     };
   }, [products]);
@@ -62,164 +68,156 @@ const RelatedProducts = () => {
     return <div className="text-center py-10"><Spin /></div>;
   }
 
+  // Chuẩn bị dữ liệu: lấy 12 biến thể mới nhất (mỗi màu duy nhất 1 variant)
+  const variantsToShow = products.flatMap(product => {
+    const sortedVariants = (product.variants || [])
+      .slice()
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+
+    const uniqueVariants = sortedVariants.filter((v, i, self) => {
+      const colorId = typeof v.color === "object" ? v.color._id : v.color;
+      return i === self.findIndex(t => {
+        const tColorId = typeof t.color === "object" ? t.color._id : t.color;
+        return tColorId === colorId;
+      });
+    });
+
+    return uniqueVariants.map(variant => ({ product, variant }));
+  }).slice(0, 12);
+
   return (
-    <div style={{ padding: '40px 20px' }}>
-      <Title level={2} style={{ textAlign: 'center', fontSize: '20px', marginBottom: 10 }}>
-        <span style={{ display: 'inline-block', paddingBottom: 4, position: 'relative' }}>
+    <div style={{ padding: "40px 20px" }}>
+      <Title level={2} style={{ textAlign: "center", fontSize: "20px", marginBottom: 10 }}>
+        <span style={{ display: "inline-block", paddingBottom: 4, position: "relative" }}>
           Sản phẩm liên quan
           <span
             style={{
-              position: 'absolute',
-              left: '25%',
+              position: "absolute",
+              left: "25%",
               bottom: 0,
-              width: '50%',
-              borderBottom: '2px solid black',
-              transform: 'translateY(100%)',
+              width: "50%",
+              borderBottom: "2px solid black",
+              transform: "translateY(100%)",
             }}
           />
         </span>
       </Title>
 
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: "relative" }}>
         {/* Nút trái */}
         <Button
           shape="circle" size="small" icon={<LeftOutlined />}
-          onClick={() => sliderRef.current?.scrollBy({ left: -sliderRef.current.offsetWidth, behavior: 'smooth' })}
-          style={{ position: 'absolute', top: '50%', left: 0, transform: 'translateY(-50%)', zIndex: 2 }}
+          onClick={() => sliderRef.current?.scrollBy({ left: -sliderRef.current.offsetWidth, behavior: "smooth" })}
+          style={{ position: "absolute", top: "50%", left: 0, transform: "translateY(-50%)", zIndex: 2 }}
         />
         {/* Nút phải */}
         <Button
           shape="circle" size="small" icon={<RightOutlined />}
-          onClick={() => sliderRef.current?.scrollBy({ left: sliderRef.current.offsetWidth, behavior: 'smooth' })}
-          style={{ position: 'absolute', top: '50%', right: 0, transform: 'translateY(-50%)', zIndex: 2 }}
+          onClick={() => sliderRef.current?.scrollBy({ left: sliderRef.current.offsetWidth, behavior: "smooth" })}
+          style={{ position: "absolute", top: "50%", right: 0, transform: "translateY(-50%)", zIndex: 2 }}
         />
 
-        <div ref={sliderRef} style={{ display: 'flex', overflowX: 'hidden', scrollBehavior: 'smooth' }}>
-          {products.flatMap(product => {
-            // Sắp xếp biến thể mới nhất trước
-            const sortedVariants = (product.variants || [])
-              .slice()
-              .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+        <div ref={sliderRef} style={{ display: "flex", overflowX: "hidden", scrollBehavior: "smooth" }}>
+          {variantsToShow.map(({ product, variant }) => {
+            const currentColorId = typeof variant.color === "object" ? variant.color._id : variant.color;
 
-            // Lấy duy nhất 1 variant cho mỗi màu (ưu tiên mới nhất)
-            const uniqueVariants = sortedVariants.filter((v, i, self) => {
-              const colorId = typeof v.color === "object" ? v.color._id : v.color;
-              return i === self.findIndex(t => {
-                const tColorId = typeof t.color === "object" ? t.color._id : t.color;
-                return tColorId === colorId;
-              });
-            });
+            // Gom màu hiện tại lên trước, sau đó đến các màu khác
+            const colorOptions = [
+              ...(product.variants || [])
+                .filter(v => {
+                  const cid = typeof v.color === "object" ? v.color._id : v.color;
+                  return cid === currentColorId;
+                })
+                .map(v => ({
+                  id: typeof v.color === "object" ? v.color._id : v.color,
+                  code: typeof v.color === "object" ? v.color.code : "#ccc",
+                  name: typeof v.color === "object" ? v.color.name : "Màu",
+                })),
+              ...(product.variants || [])
+                .filter(v => {
+                  const cid = typeof v.color === "object" ? v.color._id : v.color;
+                  return cid !== currentColorId;
+                })
+                .map(v => ({
+                  id: typeof v.color === "object" ? v.color._id : v.color,
+                  code: typeof v.color === "object" ? v.color.code : "#ccc",
+                  name: typeof v.color === "object" ? v.color.name : "Màu",
+                })),
+            ];
 
-            return uniqueVariants.map(variant => {
-              const currentColorId = typeof variant.color === "object" ? variant.color._id : variant.color;
-
-              const colorOptions = [
-                // Màu hiện tại
-                ...uniqueVariants
-                  .filter(v => {
-                    const cid = typeof v.color === "object" ? v.color._id : v.color;
-                    return cid === currentColorId;
-                  })
-                  .map(v => ({
-                    id: typeof v.color === "object" ? v.color._id : v.color,
-                    code: typeof v.color === "object" ? v.color.code : "#ccc",
-                    name: typeof v.color === "object" ? v.color.name : "Màu",
-                  })),
-                // Các màu khác
-                ...uniqueVariants
-                  .filter(v => {
-                    const cid = typeof v.color === "object" ? v.color._id : v.color;
-                    return cid !== currentColorId;
-                  })
-                  .map(v => ({
-                    id: typeof v.color === "object" ? v.color._id : v.color,
-                    code: typeof v.color === "object" ? v.color.code : "#ccc",
-                    name: typeof v.color === "object" ? v.color.name : "Màu",
-                  })),
-              ];
-
-              return (
-                <div key={variant._id} style={{ flex: "0 0 auto", width: 250, padding: "0 10px", marginBottom: 20 }}>
-                  <Link
-                    to={`/products/${product.slug}`}
-                    state={{ variantId: variant._id }}
-                    className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
-                  >
-                    {/* Ảnh */}
-                    <div className="relative">
-                      <img
-                        src={variant.image_url?.[0] || "https://picsum.photos/200"}
-                        alt={product.name}
-                        className="w-full h-48 object-cover rounded-md"
-                      />
-                      {/* Nút giỏ hàng */}
-                      <div
-                        className="absolute top-2 right-2 z-10"
-                        onClick={e => {
-                          e.preventDefault();
-                          if (!isLoggedIn()) {
-                            import("antd").then(({ message }) => {
-                              message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!");
-                            });
-                            return;
-                          }
-                          if (variant.stock?.status === "outOfStock" || (variant.stock?.quantity ?? 0) <= 0) {
-                            import("antd").then(({ message }) => {
-                              message.error("Sản phẩm này đã hết hàng!");
-                            });
-                            return;
-                          }
-                          if (variant.status === "paused") {
-                            import("antd").then(({ message }) => {
-                              message.warning("Sản phẩm này đang tạm ngưng bán!");
-                            });
-                            return;
-                          }
-                          addToCart({ variant_id: variant._id!, quantity: 1 });
-                        }}
-                      >
-                        <div className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition">
-                          <ShoppingCartOutlined />
-                        </div>
+            return (
+              <div key={`${product._id}-${variant._id}`} style={{ flex: "0 0 auto", width: 250, padding: "0 10px", marginBottom: 20 }}>
+                <Link
+                  to={`/products/${product.slug}`}
+                  state={{ variantId: variant._id }}
+                  className="bg-white rounded-xl shadow text-center p-4 hover:shadow-lg transition block h-[370px]"
+                >
+                  {/* Ảnh */}
+                  <div className="relative">
+                    <img
+                      src={variant.image_url?.[0] || "https://picsum.photos/200"}
+                      alt={product.name}
+                      className="w-full h-48 object-cover rounded-md"
+                    />
+                    {/* Nút giỏ hàng */}
+                    <div
+                      className="absolute top-2 right-2 z-10"
+                      onClick={e => {
+                        e.preventDefault();
+                        if (!isLoggedIn()) {
+                          import("antd").then(({ message }) => message.warning("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng!"));
+                          return;
+                        }
+                        if (variant.stock?.status === "outOfStock" || (variant.stock?.quantity ?? 0) <= 0) {
+                          import("antd").then(({ message }) => message.error("Sản phẩm này đã hết hàng!"));
+                          return;
+                        }
+                        if (variant.status === "paused") {
+                          import("antd").then(({ message }) => message.warning("Sản phẩm này đang tạm ngưng bán!"));
+                          return;
+                        }
+                        addToCart({ variant_id: variant._id!, quantity: 1 });
+                      }}
+                    >
+                      <div className="w-10 h-10 rounded-full bg-white bg-opacity-70 text-black flex justify-center items-center cursor-pointer hover:scale-110 transition">
+                        <ShoppingCartOutlined />
                       </div>
                     </div>
+                  </div>
 
-                    {/* Chấm màu */}
-                    <div className="flex justify-center items-center gap-1 mt-2 pt-[4px]">
-                      {colorOptions.map(c => (
-                        <div
-                          key={c.id}
-                          className="w-4 h-4 rounded-full border"
-                          style={{
-                            backgroundColor: c.code,
-                            borderColor: c.id === currentColorId ? "black" : "#ccc",
-                          }}
-                          title={c.name}
-                        />
-                      ))}
-                    </div>
-
-                    {/* Tên, giá, rating */}
-                    <div className="mt-2 pt-[4px]"><Text strong>{product.name}</Text></div>
-                    <div className="mt-1 pt-[4px]">
-                      <Text>{variant.price?.toLocaleString("vi-VN")}đ</Text>
-                    </div>
-                    <div className="mt-1 flex justify-center pt-[4px]">
-                      <Rate
-                        disabled
-                        allowHalf
-                        value={getAverageRatingForVariant(variant._id!)}
-                        style={{ fontSize: 14 }}
+                  {/* Chấm màu */}
+                  <div className="flex justify-center items-center gap-1 mt-2 pt-[4px]">
+                    {colorOptions.map(c => (
+                      <div
+                        key={c.id}
+                        className="w-4 h-4 rounded-full border"
+                        style={{
+                          backgroundColor: c.code,
+                          borderColor: c.id === currentColorId ? "black" : "#ccc",
+                        }}
+                        title={c.name}
                       />
-                    </div>
-                  </Link>
-                </div>
-              );
-            });
+                    ))}
+                  </div>
+
+                  {/* Tên, giá, rating */}
+                  <div className="mt-2 pt-[4px]"><Text strong>{product.name}</Text></div>
+                  <div className="mt-1 pt-[4px]">
+                    <Text>{variant.price?.toLocaleString("vi-VN")}đ</Text>
+                  </div>
+                  <div className="mt-1 flex justify-center pt-[4px]">
+                    <Rate
+                      disabled
+                      allowHalf
+                      value={getAverageRatingForVariant(variant._id!)}
+                      style={{ fontSize: 14 }}
+                    />
+                  </div>
+                </Link>
+              </div>
+            );
           })}
-
         </div>
-
       </div>
     </div>
   );

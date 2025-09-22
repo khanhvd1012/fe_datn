@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
-import { Typography, Spin, Rate, Button } from 'antd';
+import { useEffect, useMemo, useRef } from 'react';
+import { Typography, Spin, Rate, Button, Skeleton } from 'antd';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useTopSellingVariants } from '../../hooks/useVariants';
@@ -13,15 +13,15 @@ const { Title, Text } = Typography;
 const BestSellingProducts = () => {
   const sliderRef = useRef<HTMLDivElement>(null);
   const { mutate: addToCart } = useAddToCart();
+
   const { data: variants = [], isLoading: loadingVariants } = useTopSellingVariants();
   const { data: reviews = [], isLoading: loadingReviews } = useReviews();
   const { data: products = [], isLoading: loadingProducts } = useQuery({
     queryKey: ['products'],
     queryFn: getProducts,
   });
-  const isLoggedIn = () => {
-    return !!localStorage.getItem("token");
-  };
+
+  const isLoggedIn = () => !!localStorage.getItem("token");
 
   const getAverageRatingForVariant = (variantId: string) => {
     const related = reviews.filter(r => {
@@ -32,6 +32,42 @@ const BestSellingProducts = () => {
       ? related.reduce((sum, r) => sum + r.rating, 0) / related.length
       : 0;
   };
+
+  const sortedVariants = useMemo(() => {
+    const uniqueVariantsMap = new Map<string, typeof variants[0]>();
+
+    variants.forEach(variant => {
+      const productId = typeof variant.product_id === 'object'
+        ? variant.product_id._id
+        : variant.product_id;
+      const colorId = typeof variant.color === 'object'
+        ? variant.color._id
+        : variant.color;
+      const key = `${productId}_${colorId}`;
+
+      if (
+        !uniqueVariantsMap.has(key) ||
+        (variant.totalSold ?? 0) > (uniqueVariantsMap.get(key)?.totalSold ?? 0) ||
+        (
+          (variant.totalSold ?? 0) === (uniqueVariantsMap.get(key)?.totalSold ?? 0) &&
+          new Date(variant.createdAt ?? 0).getTime() >
+          new Date(uniqueVariantsMap.get(key)?.createdAt ?? 0).getTime()
+        )
+      ) {
+        uniqueVariantsMap.set(key, variant);
+      }
+
+    });
+
+    return Array.from(uniqueVariantsMap.values())
+      .sort((a, b) => {
+        if ((b.totalSold ?? 0) !== (a.totalSold ?? 0)) {
+          return (b.totalSold ?? 0) - (a.totalSold ?? 0); 
+        }
+        return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime(); 
+      })
+      .slice(0, 12);
+  }, [variants]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -47,28 +83,32 @@ const BestSellingProducts = () => {
         }
       }, 3000);
     };
+
+    const stopScroll = () => clearInterval(interval);
     const container = sliderRef.current;
+
     if (container) {
-      container.addEventListener('mouseenter', () => clearInterval(interval));
+      container.addEventListener('mouseenter', stopScroll);
       container.addEventListener('mouseleave', startScroll);
     }
     startScroll();
+
     return () => {
       clearInterval(interval);
       if (container) {
-        container.removeEventListener('mouseenter', () => clearInterval(interval));
+        container.removeEventListener('mouseenter', stopScroll);
         container.removeEventListener('mouseleave', startScroll);
       }
     };
   }, [variants]);
 
   if (loadingVariants || loadingProducts || loadingReviews) {
-    return <div className="text-center py-10"><Spin /></div>;
+    return (
+      <div className="text-center py-10">
+        <Skeleton active paragraph={{ rows: 3 }} />
+      </div>
+    );
   }
-
-  const sortedVariants = [...variants]
-    .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
-    .slice(0, 10);
 
   return (
     <div className="px-5 py-10">
