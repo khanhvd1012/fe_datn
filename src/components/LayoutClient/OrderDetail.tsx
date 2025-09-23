@@ -23,8 +23,11 @@ const statusColor: Record<string, string> = {
     processing: 'blue',
     shipped: 'purple',
     delivered: 'green',
-    canceled: 'red',
+    return_requested: 'gold',
+    return_accepted: 'cyan',
+    return_rejected: 'volcano',
     returned: 'gray',
+    canceled: 'red',
 };
 
 const OrderDetail = () => {
@@ -35,19 +38,23 @@ const OrderDetail = () => {
     const [variantMap, setVariantMap] = useState<Record<string, any>>({});
     const [colorMap, setColorMap] = useState<Record<string, any>>({});
 
-    const handleReturn = async () => {
+    const handleReturn = () => {
         Modal.confirm({
-            title: "Xác nhận trả hàng",
-            content: "Bạn có chắc chắn muốn trả lại đơn hàng này không?",
+            title: "Xác nhận yêu cầu hoàn đơn",
+            content: "Bạn có chắc chắn muốn gửi yêu cầu hoàn (trả) đơn hàng này không?",
             okText: "Xác nhận",
             cancelText: "Thoát",
             onOk: async () => {
                 try {
                     const token = localStorage.getItem("token");
+                    if (!token) {
+                        message.error("Bạn cần đăng nhập");
+                        return Promise.reject();
+                    }
 
                     await axios.put(
-                        `http://localhost:3000/api/orders/${order._id}/return`,
-                        {},
+                        `http://localhost:3000/api/orders/${order._id}`,
+                        { status: "return_requested" },
                         {
                             headers: {
                                 Authorization: `Bearer ${token}`,
@@ -56,15 +63,17 @@ const OrderDetail = () => {
                         }
                     );
 
-                    message.success("Yêu cầu trả hàng thành công");
-                    window.location.reload();
+                    message.success("Đã gửi yêu cầu hoàn đơn hàng");
+                    setOrder((prev: any) => ({ ...prev, status: "return_requested" })); // cập nhật local
                 } catch (error) {
-                    console.error("Lỗi khi trả hàng:", error);
-                    message.error("Trả hàng thất bại");
+                    console.error("Yêu cầu hoàn đơn hàng thất bại:", error);
+                    message.error("Yêu cầu hoàn đơn hàng thất bại");
+                    return Promise.reject();
                 }
             },
         });
     };
+
 
 
     const handleCancel = () => {
@@ -315,10 +324,14 @@ const OrderDetail = () => {
                             {order.status === 'processing' && 'Đã xác nhận'}
                             {order.status === 'shipped' && 'Đang giao'}
                             {order.status === 'delivered' && 'Đã giao'}
-                            {order.status === 'canceled' && 'Đã hủy'}
+                            {order.status === 'return_requested' && 'Yêu cầu hoàn hàng'}
+                            {order.status === 'return_accepted' && 'Yêu cầu hoàn được chấp nhận'}
+                            {order.status === 'return_rejected' && 'Yêu cầu hoàn bị từ chối'}
                             {order.status === 'returned' && 'Đã trả hàng'}
+                            {order.status === 'canceled' && 'Đã hủy'}
                         </Tag>
                     </Descriptions.Item>
+
 
                     <Descriptions.Item label="Người nhận">
                         {shipping.name}
@@ -371,7 +384,7 @@ const OrderDetail = () => {
                         ⬅ Quay lại danh sách
                     </Button>
 
-                    {order.status === 'pending' && (
+                    {(order.status === "pending" || order.status === "processing") && (
                         <Button danger onClick={handleCancel}>
                             Hủy đơn hàng
                         </Button>
