@@ -166,6 +166,7 @@ const Orders = () => {
     processing: "blue",
     shipped: "purple",
     delivered: "green",
+    return_requested: "gold",
     return_accepted: "geekblue",
     return_rejected: "volcano",
     returned: "magenta",
@@ -177,6 +178,7 @@ const Orders = () => {
     processing: "Đang xử lý",
     shipped: "Đang giao",
     delivered: "Đã giao",
+    return_requested: "Yêu cầu hoàn hàng",
     return_accepted: "Chấp nhận hoàn hàng",
     return_rejected: "Từ chối hoàn hàng",
     returned: "Đã hoàn hàng",
@@ -378,26 +380,31 @@ const Orders = () => {
       title: "Cập nhật trạng thái",
       key: "updateStatus",
       render: (_: any, order: IOrder) => {
+        if (order.status === "canceled") {
+          return (
+            <Tag color={statusColorMap[order.status]}>
+              {statusLabelMap[order.status]}
+            </Tag>
+          );
+        }
+
         return (
           <Select
-            defaultValue={statusLabelMap[order.status]}
+            labelInValue
+            value={{ value: order.status, label: statusLabelMap[order.status] || order.status }}
             style={{ width: 160 }}
-            onChange={(label) => {
-              const newStatus = Object.entries(statusLabelMap).find(
-                ([, v]) => v === label
-              )?.[0] as IOrder["status"];
-              if (newStatus) handleUpdateStatus(order._id, newStatus);
-            }}
-            disabled={order.status === "canceled"}
+            onChange={({ value }) => handleUpdateStatus(order._id, value)}
           >
-            {Object.entries(statusLabelMap).map(([key, label]) => (
-              <Select.Option key={key} value={label}>
-                {label}
-              </Select.Option>
-            ))}
+            {Object.entries(statusLabelMap)
+              .filter(([key]) => !["canceled", "return_requested"].includes(key))
+              .map(([key, label]) => (
+                <Select.Option key={key} value={key}>
+                  {label}
+                </Select.Option>
+              ))}
           </Select>
         );
-      },
+      }
     },
     {
       title: "Thao tác",

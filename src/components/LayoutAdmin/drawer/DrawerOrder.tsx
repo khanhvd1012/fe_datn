@@ -1,4 +1,4 @@
-import { Drawer, Descriptions, Skeleton, Divider, Tag, Table } from 'antd';
+import { Drawer, Descriptions, Skeleton, Divider, Tag, Table, Typography } from 'antd';
 import type { IOrder } from '../../../interface/order';
 import type { ColumnsType } from 'antd/es/table';
 import { useColors } from '../../../hooks/useColors';
@@ -10,6 +10,8 @@ interface DrawerOrderProps {
   onClose: () => void;
   loading?: boolean;
 }
+
+const { Text } = Typography;
 
 const parseShippingAddress = (address: string) => {
   if (!address) return null;
@@ -36,84 +38,86 @@ const parseShippingAddress = (address: string) => {
   };
 };
 
+// Map trạng thái để dễ maintain
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  pending: { label: "Chờ xử lý", color: "orange" },
+  processing: { label: "Đang xử lý", color: "blue" },
+  shipped: { label: "Đang giao", color: "purple" },
+  delivered: { label: "Đã giao", color: "green" },
+  canceled: { label: "Đã hủy", color: "red" },
+  returned: { label: "Đã hoàn hàng", color: "magenta" },
+  return_requested: { label: "Yêu cầu hoàn hàng", color: "gold" },
+  return_accepted: { label: "Chấp nhận hoàn hàng", color: "geekblue" },
+  return_rejected: { label: "Từ chối hoàn hàng", color: "volcano" },
+};
+
 const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => {
   const { data: colors } = useColors();
   const { data: sizesData } = useSizes();
+
   const shipping =
     typeof order?.shipping_address === "string"
       ? parseShippingAddress(order.shipping_address)
       : order?.shipping_address;
 
   const renderStatus = (status: string) => {
-    switch (status) {
-      case "pending":
-        return <Tag color="blue">Chờ xử lý</Tag>;
-      case "processing":
-        return <Tag color="cyan">Đang xử lý</Tag>;
-      case "shipped":
-        return <Tag color="orange">Đang giao</Tag>;
-      case "delivered":
-        return <Tag color="green">Đã giao</Tag>;
-      case "canceled":
-        return <Tag color="red">Đã hủy</Tag>;
-      case "returned":
-        return <Tag color="purple">Đã trả hàng</Tag>;
-      default:
-        return <Tag color="default">Không rõ</Tag>;
-    }
+    const info = STATUS_MAP[status];
+    return info ? <Tag color={info.color}>{info.label}</Tag> : <Tag>Không rõ</Tag>;
   };
 
   const columns: ColumnsType<any> = [
     {
-      title: 'Tên sản phẩm',
-      key: 'product_name',
-      render: (_, record) => record.variant_id?.product_id?.name || "Không rõ",
-    },
-
-    {
-      title: 'Màu sắc',
-      key: 'color',
+      title: "Tên sản phẩm",
+      key: "product_name",
       render: (_, record) => {
-        const colorId = record.variant_id?.color;
-        const colorDetail = colors?.find((c: any) => c._id === colorId);
-
-        return colorDetail ? (
-          <span>{colorDetail.name}</span>
-        ) : (
-          "---"
+        const name = record.variant_id?.product_id?.name || "Không rõ";
+        return (
+          <Text ellipsis={{ tooltip: name }} style={{ maxWidth: 100 }}>
+            {name}
+          </Text>
         );
       },
     },
     {
-      title: 'Kích thước',
-      key: 'size',
+      title: "Màu sắc",
+      key: "color",
       render: (_, record) => {
-        const sizeId = record.variant_id?.size;
-        const sizeDetail = sizesData?.find((s: any) => s._id === sizeId);
-
-        return sizeDetail ? (
-          <span>{sizeDetail.size}</span>
-        ) : (
-          "---"
-        );
+        const color = (record.variant_id as any)?.color;
+        if (typeof color === "object") {
+          return color?.name || "---";
+        }
+        const colorDetail = colors?.find((c: any) => c._id === color);
+        return colorDetail ? colorDetail.name : "---";
       },
     },
-
     {
-      title: 'Giá',
-      dataIndex: 'price',
-      key: 'price',
-      render: (price: number) => `${price.toLocaleString('vi-VN')} ₫`,
+      title: "Kích thước",
+      key: "size",
+      render: (_, record) => {
+        const size = (record.variant_id as any)?.size;
+        if (typeof size === "object") {
+          return size?.size || "---";
+        }
+        const sizeDetail = sizesData?.find((s: any) => s._id === size);
+        return sizeDetail ? sizeDetail.size : "---";
+      },
     },
     {
-      title: 'Số lượng',
-      dataIndex: 'quantity',
-      key: 'quantity',
+      title: "Giá",
+      dataIndex: "price",
+      key: "price",
+      render: (price: number) => `${price.toLocaleString("vi-VN")} ₫`,
     },
     {
-      title: 'Tổng',
-      key: 'total',
-      render: (_, record) => `${(record.price * record.quantity).toLocaleString('vi-VN')} ₫`,
+      title: "Số lượng",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Tổng",
+      key: "total",
+      render: (_, record) =>
+        `${(record.price * record.quantity).toLocaleString("vi-VN")} ₫`,
     },
   ];
 
@@ -139,21 +143,23 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
               <Descriptions.Item label="Trạng thái">
                 {renderStatus(order.status)}
               </Descriptions.Item>
-              {order.status === 'canceled' && (
+
+              {order.status === "canceled" && (
                 <>
                   <Descriptions.Item label="Lý do hủy">
-                    {order.cancel_reason || '---'}
+                    {order.cancel_reason || "---"}
                   </Descriptions.Item>
                   <Descriptions.Item label="Ngày hủy">
                     {order.cancelled_at
-                      ? new Date(order.cancelled_at).toLocaleString('vi-VN')
-                      : '---'}
+                      ? new Date(order.cancelled_at).toLocaleString("vi-VN")
+                      : "---"}
                   </Descriptions.Item>
                 </>
               )}
+
               <Descriptions.Item label="Phương thức thanh toán">
-                {order.payment_method === 'cod'
-                  ? 'Thanh toán khi nhận hàng'
+                {order.payment_method === "cod"
+                  ? "Thanh toán khi nhận hàng"
                   : order.payment_method}
               </Descriptions.Item>
               <Descriptions.Item label="Tạm tính">
@@ -223,13 +229,13 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
             <Descriptions column={1} bordered size="small">
               <Descriptions.Item label="Ngày tạo">
                 {order.createdAt
-                  ? new Date(order.createdAt).toLocaleString('vi-VN')
-                  : '---'}
+                  ? new Date(order.createdAt).toLocaleString("vi-VN")
+                  : "---"}
               </Descriptions.Item>
               <Descriptions.Item label="Cập nhật lần cuối">
                 {order.updatedAt
-                  ? new Date(order.updatedAt).toLocaleString('vi-VN')
-                  : '---'}
+                  ? new Date(order.updatedAt).toLocaleString("vi-VN")
+                  : "---"}
               </Descriptions.Item>
             </Descriptions>
           </div>
