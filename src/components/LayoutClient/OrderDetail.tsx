@@ -200,8 +200,6 @@ const OrderDetail = () => {
 
     // công thức: tính shipping_fee
     const shippingFee = (order?.total_price || 0) - (order?.sub_total || 0) + (order?.voucher_discount || 0);
-    const finalPrice = order?.sub_total - (order?.voucher_discount || 0);
-
 
     useEffect(() => {
         const fetchColors = async () => {

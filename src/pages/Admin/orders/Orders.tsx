@@ -19,8 +19,11 @@ const Orders = () => {
   const { data: users } = useUsers();
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
-  const [cancelModalVisible, setCancelModalVisible] = useState(false);
-  const [selectedCancelReason, setSelectedCancelReason] = useState("");
+  const [selectedReason, setSelectedReason] = useState("");
+  const [reasonType, setReasonType] = useState<"cancel" | "return" | null>(null);
+  const [reasonModalVisible, setReasonModalVisible] = useState(false);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+
   const [filters, setFilters] = useState({
     user: "",
     createdAt: "",
@@ -126,8 +129,16 @@ const Orders = () => {
   };
 
   const showCancelReason = (reason: string) => {
-    setSelectedCancelReason(reason);
-    setCancelModalVisible(true);
+    setSelectedReason(reason);
+    setReasonType("cancel");
+    setReasonModalVisible(true);
+  };
+
+  const showReturnReason = (reason: string, images: string[] = []) => {
+    setSelectedReason(reason);
+    setSelectedImages(images);
+    setReasonType("return");
+    setReasonModalVisible(true);
   };
 
   const handleCancel = (id: string) => {
@@ -444,7 +455,21 @@ const Orders = () => {
             Xem lý do hủy
           </Button>
         ) : null,
-    }
+    },
+    {
+      title: "Lý do hoàn hàng",
+      key: "returnReason",
+      render: (_: any, record: IOrder) =>
+        (["return_requested", "return_accepted", "return_rejected", "returned"].includes(record.status)) &&
+          record.return_reason ? (
+          <Button
+            type="link"
+            onClick={() => showReturnReason(record.return_reason!, record.images || [])}
+          >
+            Xem lý do hoàn hàng
+          </Button>
+        ) : null,
+    },
   ];
 
   if (isLoading) return <Skeleton active />;
@@ -470,18 +495,41 @@ const Orders = () => {
         onClose={() => setDrawerVisible(false)}
       />
       <Modal
-        title="Lý do hủy đơn hàng"
-        open={cancelModalVisible}
-        onCancel={() => setCancelModalVisible(false)}
-        onOk={() => setCancelModalVisible(false)}
+        title={reasonType === "cancel" ? "Lý do hủy đơn hàng" : "Lý do hoàn hàng"}
+        open={reasonModalVisible}
+        onCancel={() => setReasonModalVisible(false)}
+        onOk={() => setReasonModalVisible(false)}
         okText="Đóng"
         cancelButtonProps={{ style: { display: "none" } }}
+        width={600}   // cho rộng hơn để hiển thị ảnh đẹp
       >
         <div style={{ lineHeight: 1.6 }}>
           <strong>Nội dung:</strong>
           <div style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
-            {selectedCancelReason}
+            {selectedReason}
           </div>
+
+          {reasonType === "return" && selectedImages.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <strong>Ảnh minh chứng:</strong>
+              <div style={{ marginTop: 8, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {selectedImages.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`return-proof-${index}`}
+                    style={{
+                      width: 120,
+                      height: 120,
+                      objectFit: "cover",
+                      borderRadius: 8,
+                      border: "1px solid #ddd",
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </Modal>
     </div>

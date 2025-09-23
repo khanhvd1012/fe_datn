@@ -9,15 +9,15 @@ export interface IOrder {
   sub_total: number;
   total_price: number;
   status:
-    | "pending"
-    | "processing"
-    | "shipped"
-    | "delivered"
-    | "return_requested"
-    | "return_accepted"
-    | "return_rejected"
-    | "returned"
-    | "canceled";
+  | "pending"
+  | "processing"
+  | "shipped"
+  | "delivered"
+  | "return_requested"
+  | "return_accepted"
+  | "return_rejected"
+  | "returned"
+  | "canceled";
   payment_method: string;
   payment_status?: "unpaid" | "paid" | "failed" | "canceled" | "refunded";
   app_trans_id: string;
@@ -52,6 +52,7 @@ export interface IOrder {
 
   // Virtuals
   order_code?: string;
+  images: string[];
   items?: IOrderItem[];
   trangThai?: string;
 }
