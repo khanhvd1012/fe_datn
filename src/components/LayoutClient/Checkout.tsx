@@ -45,7 +45,7 @@ const Checkout = () => {
     email: '',
     note: '',
     shipping_type: 'standard',
-    payment_method: 'cod',
+    payment_method: 'COD',
 
     voucher_type: '',
     voucher_value: 0,
@@ -760,7 +760,7 @@ const Checkout = () => {
                 <Text strong className="block mb-2">Phương thức thanh toán</Text>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {[
-                    { label: 'Thanh toán khi nhận hàng', value: 'cod', icon: '💰' },
+                    { label: 'Thanh toán khi nhận hàng', value: 'COD', icon: '💰' },
                     {
                       label: "Thanh toán qua ZaloPay",
                       value: "ZALOPAY",
