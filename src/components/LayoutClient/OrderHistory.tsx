@@ -22,8 +22,11 @@ const statusColor: Record<string, string> = {
   processing: 'blue',
   shipped: 'purple',
   delivered: 'green',
-  canceled: 'red',
+  return_requested: 'gold',
+  return_accepted: 'cyan',
+  return_rejected: 'volcano',
   returned: 'gray',
+  canceled: 'red',
 };
 
 const statusLabels: Record<string, string> = {
@@ -31,9 +34,13 @@ const statusLabels: Record<string, string> = {
   processing: 'Đang xử lý',
   shipped: 'Đang giao',
   delivered: 'Đã giao',
-  canceled: 'Đã hủy',
+  return_requested: 'Yêu cầu hoàn hàng',
+  return_accepted: 'Yêu cầu hoàn được chấp nhận',
+  return_rejected: 'Yêu cầu hoàn bị từ chối',
   returned: 'Đã trả hàng',
+  canceled: 'Đã hủy',
 };
+
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -60,16 +67,23 @@ const OrderHistory = () => {
   // hoàn đơn hàng
   const handleReturn = (orderId: string) => {
     Modal.confirm({
-      title: 'Xác nhận hoàn đơn hàng',
-      content: <p>Bạn có chắc chắn muốn hoàn (trả) đơn hàng này không?</p>,
+      title: 'Xác nhận yêu cầu hoàn đơn',
+      content: (
+        <p>Bạn có chắc chắn muốn gửi yêu cầu hoàn (trả) đơn hàng này không?</p>
+      ),
       okText: 'Xác nhận',
       cancelText: 'Thoát',
       onOk: async () => {
         try {
           const token = localStorage.getItem('token');
+          if (!token) {
+            message.error('Bạn cần đăng nhập để thực hiện thao tác này');
+            return Promise.reject();
+          }
+
           await axios.put(
-            `http://localhost:3000/api/orders/${orderId}/return`,
-            {},
+            `http://localhost:3000/api/orders/${orderId}`,
+            { status: "return_requested" }, // chuyển trạng thái sang return_requested
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -77,18 +91,24 @@ const OrderHistory = () => {
               },
             }
           );
-          message.success('Hoàn đơn hàng thành công');
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
+
+          message.success('Đã gửi yêu cầu hoàn đơn hàng');
+          // ✅ Không nên reload cứng, chỉ cần cập nhật state
+          setOrders((prev) =>
+            prev.map((o) =>
+              o._id === orderId ? { ...o, status: "return_requested" } : o
+            )
+          );
         } catch (error) {
-          console.error('Hoàn đơn hàng thất bại:', error);
-          message.error('Hoàn đơn hàng thất bại');
+          console.error('Yêu cầu hoàn đơn hàng thất bại:', error);
+          message.error('Yêu cầu hoàn đơn hàng thất bại');
           return Promise.reject();
         }
       },
     });
   };
+
+
 
 
   const handleCancel = (orderId: string) => {
@@ -311,7 +331,7 @@ const OrderHistory = () => {
                         >
                           Xem chi tiết
                         </a>
-                        {order.status === "pending" && (
+                        {(order.status === "pending" || order.status === "processing") && (
                           <Button
                             danger
                             size="small"
@@ -320,6 +340,15 @@ const OrderHistory = () => {
                             Hủy đơn
                           </Button>
                         )}
+
+                        {/* {order.status === "delivered" && (
+                          <Button
+                            size="small"
+                            onClick={() => handleReturn(order._id)}
+                          >
+                            Hoàn đơn
+                          </Button>
+                        )} */}
                         {order.status === "delivered" && (
                           <Button
                             size="small"
