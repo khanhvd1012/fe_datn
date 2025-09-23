@@ -437,7 +437,6 @@ const OrderDetail = () => {
                         {shipping.address}
                     </Descriptions.Item>
 
-
                     <Descriptions.Item label="Phương thức thanh toán">
                         {order.payment_method === 'cod'
                             ? 'Thanh toán khi nhận hàng'

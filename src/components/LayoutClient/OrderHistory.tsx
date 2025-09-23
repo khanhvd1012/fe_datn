@@ -14,8 +14,9 @@ import {
   Tabs,
   Pagination,
   Upload,
+  Tooltip,
 } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import Breadcrumb from './Breadcrumb';
 
 const { Title, Text } = Typography;
@@ -121,9 +122,6 @@ const OrderHistory = () => {
     });
   };
 
-
-  // hoàn đơn hàng
-  // hoàn đơn hàng (có lý do + ảnh)
   const handleReturn = (orderId: string) => {
     let returnReason = '';
     let fileList: any[] = [];
@@ -263,14 +261,12 @@ const OrderHistory = () => {
         });
 
         const baseOrders = res.data || [];
-        console.log("Orders từ API:", baseOrders);
         const ordersWithDetails = await Promise.all(
           baseOrders.map(async (order: any) => {
 
             const itemsWithDetails = await Promise.all(
               (order.items || []).map(async (item: any) => {
                 const variantId = item.variant_id?._id;
-                console.log('variantId:', variantId);
                 const variantData = await axios
                   .get(`http://localhost:3000/api/variants/${variantId}`)
                   .then((res) => res.data?.data)
@@ -443,13 +439,14 @@ const OrderHistory = () => {
                             {order.status === "delivered" && (
                               <>
                                 {!order.confirmed_received && (
-                                  <Button
-                                    type="primary"
-                                    size="small"
-                                    onClick={() => handleConfirmReceived(order._id)}
-                                  >
-                                    Xác nhận đã nhận hàng
-                                  </Button>
+                                  <Tooltip title="Xác nhận đã nhận hàng">
+                                    <Button
+                                      type="primary"
+                                      size="small"
+                                      icon={<CheckCircleOutlined />}
+                                      onClick={() => handleConfirmReceived(order._id)}
+                                    />
+                                  </Tooltip>
                                 )}
                                 <Button size="small" onClick={() => handleReturn(order._id)}>
                                   Hoàn đơn
@@ -465,7 +462,7 @@ const OrderHistory = () => {
                   ))}
 
                   {/* Pagination */}
-                  <div className="flex justify-center mt-4">
+                  <div className="flex justify-center mt-4 mb-6">
                     <Pagination
                       current={currentPage}
                       pageSize={pageSize}
