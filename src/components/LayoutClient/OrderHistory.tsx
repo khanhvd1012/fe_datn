@@ -168,7 +168,7 @@ const OrderHistory = () => {
           }
 
           const formData = new FormData();
-          formData.append('reason', returnReason);
+          formData.append('return_reason', returnReason);
           fileList.forEach((file) => {
             formData.append('images', file.originFileObj);
           });
