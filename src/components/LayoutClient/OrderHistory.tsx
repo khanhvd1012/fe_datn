@@ -15,7 +15,22 @@ import {
   Pagination,
 } from 'antd';
 import Breadcrumb from './Breadcrumb';
+
 const { Title, Text } = Typography;
+
+const paymentStatusColor: Record<string, string> = {
+  unpaid: "red",
+  paid: "green",
+  pending: "orange",
+  refunded: "blue",
+};
+
+const paymentStatusLabels: Record<string, string> = {
+  unpaid: "Chưa thanh toán",
+  paid: "Đã thanh toán",
+  pending: "Đang chờ thanh toán",
+  refunded: "Đã hoàn tiền",
+};
 
 const statusColor: Record<string, string> = {
   pending: 'orange',
@@ -40,7 +55,6 @@ const statusLabels: Record<string, string> = {
   returned: 'Đã trả hàng',
   canceled: 'Đã hủy',
 };
-
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState<any[]>([]);
@@ -93,7 +107,6 @@ const OrderHistory = () => {
           );
 
           message.success('Đã gửi yêu cầu hoàn đơn hàng');
-          // ✅ Không nên reload cứng, chỉ cần cập nhật state
           setOrders((prev) =>
             prev.map((o) =>
               o._id === orderId ? { ...o, status: "return_requested" } : o
@@ -107,9 +120,6 @@ const OrderHistory = () => {
       },
     });
   };
-
-
-
 
   const handleCancel = (orderId: string) => {
     let cancelReason = '';
@@ -217,9 +227,6 @@ const OrderHistory = () => {
     fetchOrders();
   }, []);
 
-  const groupOrdersByStatus = (status: string) =>
-    orders.filter((order) => order.status === status);
-
   if (loading)
     return <Spin style={{ display: 'block', marginTop: 60 }} size="large" />;
   if (!orders.length) return <Text>Bạn chưa có đơn hàng nào</Text>;
@@ -254,17 +261,19 @@ const OrderHistory = () => {
                   {data.map((order) => (
                     <Card
                       key={order.order_code}
-                      className="mb-6"
+                      className="mb-6 shadow-sm rounded-lg"
                       title={
                         <div className="flex justify-between items-center">
-                          <div>
-                            <Tag color="blue">
-                              #{order.order_code}
-                            </Tag>
-                            <span className="ml-2 text-gray-600">
-                              {new Date(order.createdAt).toLocaleString("vi-VN")}
-                            </span>
-                          </div>
+                          <Text strong>
+                            Mã đơn hàng: <Tag color="blue">#{order.order_code}</Tag>
+                          </Text>
+                          <Text type="secondary" className="text-sm">
+                            {new Date(order.createdAt).toLocaleDateString("vi-VN")}{" "}
+                            {new Date(order.createdAt).toLocaleTimeString("vi-VN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </Text>
                         </div>
                       }
                     >
@@ -313,51 +322,51 @@ const OrderHistory = () => {
                       <Divider />
 
                       <div className="flex justify-between items-center mt-4">
-                        <div>
-                          <Tag color={statusColor[order.status] || "default"}>
-                            {statusLabels[order.status]}
-                          </Tag>
+                        {/* Bên trái: trạng thái */}
+                        <div className="flex flex-col gap-1">
+                          <div>
+                            Trạng thái đơn hàng:{" "}
+                            <Tag color={statusColor[order.status] || "default"}>
+                              {statusLabels[order.status]}
+                            </Tag>
+                          </div>
+                          <div>
+                            Trạng thái thanh toán:{" "}
+                            <Tag color={paymentStatusColor[order.payment_status] || "default"}>
+                              {paymentStatusLabels[order.payment_status] || "Không rõ"}
+                            </Tag>
+                          </div>
                         </div>
 
-                        <div className="text-green-600 font-semibold">
-                          Tổng tiền: {(order.total_price || 0).toLocaleString("vi-VN")}đ
+                        {/* Bên phải: tổng tiền + nút hành động */}
+                        <div className="flex items-center gap-4">
+                          <div className="text-green-600 font-semibold">
+                            Tổng tiền: {(order.total_price || 0).toLocaleString("vi-VN")}đ
+                          </div>
+
+                          <div className="flex items-center gap-3">
+                            <a
+                              href={`/OrderDetail/${order._id}`}
+                              className="text-blue-500 hover:underline"
+                            >
+                              Xem chi tiết
+                            </a>
+
+                            {(order.status === "pending" || order.status === "processing") && (
+                              <Button danger size="small" onClick={() => handleCancel(order._id)}>
+                                Hủy đơn
+                              </Button>
+                            )}
+
+                            {order.status === "delivered" && (
+                              <Button size="small" onClick={() => handleReturn(order._id)}>
+                                Hoàn đơn
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-                      <div className="flex justify-end space-x-3 mt-4">
-                        <a
-                          href={`/OrderDetail/${order._id}`}
-                          className="text-blue-500 hover:underline"
-                        >
-                          Xem chi tiết
-                        </a>
-                        {(order.status === "pending" || order.status === "processing") && (
-                          <Button
-                            danger
-                            size="small"
-                            onClick={() => handleCancel(order._id)}
-                          >
-                            Hủy đơn
-                          </Button>
-                        )}
-
-                        {/* {order.status === "delivered" && (
-                          <Button
-                            size="small"
-                            onClick={() => handleReturn(order._id)}
-                          >
-                            Hoàn đơn
-                          </Button>
-                        )} */}
-                        {order.status === "delivered" && (
-                          <Button
-                            size="small"
-                            onClick={() => handleReturn(order._id)}
-                          >
-                            Hoàn đơn
-                          </Button>
-                        )}
-                      </div>
                     </Card>
                   ))}
 

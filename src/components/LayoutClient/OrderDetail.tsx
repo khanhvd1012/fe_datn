@@ -15,19 +15,40 @@ import {
     Input,
 } from 'antd';
 import Breadcrumb from './Breadcrumb';
+import type { IOrder } from '../../interface/order';
 
 const { Title, Text } = Typography;
 
-const statusColor: Record<string, string> = {
-    pending: 'orange',
-    processing: 'blue',
-    shipped: 'purple',
-    delivered: 'green',
-    return_requested: 'gold',
-    return_accepted: 'cyan',
-    return_rejected: 'volcano',
-    returned: 'gray',
-    canceled: 'red',
+const statusColor: Record<IOrder["status"], string> = {
+  pending: "orange",
+  processing: "blue",
+  shipped: "purple",
+  delivered: "green",
+  return_requested: "gold",
+  return_accepted: "cyan",
+  return_rejected: "volcano",
+  returned: "gray",
+  canceled: "red",
+};
+
+const statusLabels: Record<IOrder["status"], string> = {
+  pending: "Chờ xác nhận",
+  processing: "Đã xác nhận",
+  shipped: "Đang giao",
+  delivered: "Đã giao",
+  return_requested: "Yêu cầu hoàn hàng",
+  return_accepted: "Hoàn hàng được chấp nhận",
+  return_rejected: "Hoàn hàng bị từ chối",
+  returned: "Đã trả hàng",
+  canceled: "Đã hủy",
+};
+
+const paymentStatusLabels: Record<NonNullable<IOrder["payment_status"]>, string> = {
+  unpaid: "Chưa thanh toán",
+  paid: "Đã thanh toán",
+  failed: "Thanh toán thất bại",
+  canceled: "Thanh toán bị hủy",
+  refunded: "Đã hoàn tiền",
 };
 
 const OrderDetail = () => {
@@ -73,8 +94,6 @@ const OrderDetail = () => {
             },
         });
     };
-
-
 
     const handleCancel = () => {
         let cancelReason = "";
@@ -154,7 +173,6 @@ const OrderDetail = () => {
             }
         }
 
-
         setVariantMap(map);
     };
 
@@ -212,8 +230,6 @@ const OrderDetail = () => {
             fetchColors();
         }
     }, [variantMap]);
-
-
 
     const columns = [
         {
@@ -283,23 +299,6 @@ const OrderDetail = () => {
                 <>{(record.price || 0).toLocaleString('vi-VN')}đ</>
             )
         },
-        {
-            title: 'Mã giảm giá',
-
-            render: (_: any, record: any) => (
-                console.log("record:", record),
-                <>
-
-                    {order.voucher_discount > 0 ? (
-                        <span className="text-red-600">
-                            -{order.voucher_discount.toLocaleString("vi-VN")}đ
-                        </span>
-                    ) : (
-                        <span>0đ</span>
-                    )}
-                </>
-            )
-        }
 
     ];
 
@@ -319,19 +318,28 @@ const OrderDetail = () => {
                         {new Date(order.createdAt).toLocaleString('vi-VN')}
                     </Descriptions.Item>
                     <Descriptions.Item label="Trạng thái">
-                        <Tag color={statusColor[order.status] || 'default'}>
-                            {order.status === 'pending' && 'Chờ xác nhận'}
-                            {order.status === 'processing' && 'Đã xác nhận'}
-                            {order.status === 'shipped' && 'Đang giao'}
-                            {order.status === 'delivered' && 'Đã giao'}
-                            {order.status === 'return_requested' && 'Yêu cầu hoàn hàng'}
-                            {order.status === 'return_accepted' && 'Yêu cầu hoàn được chấp nhận'}
-                            {order.status === 'return_rejected' && 'Yêu cầu hoàn bị từ chối'}
-                            {order.status === 'returned' && 'Đã trả hàng'}
-                            {order.status === 'canceled' && 'Đã hủy'}
+                        <Tag color={statusColor[order.status] || "default"}>
+                            {statusLabels[order.status]}
                         </Tag>
                     </Descriptions.Item>
 
+                    <Descriptions.Item label="Trạng thái thanh toán">
+                        <Tag
+                            color={
+                                order.payment_status === "paid"
+                                    ? "green"
+                                    : order.payment_status === "unpaid"
+                                        ? "red"
+                                        : order.payment_status === "pending"
+                                            ? "orange"
+                                            : "blue"
+                            }
+                        >
+                            {order.payment_status
+                                ? paymentStatusLabels[order.payment_status]
+                                : "Không rõ"}
+                        </Tag>
+                    </Descriptions.Item>
 
                     <Descriptions.Item label="Người nhận">
                         {shipping.name}
@@ -363,16 +371,23 @@ const OrderDetail = () => {
                     pagination={false}
                 />
 
+                {/* Hiển thị mã giảm giá */}
                 <div className="flex justify-between mt-4">
-                    <Text strong>Giá sau khi giảm:</Text>
-                    <Text>{finalPrice.toLocaleString("vi-VN")}đ</Text>
+                    <Text strong>Mã giảm giá:</Text>
+                    <Text className="text-red-600">
+                        {(order?.voucher_discount || 0) > 0 
+                            ? `-${(order.voucher_discount).toLocaleString("vi-VN")}đ`
+                            : "0đ"
+                        }
+                    </Text>
                 </div>
+
                 <div className="flex justify-between mt-4">
                     <Text strong>Phí vận chuyển:</Text>
                     <Text>{shippingFee.toLocaleString("vi-VN")}đ</Text>
                 </div>
 
-                <div className="flex justify-between mt-6">
+                <div className="flex justify-between mt-4">
                     <Text strong className="text-lg">Tổng thanh toán:</Text>
                     <Text strong className="text-lg text-green-600">
                         {(order.total_price || 0).toLocaleString('vi-VN')}đ
