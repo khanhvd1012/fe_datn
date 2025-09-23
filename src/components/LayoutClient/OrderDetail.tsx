@@ -13,42 +13,86 @@ import {
     Button,
     Modal,
     Input,
+    Upload,
+    Space,
 } from 'antd';
 import Breadcrumb from './Breadcrumb';
+import { UploadOutlined } from '@ant-design/icons';
 import type { IOrder } from '../../interface/order';
 
 const { Title, Text } = Typography;
 
 const statusColor: Record<IOrder["status"], string> = {
-  pending: "orange",
-  processing: "blue",
-  shipped: "purple",
-  delivered: "green",
-  return_requested: "gold",
-  return_accepted: "cyan",
-  return_rejected: "volcano",
-  returned: "gray",
-  canceled: "red",
+    pending: "orange",
+    processing: "blue",
+    shipped: "purple",
+    delivered: "green",
+    return_requested: "gold",
+    return_accepted: "cyan",
+    return_rejected: "volcano",
+    returned: "gray",
+    canceled: "red",
 };
 
 const statusLabels: Record<IOrder["status"], string> = {
-  pending: "Chờ xác nhận",
-  processing: "Đang xử lý",
-  shipped: "Đang giao",
-  delivered: "Đã giao",
-  return_requested: "Yêu cầu hoàn hàng",
-  return_accepted: "Hoàn hàng được chấp nhận",
-  return_rejected: "Hoàn hàng bị từ chối",
-  returned: "Đã trả hàng",
-  canceled: "Đã hủy",
+    pending: "Chờ xác nhận",
+    processing: "Đang xử lý",
+    shipped: "Đang giao",
+    delivered: "Đã giao",
+    return_requested: "Yêu cầu hoàn hàng",
+    return_accepted: "Hoàn hàng được chấp nhận",
+    return_rejected: "Hoàn hàng bị từ chối",
+    returned: "Đã trả hàng",
+    canceled: "Đã hủy",
 };
 
 const paymentStatusLabels: Record<NonNullable<IOrder["payment_status"]>, string> = {
-  unpaid: "Chưa thanh toán",
-  paid: "Đã thanh toán",
-  failed: "Thanh toán thất bại",
-  canceled: "Thanh toán bị hủy",
-  refunded: "Đã hoàn tiền",
+    unpaid: "Chưa thanh toán",
+    paid: "Đã thanh toán",
+    failed: "Thanh toán thất bại",
+    canceled: "Thanh toán bị hủy",
+    refunded: "Đã hoàn tiền",
+};
+
+// Xác nhận đã nhận hàng
+const handleConfirmReceived = (orderId: string) => {
+    Modal.confirm({
+        title: 'Xác nhận đã nhận hàng',
+        content: <p>Bạn có chắc chắn muốn xác nhận đã nhận được đơn hàng này không?</p>,
+        okText: 'Xác nhận',
+        cancelText: 'Thoát',
+        onOk: async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    message.error('Bạn cần đăng nhập để thực hiện thao tác này');
+                    return Promise.reject();
+                }
+
+                await axios.put(
+                    `http://localhost:3000/api/orders/${orderId}/confirm-received`,
+                    {},
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                    }
+                );
+
+                message.success('Xác nhận đã nhận hàng thành công');
+                setOrders((prev) =>
+                    prev.map((o: { _id: string; }) =>
+                        o._id === orderId ? { ...o, confirmed_received: true } : o
+                    )
+                );
+            } catch (error) {
+                console.error('Xác nhận nhận hàng thất bại:', error);
+                message.error('Xác nhận nhận hàng thất bại');
+                return Promise.reject();
+            }
+        },
+    });
 };
 
 const OrderDetail = () => {
@@ -59,36 +103,78 @@ const OrderDetail = () => {
     const [variantMap, setVariantMap] = useState<Record<string, any>>({});
     const [colorMap, setColorMap] = useState<Record<string, any>>({});
 
-    const handleReturn = () => {
+    // hoàn đơn hàng (có lý do + ảnh)
+    const handleReturn = (orderId: string) => {
+        let returnReason = '';
+        let fileList: any[] = [];
+
         Modal.confirm({
-            title: "Xác nhận yêu cầu hoàn đơn",
-            content: "Bạn có chắc chắn muốn gửi yêu cầu hoàn (trả) đơn hàng này không?",
-            okText: "Xác nhận",
-            cancelText: "Thoát",
-            onOk: async () => {
+            title: 'Yêu cầu hoàn hàng',
+            width: 600,
+            content: (
+                <div>
+                    <p>Vui lòng nhập lý do hoàn hàng:</p>
+                    <Input.TextArea
+                        placeholder="Nhập lý do..."
+                        rows={3}
+                        onChange={(e) => (returnReason = e.target.value)}
+                        style={{ marginBottom: 12 }}
+                    />
+
+                    <Upload
+                        multiple
+                        listType="picture-card"
+                        accept="image/*"
+                        beforeUpload={() => false}
+                        onChange={({ fileList: newList }) => {
+                            fileList = newList;
+                        }}
+                    >
+                        <Button icon={<UploadOutlined />}>Ảnh chứng minh</Button>
+                    </Upload>
+                </div>
+            ),
+            okText: 'Gửi yêu cầu',
+            cancelText: 'Thoát',
+            async onOk() {
+                if (!returnReason.trim()) {
+                    message.warning('Vui lòng nhập lý do hoàn hàng');
+                    return Promise.reject();
+                }
+
                 try {
-                    const token = localStorage.getItem("token");
+                    const token = localStorage.getItem('token');
                     if (!token) {
-                        message.error("Bạn cần đăng nhập");
+                        message.error('Bạn cần đăng nhập để thực hiện thao tác này');
                         return Promise.reject();
                     }
 
+                    const formData = new FormData();
+                    formData.append('reason', returnReason);
+                    fileList.forEach((file) => {
+                        formData.append('images', file.originFileObj);
+                    });
+
                     await axios.put(
-                        `http://localhost:3000/api/orders/${order._id}`,
-                        { status: "return_requested" },
+                        `http://localhost:3000/api/orders/${orderId}/request-return`,
+                        formData,
                         {
                             headers: {
                                 Authorization: `Bearer ${token}`,
-                                "Content-Type": "application/json",
+                                'Content-Type': 'multipart/form-data',
                             },
                         }
                     );
 
-                    message.success("Đã gửi yêu cầu hoàn đơn hàng");
-                    setOrder((prev: any) => ({ ...prev, status: "return_requested" })); // cập nhật local
+                    message.success('Đã gửi yêu cầu hoàn hàng');
+                    setOrder((prev: any[]) =>
+                        prev.map((o) =>
+                            o._id === orderId ? { ...o, status: 'return_requested' } : o
+                        )
+                    );
                 } catch (error) {
-                    console.error("Yêu cầu hoàn đơn hàng thất bại:", error);
-                    message.error("Yêu cầu hoàn đơn hàng thất bại");
+                    console.error('Yêu cầu hoàn hàng thất bại:', error);
+                    message.error('Yêu cầu hoàn hàng thất bại');
                     return Promise.reject();
                 }
             },
@@ -373,7 +459,7 @@ const OrderDetail = () => {
                 <div className="flex justify-between mt-4">
                     <Text strong>Mã giảm giá:</Text>
                     <Text className="text-red-600">
-                        {(order?.voucher_discount || 0) > 0 
+                        {(order?.voucher_discount || 0) > 0
                             ? `-${(order.voucher_discount).toLocaleString("vi-VN")}đ`
                             : "0đ"
                         }
@@ -403,11 +489,23 @@ const OrderDetail = () => {
                         </Button>
                     )}
 
-                    {order.status === 'delivered' && (
-                        <Button danger onClick={handleReturn}>
-                            Hoàn đơn
-                        </Button>
+                    {order.status === "delivered" && (
+                        <Space size="middle">
+                            {!order.confirmed_received && (
+                                <Button
+                                    type="primary"
+                                    size="small"
+                                    onClick={() => handleConfirmReceived(order._id)}
+                                >
+                                    Xác nhận đã nhận hàng
+                                </Button>
+                            )}
+                            <Button size="small" onClick={() => handleReturn(order._id)}>
+                                Hoàn đơn
+                            </Button>
+                        </Space>
                     )}
+
                 </div>
             </Card>
         </div>
@@ -415,3 +513,7 @@ const OrderDetail = () => {
 };
 
 export default OrderDetail;
+
+function setOrders(arg0: (prev: any) => any) {
+    throw new Error('Function not implemented.');
+}
