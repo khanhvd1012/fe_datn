@@ -78,6 +78,48 @@ const OrderHistory = () => {
     };
   };
 
+  // Xác nhận đã nhận hàng
+  const handleConfirmReceived = (orderId: string) => {
+    Modal.confirm({
+      title: 'Xác nhận đã nhận hàng',
+      content: <p>Bạn có chắc chắn muốn xác nhận đã nhận được đơn hàng này không?</p>,
+      okText: 'Xác nhận',
+      cancelText: 'Thoát',
+      onOk: async () => {
+        try {
+          const token = localStorage.getItem('token');
+          if (!token) {
+            message.error('Bạn cần đăng nhập để thực hiện thao tác này');
+            return Promise.reject();
+          }
+
+          await axios.put(
+            `http://localhost:3000/api/orders/${orderId}/confirm-received`,
+            {},
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          message.success('Xác nhận đã nhận hàng thành công');
+          setOrders((prev) =>
+            prev.map((o) =>
+              o._id === orderId ? { ...o, confirmed_received: true } : o
+            )
+          );
+        } catch (error) {
+          console.error('Xác nhận nhận hàng thất bại:', error);
+          message.error('Xác nhận nhận hàng thất bại');
+          return Promise.reject();
+        }
+      },
+    });
+  };
+
+
   // hoàn đơn hàng
   const handleReturn = (orderId: string) => {
     Modal.confirm({
@@ -360,10 +402,22 @@ const OrderHistory = () => {
                             )}
 
                             {order.status === "delivered" && (
-                              <Button size="small" onClick={() => handleReturn(order._id)}>
-                                Hoàn đơn
-                              </Button>
+                              <>
+                                {!order.confirmed_received && (
+                                  <Button
+                                    type="primary"
+                                    size="small"
+                                    onClick={() => handleConfirmReceived(order._id)}
+                                  >
+                                    Xác nhận đã nhận hàng
+                                  </Button>
+                                )}
+                                <Button size="small" onClick={() => handleReturn(order._id)}>
+                                  Hoàn đơn
+                                </Button>
+                              </>
                             )}
+
                           </div>
                         </div>
                       </div>
