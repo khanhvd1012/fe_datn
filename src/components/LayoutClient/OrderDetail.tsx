@@ -33,7 +33,7 @@ const statusColor: Record<IOrder["status"], string> = {
 
 const statusLabels: Record<IOrder["status"], string> = {
   pending: "Chờ xác nhận",
-  processing: "Đã xác nhận",
+  processing: "Đang xử lý",
   shipped: "Đang giao",
   delivered: "Đã giao",
   return_requested: "Yêu cầu hoàn hàng",
@@ -307,7 +307,7 @@ const OrderDetail = () => {
         <div className="max-w-5xl mx-auto p-6">
             <Breadcrumb current="Chi tiết đơn hàng" />
             <Title level={3} className="mb-4">
-                Đơn hàng #{order._id?.slice(-6).toUpperCase()}
+                Đơn hàng #{order.order_code}
             </Title>
 
             <Card bordered>

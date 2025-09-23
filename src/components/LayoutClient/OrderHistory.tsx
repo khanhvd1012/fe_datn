@@ -248,6 +248,7 @@ const OrderHistory = () => {
         <Tabs
           defaultActiveKey="pending"
           type="card"
+          tabPosition="left"
           items={Object.keys(statusLabels).map((status) => ({
             key: status,
             label: statusLabels[status],
