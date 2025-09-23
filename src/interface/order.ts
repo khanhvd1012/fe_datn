@@ -8,17 +8,52 @@ export interface IOrder {
   voucher_discount?: number;
   sub_total: number;
   total_price: number;
-  status: "pending" | "processing" | "shipped" | "delivered" | "canceled" | "returned";
+  status:
+    | "pending"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "return_requested"
+    | "return_accepted"
+    | "return_rejected"
+    | "returned"
+    | "canceled";
   payment_method: string;
+  payment_status?: "unpaid" | "paid" | "failed" | "canceled" | "refunded";
+  app_trans_id: string;
+
+  // Hủy đơn
   cancel_reason?: string | null;
   cancelled_at?: string | null;
   cancelled_by?: string | null;
+
+  // Hoàn hàng
+  return_reason?: string | null;
+  return_requested_at?: string | null;
+  return_accepted_at?: string | null;
+  return_accepted_by?: string | null;
+  return_rejected_at?: string | null;
+  return_rejected_by?: string | null;
+  return_reject_reason?: string | null;
+  returned_at?: string | null;
+
+  // Xác nhận nhận hàng
+  confirmed_received?: boolean;
+  confirmed_received_at?: string | null;
+
+  // Giao hàng
+  delivered_at?: string | null;
+  shipping_fee?: number;
+  shipping_service?: string | null;
+  shipping_address?: IShippingAddress | string;
+
   createdAt?: string;
   updatedAt?: string;
+
+  // Virtuals
   order_code?: string;
   items?: IOrderItem[];
   trangThai?: string;
-  shipping_address?: IShippingAddress | string;
 }
 
 export interface IOrderItem {

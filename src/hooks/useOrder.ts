@@ -11,7 +11,6 @@ import {
 
 type OrderStatus = NonNullable<IOrder['status']>;
 
-// ✅ USER - Lấy đơn hàng của chính họ
 export const useUserOrders = () => {
   return useQuery({
     queryKey: ['user-orders'],
@@ -19,7 +18,7 @@ export const useUserOrders = () => {
   });
 };
 
-// ✅ ADMIN - Lấy tất cả đơn hàng
+// ADMIN - Lấy tất cả đơn hàng
 export const useAdminOrders = () => {
   return useQuery({
     queryKey: ['admin-orders'],
@@ -28,7 +27,7 @@ export const useAdminOrders = () => {
 };
 
 
-// ✅ Lấy chi tiết đơn hàng theo ID
+// Lấy chi tiết đơn hàng theo ID
 export const useOrder = (id: string) => {
   return useQuery({
     queryKey: ['order-detail', id],
@@ -37,7 +36,7 @@ export const useOrder = (id: string) => {
   });
 };
 
-// ✅ Tạo đơn hàng mới
+// Tạo đơn hàng mới
 export const useCreateOrder = () => {
   const queryClient = useQueryClient();
 
@@ -49,7 +48,7 @@ export const useCreateOrder = () => {
   });
 };
 
-// ✅ Cập nhật trạng thái đơn hàng (admin)
+// Cập nhật trạng thái đơn hàng (admin)
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
 
@@ -63,7 +62,7 @@ export const useUpdateOrderStatus = () => {
   });
 };
 
-// ✅ Hủy đơn hàng (admin hoặc user)
+// Hủy đơn hàng (admin hoặc user)
 export const useCancelOrder = () => {
   const queryClient = useQueryClient();
 

@@ -8,7 +8,7 @@ const authHeader = () => ({
   Authorization: `Bearer ${localStorage.getItem("token")}`,
 });
 
-// ✅ Admin: lấy tất cả đơn hàng
+// Admin: lấy tất cả đơn hàng
 export const getAllOrders = async (): Promise<IOrder[]> => {
   const token = localStorage.getItem("token");
   const res = await axios.get(`${API_URL}/orders`, {
@@ -19,7 +19,7 @@ export const getAllOrders = async (): Promise<IOrder[]> => {
   return res.data.data || [];
 };
 
-// ✅ User: lấy đơn hàng của mình
+// User: lấy đơn hàng của mình
 export const getUserOrders = async (): Promise<IOrder[]> => {
   try {
     const token = localStorage.getItem("token");
@@ -33,10 +33,7 @@ export const getUserOrders = async (): Promise<IOrder[]> => {
   }
 };
 
-
-
-
-// 🟩 Lấy đơn hàng theo ID
+// Lấy đơn hàng theo ID
 export const getOrderById = async (id: string): Promise<IOrder> => {
   const res = await axios.get(`${API_URL}/orders/${id}`, {
     headers: authHeader(),
@@ -44,7 +41,7 @@ export const getOrderById = async (id: string): Promise<IOrder> => {
   return res.data?.data;
 };
 
-// 🟩 Tạo đơn hàng mới
+// Tạo đơn hàng mới
 export const createOrder = async (orderData: Partial<IOrder>): Promise<IOrder> => {
   const res = await axios.post(`${API_URL}/orders`, orderData, {
     headers: authHeader(),
@@ -52,7 +49,7 @@ export const createOrder = async (orderData: Partial<IOrder>): Promise<IOrder> =
   return res.data?.data;
 };
 
-// 🟩 Cập nhật trạng thái đơn hàng (Admin)
+// Cập nhật trạng thái đơn hàng (Admin)
 export const updateOrderStatus = async (
   id: string,
   status: IOrder["status"]
@@ -65,7 +62,7 @@ export const updateOrderStatus = async (
   return res.data?.data;
 };
 
-// 🟩 Hủy đơn hàng
+// Hủy đơn hàng
 export const cancelOrder = async (
   id: string,
   cancel_reason: string
@@ -75,5 +72,33 @@ export const cancelOrder = async (
     { cancel_reason },
     { headers: authHeader() }
   );
+  return res.data?.data;
+};
+
+// User: yêu cầu trả hàng
+export const requestReturn = async (id: string, reason: string): Promise<IOrder> => {
+  const res = await axios.put(
+    `${API_URL}/orders/${id}/request-return`,
+    { reason },
+    { headers: authHeader() }
+  );
+  return res.data?.data;
+};
+
+// User: xác nhận đã nhận hàng
+export const confirmReceived = async (id: string): Promise<IOrder> => {
+  const res = await axios.put(
+    `${API_URL}/orders/${id}/confirm-received`,
+    {},
+    { headers: authHeader() }
+  );
+  return res.data?.data;
+};
+
+// Admin: lấy chi tiết đơn hàng
+export const getOrderByIdAdmin = async (id: string): Promise<IOrder> => {
+  const res = await axios.get(`${API_URL}/orders/${id}/admin`, {
+    headers: authHeader(),
+  });
   return res.data?.data;
 };

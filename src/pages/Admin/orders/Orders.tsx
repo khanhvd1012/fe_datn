@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useAdminOrders, useCancelOrder, useUpdateOrderStatus } from "../../../hooks/useOrder";
 import { useUsers } from "../../../hooks/useUser";
 import { DeleteOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
-import type { IOrder } from "../../../interface/order";
+import type { IOrder, IUser, IOrderItem } from "../../../interface/order";
 import { useQueryClient } from "@tanstack/react-query";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 import DrawerOrder from "../../../components/LayoutAdmin/drawer/DrawerOrder";
 import { useRole } from "../../../hooks/useAuth";
 
@@ -20,21 +20,28 @@ const Orders = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
-  const [selectedCancelReason, setSelectedCancelReason] = useState('');
+  const [selectedCancelReason, setSelectedCancelReason] = useState("");
   const [filters, setFilters] = useState({
     user: "",
     createdAt: "",
     status: "",
+    paymentStatus: "",
     orderCode: "",
     productName: "",
     sku: "",
   });
-  const role = useRole()
+  const role = useRole();
+
   const handleFilterChange = (value: string, key: keyof typeof filters) => {
     setFilters({ ...filters, [key]: value });
   };
+
   const filteredOrders = orders?.filter((order) => {
-    const user = users?.find((u) => u._id === order.user_id);
+    // user_id có thể là object hoặc string
+    const user =
+      typeof order.user_id === "string"
+        ? users?.find((u) => u._id === order.user_id)
+        : (order.user_id as IUser);
     const username = user?.username?.toLowerCase() || "";
 
     if (filters.user && !username.includes(filters.user.toLowerCase())) {
@@ -51,24 +58,48 @@ const Orders = () => {
     if (filters.status && order.status !== filters.status) {
       return false;
     }
-    if (filters.orderCode && !order._id.toLowerCase().includes(filters.orderCode.toLowerCase())) {
+
+    if (filters.paymentStatus && order.payment_status !== filters.paymentStatus) {
       return false;
     }
+
+    if (
+      filters.orderCode &&
+      !(order.order_code || "").toLowerCase().includes(filters.orderCode.toLowerCase())
+    ) {
+      return false;
+    }
+
     // lọc theo tên sản phẩm
     if (filters.productName) {
-      const productNames = order?.items?.map((i: any) => i.variant_id?.product_id?.name?.toLowerCase() || "");
-      if (!productNames?.some((name: string) => name.includes(filters.productName.toLowerCase()))) {
+      const productNames =
+        order?.items?.map((i: IOrderItem) =>
+          typeof i.variant_id === "object" && "product_id" in i.variant_id
+            ? (i.variant_id as any)?.product_id?.name?.toLowerCase()
+            : ""
+        ) || [];
+      if (
+        !productNames.some((name) =>
+          name?.includes(filters.productName.toLowerCase())
+        )
+      ) {
         return false;
       }
     }
 
     // lọc theo SKU
     if (filters.sku) {
-      const skus = order?.items?.map((i: any) => i.variant_id?.sku?.toLowerCase() || "");
-      if (!skus?.some((sku: string) => sku.includes(filters.sku.toLowerCase()))) {
+      const skus =
+        order?.items?.map((i: IOrderItem) =>
+          typeof i.variant_id === "object"
+            ? (i.variant_id as any)?.sku?.toLowerCase()
+            : ""
+        ) || [];
+      if (!skus.some((sku) => sku?.includes(filters.sku.toLowerCase()))) {
         return false;
       }
     }
+
     return true;
   });
 
@@ -90,9 +121,8 @@ const Orders = () => {
   };
 
   const showOrderDetails = (order: IOrder) => {
-    console.log('Chi tiết đơn hàng:');
     setDrawerVisible(true);
-    setSelectedOrder(order); // chỉ cần ID nếu muốn
+    setSelectedOrder(order);
   };
 
   const showCancelReason = (reason: string) => {
@@ -115,6 +145,44 @@ const Orders = () => {
     );
   };
 
+  const paymentStatusColorMap: Record<NonNullable<IOrder["payment_status"]>, string> = {
+    unpaid: "orange",
+    paid: "green",
+    failed: "volcano",
+    canceled: "red",
+    refunded: "blue",
+  };
+
+  const paymentStatusLabelMap: Record<NonNullable<IOrder["payment_status"]>, string> = {
+    unpaid: "Chưa thanh toán",
+    paid: "Đã thanh toán",
+    failed: "Thanh toán thất bại",
+    canceled: "Thanh toán hủy",
+    refunded: "Đã hoàn tiền",
+  };
+
+  const statusColorMap: Partial<Record<IOrder["status"], string>> = {
+    pending: "orange",
+    processing: "blue",
+    shipped: "purple",
+    delivered: "green",
+    return_accepted: "geekblue",
+    return_rejected: "volcano",
+    returned: "magenta",
+    canceled: "red",
+  };
+
+  const statusLabelMap: Partial<Record<IOrder["status"], string>> = {
+    pending: "Chờ xử lý",
+    processing: "Đang xử lý",
+    shipped: "Đang giao",
+    delivered: "Đã giao",
+    return_accepted: "Chấp nhận hoàn hàng",
+    return_rejected: "Từ chối hoàn hàng",
+    returned: "Đã hoàn hàng",
+    canceled: "Đã hủy",
+  };
+
   const columns = [
     {
       title: "Mã đơn",
@@ -133,9 +201,23 @@ const Orders = () => {
         </div>
       ),
       filterIcon: () => (
-        <FilterOutlined style={{ color: filters.orderCode ? "#1890ff" : undefined }} />
+        <FilterOutlined
+          style={{ color: filters.orderCode ? "#1890ff" : undefined }}
+        />
       ),
       render: (code: string) => <Tag color="blue">#{code}</Tag>,
+    },
+    {
+      title: "Người đặt",
+      dataIndex: "user_id",
+      key: "user_id",
+      render: (user: IUser | string) => {
+        if (typeof user === "string") {
+          const u = users?.find((x) => x._id === user);
+          return u?.username || "Không rõ";
+        }
+        return user?.username || "Không rõ";
+      },
     },
     {
       title: "Sản phẩm",
@@ -194,32 +276,6 @@ const Orders = () => {
       },
     },
     {
-      title: "Người đặt",
-      dataIndex: "user_id",
-      key: "user_id",
-      filterDropdown: () => (
-        <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
-          <Input
-            placeholder="Tìm tên người dùng"
-            value={filters.user}
-            onChange={(e) => handleFilterChange(e.target.value, "user")}
-            prefix={<SearchOutlined />}
-            allowClear
-            style={{ width: "200px" }}
-          />
-        </div>
-      ),
-      filterIcon: () => (
-        <FilterOutlined
-          style={{ color: filters.user ? "#1890ff" : undefined }}
-        />
-      ),
-      render: (userId: string) => {
-        const user = users?.find((u) => u._id === userId);
-        return user?.username || "Không rõ";
-      },
-    },
-    {
       title: "Ngày đặt",
       dataIndex: "createdAt",
       key: "createdAt",
@@ -240,43 +296,6 @@ const Orders = () => {
       ),
       render: (date: string) => dayjs(date).format("HH:mm DD/MM/YYYY"),
     },
-
-
-    {
-      title: "Tổng gốc",
-      dataIndex: "sub_total",
-      key: "sub_total",
-      render: (value: number) =>
-        value.toLocaleString("vi-VN", { style: "currency", currency: "VND" }),
-    },
-    {
-      title: "Giảm giá",
-      dataIndex: "voucher_discount",
-      key: "voucher_discount",
-      render: (value: number) =>
-        value
-          ? `- ${value.toLocaleString("vi-VN", {
-            style: "currency",
-            currency: "VND",
-          })}`
-          : "-",
-    },
-    {
-      title: "Phí vận chuyển",
-      key: "shipping_fee",
-      render: (_: any, record: IOrder) => {
-        const shippingFee =
-          (record?.total_price || 0) -
-          (record?.sub_total || 0) +
-          (record?.voucher_discount || 0);
-
-        return shippingFee.toLocaleString("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        });
-      },
-    },
-
     {
       title: "Thanh toán",
       dataIndex: "total_price",
@@ -291,7 +310,7 @@ const Orders = () => {
       render: (value: string) => <Tag>{value}</Tag>,
     },
     {
-      title: "Trạng thái",
+      title: "Trạng thái đơn hàng",
       dataIndex: "status",
       key: "status",
       filterDropdown: () => (
@@ -303,98 +322,79 @@ const Orders = () => {
             value={filters.status || undefined}
             onChange={(value) => handleFilterChange(value || "", "status")}
           >
-            <Select.Option value="pending">Chờ xử lý</Select.Option>
-            <Select.Option value="processing">Đang xử lý</Select.Option>
-            <Select.Option value="shipped">Đang giao</Select.Option>
-            <Select.Option value="delivered">Đã giao</Select.Option>
-            <Select.Option value="canceled">Đã hủy</Select.Option>
-            <Select.Option value="returned">Đã trả hàng</Select.Option>
+            {Object.entries(statusLabelMap).map(([key, label]) => (
+              <Select.Option key={key} value={key}>
+                {label}
+              </Select.Option>
+            ))}
           </Select>
         </div>
       ),
       filterIcon: () => (
         <FilterOutlined style={{ color: filters.status ? "#1890ff" : undefined }} />
       ),
-      render: (status: IOrder["status"]) => {
-        const colorMap = {
-          pending: "orange",
-          processing: "blue",
-          shipped: "purple",
-          delivered: "green",
-          canceled: "red",
-          returned: "magenta",
-        };
-
-        const labelMap = {
-          pending: "Chờ xử lý",
-          processing: "Đang xử lý",
-          shipped: "Đang giao",
-          delivered: "Đã giao",
-          canceled: "Đã hủy",
-          returned: "Đã trả hàng",
-        };
-
-        return <Tag color={colorMap[status]}>{labelMap[status]}</Tag>;
+      render: (status: IOrder["status"]) => (
+        <Tag color={statusColorMap[status] || "default"}>
+          {statusLabelMap[status] || status}
+        </Tag>
+      ),
+    },
+    {
+      title: "Trạng thái thanh toán",
+      dataIndex: "payment_status",
+      key: "payment_status",
+      filterDropdown: () => (
+        <div style={{ padding: 8, backgroundColor: "white", borderRadius: 6 }}>
+          <Select
+            placeholder="Chọn trạng thái thanh toán"
+            style={{ width: 180 }}
+            allowClear
+            value={filters.paymentStatus || undefined}
+            onChange={(value) => handleFilterChange(value || "", "paymentStatus")}
+          >
+            {Object.entries(paymentStatusLabelMap).map(([key, label]) => (
+              <Select.Option key={key} value={key}>
+                {label}
+              </Select.Option>
+            ))}
+          </Select>
+        </div>
+      ),
+      filterIcon: () => (
+        <FilterOutlined
+          style={{ color: filters.paymentStatus ? "#1890ff" : undefined }}
+        />
+      ),
+      render: (status: IOrder["payment_status"]) => {
+        if (!status) return <Tag color="default">Không rõ</Tag>;
+        return (
+          <Tag color={paymentStatusColorMap[status]}>
+            {paymentStatusLabelMap[status]}
+          </Tag>
+        );
       },
     },
     {
       title: "Cập nhật trạng thái",
       key: "updateStatus",
       render: (_: any, order: IOrder) => {
-        const statusOrder = {
-          pending: 0,
-          processing: 1,
-          shipped: 2,
-          delivered: 3,
-          canceled: 4,
-          returned: 5,
-        };
-
-        const labelMap: Partial<Record<IOrder["status"], string>> = {
-          pending: "Chờ xử lý",
-          processing: "Đang xử lý",
-          shipped: "Đang giao",
-          delivered: "Đã giao",
-          returned: "Đã trả hàng",
-        };
-
-        const valueMap: Record<string, IOrder["status"]> = {
-          "Chờ xử lý": "pending",
-          "Đang xử lý": "processing",
-          "Đang giao": "shipped",
-          "Đã giao": "delivered",
-          "Đã trả hàng": "returned",
-        };
-
-        const currentStatusIndex = statusOrder[order.status];
-
-        // ✅ Điều kiện hoàn hàng
-        const canReturn =
-          order.status === "delivered" && // phải đã giao
-          dayjs().diff(dayjs(order.updatedAt), "day") <= 7; // trong 7 ngày
-
         return (
           <Select
-            defaultValue={labelMap[order.status]}
-            style={{ width: 140 }}
+            defaultValue={statusLabelMap[order.status]}
+            style={{ width: 160 }}
             onChange={(label) => {
-              const statusEng = valueMap[label];
-              handleUpdateStatus(order._id!, statusEng);
+              const newStatus = Object.entries(statusLabelMap).find(
+                ([, v]) => v === label
+              )?.[0] as IOrder["status"];
+              if (newStatus) handleUpdateStatus(order._id, newStatus);
             }}
             disabled={order.status === "canceled"}
           >
-            {Object.entries(labelMap)
-              .filter(([key]) => {
-                const statusIdx = statusOrder[key as IOrder["status"]];
-                if (statusIdx <= currentStatusIndex) return false; // chỉ cho phép tăng tiến
-                if (key === "returned" && !canReturn) return false; // ẩn "Đã trả hàng" nếu chưa đủ điều kiện
-                return true;
-              })
-              .map(([key, label]) => (
-                <Select.Option key={label} value={label}>
-                  {label}
-                </Select.Option>
-              ))}
+            {Object.entries(statusLabelMap).map(([key, label]) => (
+              <Select.Option key={key} value={label}>
+                {label}
+              </Select.Option>
+            ))}
           </Select>
         );
       },
@@ -438,7 +438,6 @@ const Orders = () => {
           </Button>
         ) : null,
     }
-
   ];
 
   if (isLoading) return <Skeleton active />;
@@ -452,12 +451,12 @@ const Orders = () => {
         columns={columns}
         dataSource={[...(filteredOrders || [])].sort(
           (a, b) =>
-            new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime()
+            new Date(b.createdAt ?? 0).getTime() -
+            new Date(a.createdAt ?? 0).getTime()
         )}
         pagination={{ pageSize: 10 }}
         scroll={{ x: "max-content" }}
       />
-
       <DrawerOrder
         visible={drawerVisible}
         order={selectedOrder}
@@ -469,16 +468,15 @@ const Orders = () => {
         onCancel={() => setCancelModalVisible(false)}
         onOk={() => setCancelModalVisible(false)}
         okText="Đóng"
-        cancelButtonProps={{ style: { display: 'none' } }}
+        cancelButtonProps={{ style: { display: "none" } }}
       >
         <div style={{ lineHeight: 1.6 }}>
           <strong>Nội dung:</strong>
-          <div style={{ marginTop: 8, whiteSpace: 'pre-wrap' }}>
+          <div style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
             {selectedCancelReason}
           </div>
         </div>
       </Modal>
-
     </div>
   );
 };
