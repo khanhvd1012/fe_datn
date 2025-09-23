@@ -13,7 +13,9 @@ import {
   Input,
   Tabs,
   Pagination,
+  Upload,
 } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 import Breadcrumb from './Breadcrumb';
 
 const { Title, Text } = Typography;
@@ -121,15 +123,45 @@ const OrderHistory = () => {
 
 
   // hoàn đơn hàng
+  // hoàn đơn hàng (có lý do + ảnh)
   const handleReturn = (orderId: string) => {
+    let returnReason = '';
+    let fileList: any[] = [];
+
     Modal.confirm({
-      title: 'Xác nhận yêu cầu hoàn đơn',
+      title: 'Yêu cầu hoàn hàng',
+      width: 600,
       content: (
-        <p>Bạn có chắc chắn muốn gửi yêu cầu hoàn (trả) đơn hàng này không?</p>
+        <div>
+          <p>Vui lòng nhập lý do hoàn hàng:</p>
+          <Input.TextArea
+            placeholder="Nhập lý do..."
+            rows={3}
+            onChange={(e) => (returnReason = e.target.value)}
+            style={{ marginBottom: 12 }}
+          />
+
+          <Upload
+            multiple
+            listType="picture-card"
+            accept="image/*"
+            beforeUpload={() => false}
+            onChange={({ fileList: newList }) => {
+              fileList = newList;
+            }}
+          >
+            <Button icon={<UploadOutlined />}>Ảnh chứng minh</Button>
+          </Upload>
+        </div>
       ),
-      okText: 'Xác nhận',
+      okText: 'Gửi yêu cầu',
       cancelText: 'Thoát',
-      onOk: async () => {
+      async onOk() {
+        if (!returnReason.trim()) {
+          message.warning('Vui lòng nhập lý do hoàn hàng');
+          return Promise.reject();
+        }
+
         try {
           const token = localStorage.getItem('token');
           if (!token) {
@@ -137,31 +169,38 @@ const OrderHistory = () => {
             return Promise.reject();
           }
 
+          const formData = new FormData();
+          formData.append('reason', returnReason);
+          fileList.forEach((file) => {
+            formData.append('images', file.originFileObj);
+          });
+
           await axios.put(
-            `http://localhost:3000/api/orders/${orderId}`,
-            { status: "return_requested" }, // chuyển trạng thái sang return_requested
+            `http://localhost:3000/api/orders/${orderId}/request-return`,
+            formData,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
+                'Content-Type': 'multipart/form-data',
               },
             }
           );
 
-          message.success('Đã gửi yêu cầu hoàn đơn hàng');
+          message.success('Đã gửi yêu cầu hoàn hàng');
           setOrders((prev) =>
             prev.map((o) =>
-              o._id === orderId ? { ...o, status: "return_requested" } : o
+              o._id === orderId ? { ...o, status: 'return_requested' } : o
             )
           );
         } catch (error) {
-          console.error('Yêu cầu hoàn đơn hàng thất bại:', error);
-          message.error('Yêu cầu hoàn đơn hàng thất bại');
+          console.error('Yêu cầu hoàn hàng thất bại:', error);
+          message.error('Yêu cầu hoàn hàng thất bại');
           return Promise.reject();
         }
       },
     });
   };
+
 
   const handleCancel = (orderId: string) => {
     let cancelReason = '';
