@@ -309,7 +309,7 @@ const OrderDetail = () => {
         <div className="max-w-5xl mx-auto p-6">
             <Breadcrumb current="Chi tiết đơn hàng" />
             <Title level={3} className="mb-4">
-                Đơn hàng #{order._id?.slice(-6).toUpperCase()}
+                Đơn hàng #{order.order_code}
             </Title>
 
             <Card bordered>
