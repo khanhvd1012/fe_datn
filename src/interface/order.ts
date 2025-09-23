@@ -36,6 +36,7 @@ export interface IOrder {
   return_rejected_by?: string | null;
   return_reject_reason?: string | null;
   returned_at?: string | null;
+  reject_reason?: string;
 
   // Xác nhận nhận hàng
   confirmed_received?: boolean;

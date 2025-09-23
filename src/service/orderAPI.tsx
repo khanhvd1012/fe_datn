@@ -52,11 +52,11 @@ export const createOrder = async (orderData: Partial<IOrder>): Promise<IOrder> =
 // Cập nhật trạng thái đơn hàng (Admin)
 export const updateOrderStatus = async (
   id: string,
-  status: IOrder["status"]
+  payload: { status: IOrder["status"]; reject_reason?: string }
 ): Promise<IOrder> => {
   const res = await axios.put(
     `${API_URL}/orders/${id}`,
-    { status },
+    payload,
     { headers: authHeader() }
   );
   return res.data?.data;

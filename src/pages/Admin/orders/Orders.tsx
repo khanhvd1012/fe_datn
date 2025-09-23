@@ -23,6 +23,9 @@ const Orders = () => {
   const [reasonType, setReasonType] = useState<"cancel" | "return" | null>(null);
   const [reasonModalVisible, setReasonModalVisible] = useState(false);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectOrderId, setRejectOrderId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState({
     user: "",
@@ -121,6 +124,33 @@ const Orders = () => {
         },
       }
     );
+  };
+
+  const handleConfirmReject = () => {
+    if (!rejectReason.trim()) {
+      messageApi.warning("Vui lòng nhập lý do từ chối hoàn hàng");
+      return;
+    }
+
+    if (rejectOrderId) {
+      updateStatus(
+        { id: rejectOrderId, status: "return_rejected", reject_reason: rejectReason },
+        {
+          onSuccess: () => {
+            messageApi.success("Đã từ chối hoàn hàng");
+            queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+            setRejectModalVisible(false);
+            setRejectReason("");
+            setRejectOrderId(null);
+          },
+          onError: (err: any) => {
+            const errorMessage =
+              err?.response?.data?.message || "Từ chối hoàn hàng thất bại";
+            messageApi.error(errorMessage);
+          },
+        }
+      );
+    }
   };
 
   const showOrderDetails = (order: IOrder) => {
@@ -391,7 +421,23 @@ const Orders = () => {
       title: "Cập nhật trạng thái",
       key: "updateStatus",
       render: (_: any, order: IOrder) => {
-        if (order.status === "canceled") {
+        // Thứ tự trạng thái
+        const statusOrder: IOrder["status"][] = [
+          "pending",
+          "processing",
+          "shipped",
+          "delivered",
+          "return_requested",
+          "return_accepted",
+          "return_rejected",
+          "returned",
+          "canceled",
+        ];
+
+        const currentIndex = statusOrder.indexOf(order.status);
+
+        // Nếu đơn đã giao, hủy, hoặc hoàn hàng -> chỉ hiển thị tag
+        if (["delivered", "canceled", "returned", "return_rejected"].includes(order.status)) {
           return (
             <Tag color={statusColorMap[order.status]}>
               {statusLabelMap[order.status]}
@@ -399,15 +445,72 @@ const Orders = () => {
           );
         }
 
+        // Trường hợp đặc biệt: return_requested
+        if (order.status === "return_requested") {
+          return (
+            <Select
+              labelInValue
+              value={{
+                value: order.status,
+                label: statusLabelMap[order.status] || order.status,
+              } as { value: IOrder["status"]; label: string }}
+              style={{ width: 180 }}
+              onChange={({ value }: { value: IOrder["status"] }) => {
+                if (value === "return_rejected") {
+                  setRejectOrderId(order._id!);
+                  setRejectModalVisible(true);
+                } else {
+                  handleUpdateStatus(order._id, value);
+                }
+              }}
+            >
+              <Select.Option value="return_accepted">
+                {statusLabelMap["return_accepted"]}
+              </Select.Option>
+              <Select.Option value="return_rejected">
+                {statusLabelMap["return_rejected"]}
+              </Select.Option>
+            </Select>
+          );
+        }
+
+        // Trường hợp đặc biệt: return_accepted
+        if (order.status === "return_accepted") {
+          return (
+            <Select
+              labelInValue
+              value={{
+                value: order.status,
+                label: statusLabelMap[order.status] || order.status,
+              }}
+              style={{ width: 180 }}
+              onChange={({ value }) => handleUpdateStatus(order._id, value)}
+            >
+              <Select.Option value="returned">
+                {statusLabelMap["returned"]}
+              </Select.Option>
+            </Select>
+          );
+        }
+
+        // Các trạng thái bình thường
         return (
           <Select
             labelInValue
-            value={{ value: order.status, label: statusLabelMap[order.status] || order.status }}
-            style={{ width: 160 }}
+            value={{
+              value: order.status,
+              label: statusLabelMap[order.status] || order.status,
+            }}
+            style={{ width: 180 }}
             onChange={({ value }) => handleUpdateStatus(order._id, value)}
           >
             {Object.entries(statusLabelMap)
-              .filter(([key]) => !["canceled", "return_requested"].includes(key))
+              .filter(([key]) => {
+                if (["canceled", "return_requested", "return_accepted", "return_rejected", "returned"].includes(key)) {
+                  return false; // các trạng thái hoàn hàng chỉ xử lý riêng
+                }
+                return statusOrder.indexOf(key as IOrder["status"]) >= currentIndex;
+              })
               .map(([key, label]) => (
                 <Select.Option key={key} value={key}>
                   {label}
@@ -415,8 +518,9 @@ const Orders = () => {
               ))}
           </Select>
         );
-      }
-    },
+      },
+    }
+    ,
     {
       title: "Thao tác",
       key: "actions",
@@ -428,12 +532,8 @@ const Orders = () => {
             icon={<EyeOutlined />}
             onClick={() => showOrderDetails(record)}
           />
-          {/* Nút hủy đơn hàng, chỉ hiển thị nếu đơn hàng chưa bị hủy hoặc giao xong */}
           {role === "admin" &&
-            record.status !== "canceled" &&
-            record.status !== "shipped" &&
-            record.status !== "delivered" &&
-            record.status !== "returned" && (
+            !["canceled", "shipped", "delivered", "returned", "return_accepted", "return_rejected", "return_requested"].includes(record.status) && (
               <Popconfirm
                 title="Bạn chắc chắn muốn hủy đơn hàng này?"
                 onConfirm={() => handleCancel(record._id!)}
@@ -494,6 +594,25 @@ const Orders = () => {
         order={selectedOrder}
         onClose={() => setDrawerVisible(false)}
       />
+      <Modal
+        title="Nhập lý do từ chối hoàn hàng"
+        open={rejectModalVisible}
+        onOk={handleConfirmReject}
+        onCancel={() => {
+          setRejectModalVisible(false);
+          setRejectReason("");
+          setRejectOrderId(null);
+        }}
+        okText="Xác nhận"
+        cancelText="Hủy"
+      >
+        <Input.TextArea
+          rows={4}
+          placeholder="Nhập lý do từ chối..."
+          value={rejectReason}
+          onChange={(e) => setRejectReason(e.target.value)}
+        />
+      </Modal>
       <Modal
         title={reasonType === "cancel" ? "Lý do hủy đơn hàng" : "Lý do hoàn hàng"}
         open={reasonModalVisible}
