@@ -150,6 +150,12 @@ const OrderHistory = () => {
           >
             <Button icon={<UploadOutlined />}>Ảnh chứng minh</Button>
           </Upload>
+          <div style={{ marginTop: 12 }}>
+            <span style={{ color: "red", fontSize: 13, display: "block" }}>
+              Lưu ý: Vui lòng tải lên ảnh hóa đơn, sản phẩm bị lỗi hoặc QR/số tài khoản
+              ngân hàng để thuận tiện cho việc hoàn tiền.
+            </span>
+          </div>
         </div>
       ),
       okText: 'Gửi yêu cầu',
@@ -201,10 +207,10 @@ const OrderHistory = () => {
 
 
   const handleCancel = (orderId: string) => {
-    let cancelReason = '';
+    let cancelReason = "";
 
     Modal.confirm({
-      title: 'Xác nhận hủy đơn hàng',
+      title: "Xác nhận hủy đơn hàng",
       content: (
         <div>
           <p>Vui lòng nhập lý do hủy:</p>
@@ -214,33 +220,35 @@ const OrderHistory = () => {
           />
         </div>
       ),
-      okText: 'Xác nhận hủy',
-      cancelText: 'Thoát',
+      okText: "Xác nhận hủy",
+      cancelText: "Thoát",
       onOk: async () => {
         if (!cancelReason.trim()) {
-          message.warning('Vui lòng nhập lý do hủy đơn');
+          message.warning("Vui lòng nhập lý do hủy đơn");
           return Promise.reject();
         }
 
         try {
-          const token = localStorage.getItem('token');
+          const token = localStorage.getItem("token");
           await axios.put(
             `http://localhost:3000/api/orders/${orderId}/cancel`,
             { cancel_reason: cancelReason },
             {
               headers: {
                 Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
             }
           );
-          message.success('Hủy đơn hàng thành công');
-          setTimeout(() => {
-            window.location.reload();
-          }, 500);
+          message.success("Hủy đơn hàng thành công");
+          setOrders((prev) =>
+            prev.map((o) =>
+              o._id === orderId ? { ...o, status: "canceled" } : o
+            )
+          );
         } catch (error) {
-          console.error('Hủy đơn hàng thất bại:', error);
-          message.error('Hủy đơn hàng thất bại');
+          console.error("Hủy đơn hàng thất bại:", error);
+          message.error("Hủy đơn hàng thất bại");
           return Promise.reject();
         }
       },
@@ -324,6 +332,7 @@ const OrderHistory = () => {
         </div>
         <Tabs
           defaultActiveKey="pending"
+          onChange={() => setCurrentPage(1)}
           type="card"
           tabPosition="left"
           items={Object.keys(statusLabels).map((status) => ({

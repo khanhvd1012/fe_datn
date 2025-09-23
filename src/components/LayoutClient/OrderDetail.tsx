@@ -54,47 +54,6 @@ const paymentStatusLabels: Record<NonNullable<IOrder["payment_status"]>, string>
     refunded: "Đã hoàn tiền",
 };
 
-// Xác nhận đã nhận hàng
-const handleConfirmReceived = (orderId: string) => {
-    Modal.confirm({
-        title: 'Xác nhận đã nhận hàng',
-        content: <p>Bạn có chắc chắn muốn xác nhận đã nhận được đơn hàng này không?</p>,
-        okText: 'Xác nhận',
-        cancelText: 'Thoát',
-        onOk: async () => {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    message.error('Bạn cần đăng nhập để thực hiện thao tác này');
-                    return Promise.reject();
-                }
-
-                await axios.put(
-                    `http://localhost:3000/api/orders/${orderId}/confirm-received`,
-                    {},
-                    {
-                        headers: {
-                            Authorization: `Bearer ${token}`,
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-
-                message.success('Xác nhận đã nhận hàng thành công');
-                setOrders((prev) =>
-                    prev.map((o: { _id: string; }) =>
-                        o._id === orderId ? { ...o, confirmed_received: true } : o
-                    )
-                );
-            } catch (error) {
-                console.error('Xác nhận nhận hàng thất bại:', error);
-                message.error('Xác nhận nhận hàng thất bại');
-                return Promise.reject();
-            }
-        },
-    });
-};
-
 const OrderDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -132,6 +91,12 @@ const OrderDetail = () => {
                     >
                         <Button icon={<UploadOutlined />}>Ảnh chứng minh</Button>
                     </Upload>
+                    <div style={{ marginTop: 12 }}>
+                        <span style={{ color: "red", fontSize: 13, display: "block" }}>
+                            Lưu ý: Vui lòng tải lên ảnh hóa đơn, sản phẩm bị lỗi hoặc QR/số tài khoản ngân hàng
+                            để thuận tiện cho việc hoàn tiền.
+                        </span>
+                    </div>
                 </div>
             ),
             okText: 'Gửi yêu cầu',
@@ -167,14 +132,53 @@ const OrderDetail = () => {
                     );
 
                     message.success('Đã gửi yêu cầu hoàn hàng');
-                    setOrder((prev: any[]) =>
-                        prev.map((o) =>
-                            o._id === orderId ? { ...o, status: 'return_requested' } : o
-                        )
-                    );
+                    setOrder((prev: any) => ({
+                        ...prev,
+                        status: "return_requested",
+                    }));
                 } catch (error) {
                     console.error('Yêu cầu hoàn hàng thất bại:', error);
                     message.error('Yêu cầu hoàn hàng thất bại');
+                    return Promise.reject();
+                }
+            },
+        });
+    };
+
+    // Xác nhận đã nhận hàng
+    const handleConfirmReceived = (orderId: string) => {
+        Modal.confirm({
+            title: 'Xác nhận đã nhận hàng',
+            content: <p>Bạn có chắc chắn muốn xác nhận đã nhận được đơn hàng này không?</p>,
+            okText: 'Xác nhận',
+            cancelText: 'Thoát',
+            onOk: async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        message.error('Bạn cần đăng nhập để tiếp tục');
+                        return Promise.reject();
+                    }
+
+                    await axios.put(
+                        `http://localhost:3000/api/orders/${orderId}/confirm-received`,
+                        {},
+                        {
+                            headers: {
+                                Authorization: `Bearer ${token}`,
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+
+                    message.success('Xác nhận đã nhận hàng thành công');
+                    setOrder((prev: any) => ({
+                        ...prev,
+                        confirmed_received: true
+                    }));
+                } catch (error) {
+                    console.error('Xác nhận nhận hàng thất bại:', error);
+                    message.error('Xác nhận nhận hàng thất bại');
                     return Promise.reject();
                 }
             },
@@ -218,7 +222,10 @@ const OrderDetail = () => {
                     );
 
                     message.success("Hủy đơn hàng thành công");
-                    window.location.reload();
+                    setOrder((prev: any) => ({
+                        ...prev,
+                        status: "canceled",
+                    }));
                 } catch (error) {
                     console.error("Lỗi khi hủy đơn hàng:", error);
                     message.error("Hủy đơn hàng thất bại");
@@ -512,7 +519,3 @@ const OrderDetail = () => {
 };
 
 export default OrderDetail;
-
-function setOrders(arg0: (prev: any) => any) {
-    throw new Error('Function not implemented.');
-}
