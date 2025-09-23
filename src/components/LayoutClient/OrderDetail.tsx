@@ -33,7 +33,7 @@ const statusColor: Record<IOrder["status"], string> = {
 
 const statusLabels: Record<IOrder["status"], string> = {
   pending: "Chờ xác nhận",
-  processing: "Đã xác nhận",
+  processing: "Đang xử lý",
   shipped: "Đang giao",
   delivered: "Đã giao",
   return_requested: "Yêu cầu hoàn hàng",
