@@ -1,7 +1,7 @@
 import { Table, Tag, Select, message, Popconfirm, Button, Skeleton, Empty, Modal, Upload } from "antd";
 import { DatePicker, Input } from "antd";
 import { useState } from "react";
-import { useAdminOrders, useCancelOrder, useUpdateOrderStatus, useUpdatePaymentStatus } from "../../../hooks/useOrder";
+import { useAdminOrders, useCancelOrder, useUpdateOrderStatus } from "../../../hooks/useOrder";
 import { useUsers } from "../../../hooks/useUser";
 import { DeleteOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import type { IOrder, IUser, IOrderItem } from "../../../interface/order";
@@ -26,11 +26,9 @@ const Orders = () => {
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectOrderId, setRejectOrderId] = useState<string | null>(null);
-  const { mutate: updatePaymentStatus } = useUpdatePaymentStatus();
-  const [refundModalVisible, setRefundModalVisible] = useState(false);
-  const [refundImages, setRefundImages] = useState<any[]>([]);
-  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
-
+  const [returnModalVisible, setReturnModalVisible] = useState(false);
+  const [returnFiles, setReturnFiles] = useState<any[]>([]);
+  const [returnOrderId, setReturnOrderId] = useState<string | null>(null);
 
   const [filters, setFilters] = useState({
     user: "",
@@ -114,6 +112,43 @@ const Orders = () => {
     return true;
   });
 
+  const openReturnModal = (orderId: string) => {
+    setReturnOrderId(orderId);
+    setReturnModalVisible(true);
+  };
+
+  const handleUploadReturn = () => {
+    if (!returnOrderId) return;
+    if (returnFiles.length === 0) {
+      messageApi.warning("Vui lòng chọn ít nhất 1 ảnh hoàn hàng");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("status", "returned");
+    returnFiles.forEach((file) => {
+      // file.originFileObj là file gốc từ Antd Upload
+      formData.append("return_images", file.originFileObj);
+    });
+
+    updateStatus(
+      { id: returnOrderId, formData },
+      {
+        onSuccess: () => {
+          messageApi.success("Hoàn hàng thành công");
+          setReturnModalVisible(false);
+          setReturnFiles([]);
+          setReturnOrderId(null);
+        },
+        onError: (err: any) => {
+          const errorMessage =
+            err?.response?.data?.message || "Hoàn hàng thất bại";
+          messageApi.error(errorMessage);
+        },
+      }
+    );
+  };
+
   const handleUpdateStatus = (id: string, newStatus: IOrder["status"]) => {
     updateStatus(
       { id, status: newStatus },
@@ -178,40 +213,6 @@ const Orders = () => {
     );
   };
 
-  const openRefundModal = (orderId: string) => {
-    setRefundOrderId(orderId);
-    setRefundModalVisible(true);
-  };
-
-  const handleRefundSubmit = () => {
-    if (!refundOrderId) return;
-    if (refundImages.length === 0) {
-      messageApi.warning("Vui lòng chọn ít nhất 1 ảnh");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("payment_status", "refunded");
-    refundImages.forEach((file) => {
-      formData.append("images", file.originFileObj);
-    });
-
-    updatePaymentStatus(
-      { id: refundOrderId, formData },
-      {
-        onSuccess: () => {
-          messageApi.success("Cập nhật thành công: Đã hoàn tiền");
-          queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-          setRefundModalVisible(false);
-          setRefundImages([]);
-          setRefundOrderId(null);
-        },
-        onError: (err: any) => {
-          messageApi.error(err?.response?.data?.message || "Cập nhật thất bại");
-        },
-      }
-    );
-  };
 
   const paymentStatusColorMap: Record<NonNullable<IOrder["payment_status"]>, string> = {
     unpaid: "orange",
@@ -522,9 +523,9 @@ const Orders = () => {
             <Button
               type="primary"
               size="small"
-              onClick={() => handleUpdateStatus(order._id, "returned")}
+              onClick={() => openReturnModal(order._id)}
             >
-              {statusLabelMap["returned"]}
+              Hoàn hàng
             </Button>
           );
         }
@@ -663,33 +664,30 @@ const Orders = () => {
         </div>
       </Modal>
       <Modal
-        title="Xác nhận đã hoàn tiền"
-        open={refundModalVisible}
-        onOk={handleRefundSubmit}
+        title="Xác nhận hoàn hàng & tải ảnh minh chứng"
+        open={returnModalVisible}
+        onOk={handleUploadReturn}
         onCancel={() => {
-          setRefundModalVisible(false);
-          setRefundImages([]);
-          setRefundOrderId(null);
+          setReturnModalVisible(false);
+          setReturnFiles([]);
+          setReturnOrderId(null);
         }}
-        okText="Xác nhận"
+        okText="Hoàn hàng"
         cancelText="Hủy"
       >
-        <p>Vui lòng tải lên ảnh chứng minh hoàn tiền (tối đa 5 ảnh):</p>
         <Upload
           listType="picture-card"
-          fileList={refundImages}
-          beforeUpload={() => false} // không auto upload
-          onChange={({ fileList }) => {
-            if (fileList.length > 5) {
-              messageApi.warning("Chỉ được tải tối đa 5 ảnh");
-              return;
-            }
-            setRefundImages(fileList);
-          }}
+          fileList={returnFiles}
+          beforeUpload={() => false}   // chặn upload tự động, để gửi thủ công
+          onChange={({ fileList }) => setReturnFiles(fileList)}
           multiple
+          maxCount={5}
         >
-          {refundImages.length < 5 && "+ Tải ảnh"}
+          {returnFiles.length >= 5 ? null : "+ Thêm ảnh"}
         </Upload>
+        <p style={{ marginTop: 8 }}>
+          * Bắt buộc ít nhất 1 ảnh, tối đa 5 ảnh
+        </p>
       </Modal>
     </div>
   );

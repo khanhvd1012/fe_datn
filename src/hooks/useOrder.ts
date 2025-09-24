@@ -7,10 +7,8 @@ import {
   createOrder,
   updateOrderStatus,
   cancelOrder,
-  updatePaymentStatus
 } from '../service/orderAPI';
 
-type OrderStatus = NonNullable<IOrder['status']>;
 
 export const useUserOrders = () => {
   return useQuery({
@@ -49,29 +47,24 @@ export const useCreateOrder = () => {
   });
 };
 
-// Cập nhật trạng thái đơn hàng (admin)
+type UpdateOrderStatusInput =
+  | { id: string; status: IOrder["status"]; reject_reason?: string } 
+  | { id: string; formData: FormData };            
+
 export const useUpdateOrderStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: string; status: OrderStatus; reject_reason?: string }) =>
-      updateOrderStatus(data.id, { status: data.status, reject_reason: data.reject_reason }),
-    onSuccess: (_, data) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['order-detail', data.id] });
+    mutationFn: (data: UpdateOrderStatusInput) => {
+      // Nếu có formData thì gửi multipart
+      if ("formData" in data) {
+        return updateOrderStatus(data.id, data.formData);
+      }
+      // Nếu chỉ có status thì gửi JSON
+      return updateOrderStatus(data.id, { status: data.status });
     },
-  });
-};
-
-export const useUpdatePaymentStatus = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (data: { id: string; formData: FormData }) =>
-      updatePaymentStatus(data.id, data.formData),
-    onSuccess: (_, data) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["order-detail", data.id] });
     },
   });
 };

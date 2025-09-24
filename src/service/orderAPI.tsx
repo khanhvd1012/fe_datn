@@ -52,31 +52,23 @@ export const createOrder = async (orderData: Partial<IOrder>): Promise<IOrder> =
 // Cập nhật trạng thái đơn hàng (Admin)
 export const updateOrderStatus = async (
   id: string,
-  payload: { status: IOrder["status"]; reject_reason?: string }
+  payload: FormData | { status: IOrder["status"]; reject_reason?: string }
 ): Promise<IOrder> => {
+  const isFormData = payload instanceof FormData;
+
   const res = await axios.put(
     `${API_URL}/orders/${id}`,
     payload,
-    { headers: authHeader() }
-  );
-  return res.data?.data;
-};
-
-export const updatePaymentStatus = async (
-  id: string,
-  formData: FormData
-): Promise<IOrder> => {
-  const res = await axios.put(
-    `${API_URL}/orders/${id}/update-payment`,
-    formData,
     {
       headers: {
         ...authHeader(),
-        "Content-Type": "multipart/form-data",
+        "Content-Type": isFormData
+          ? "multipart/form-data"
+          : "application/json",
       },
     }
   );
-  return res.data?.order;
+  return res.data?.data;
 };
 
 // Hủy đơn hàng

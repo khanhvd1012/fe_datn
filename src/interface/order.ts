@@ -66,6 +66,7 @@ export interface IOrder {
   // Virtuals
   order_code?: string;
   images: string[];
+  return_images: string[];
   items?: IOrderItem[];
   trangThai?: string;
 }

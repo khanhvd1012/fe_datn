@@ -201,6 +201,27 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
                 </Descriptions.Item>
               )}
 
+              {order.return_images && order.return_images.length > 0 && (
+                <Descriptions.Item label="Ảnh hoàn hàng">
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                    {order.return_images.map((img, index) => (
+                      <img
+                        key={index}
+                        src={img}
+                        alt={`return-img-${index}`}
+                        style={{
+                          width: 120,
+                          height: 120,
+                          objectFit: 'cover',
+                          borderRadius: 8,
+                          border: '1px solid #ddd',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </Descriptions.Item>
+              )}
+
               <Descriptions.Item label="Phương thức thanh toán">
                 {order.payment_method === "cod"
                   ? "Thanh toán khi nhận hàng"
