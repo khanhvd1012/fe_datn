@@ -43,7 +43,7 @@ const statusColor: Record<string, string> = {
   return_requested: 'gold',
   return_accepted: 'cyan',
   return_rejected: 'volcano',
-  returned: 'gray',
+  returned_received: 'gray',
   canceled: 'red',
 };
 
@@ -55,7 +55,7 @@ const statusLabels: Record<string, string> = {
   return_requested: 'Yêu cầu hoàn hàng',
   return_accepted: 'Yêu cầu hoàn được chấp nhận',
   return_rejected: 'Yêu cầu hoàn bị từ chối',
-  returned: 'Đã trả hàng',
+  returned_received: 'Đã trả hàng',
   canceled: 'Đã hủy',
 };
 
@@ -457,9 +457,23 @@ const OrderHistory = () => {
                                     />
                                   </Tooltip>
                                 )}
-                                <Button size="small" onClick={() => handleReturn(order._id)}>
-                                  Hoàn đơn
-                                </Button>
+                                {order?.updatedAt && (() => {
+                                  const now = new Date();
+                                  const updatedAt = new Date(order.updatedAt);
+
+                                  const diffMs = now.getTime() - updatedAt.getTime();
+                                  const diffDays = diffMs / (1000 * 60 * 60 * 24); // đổi ra ngày
+
+                                  // Chỉ hiển thị nút nếu <= 3 ngày
+                                  return diffDays <= 3 ? (
+                                    <div className="flex items-center gap-2">
+                                      <Button size="small" onClick={() => handleReturn(order._id)}>
+                                        Hoàn đơn
+                                      </Button>
+                                    </div>
+                                  ) : null;
+                                })()}
+
                               </>
                             )}
 

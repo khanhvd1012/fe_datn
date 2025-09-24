@@ -30,8 +30,9 @@ const statusColor: Record<IOrder["status"], string> = {
     return_requested: "gold",
     return_accepted: "cyan",
     return_rejected: "volcano",
-    returned: "gray",
+    returned_received: "gray",
     canceled: "red",
+    returned: ''
 };
 
 const statusLabels: Record<IOrder["status"], string> = {
@@ -42,8 +43,9 @@ const statusLabels: Record<IOrder["status"], string> = {
     return_requested: "Yêu cầu hoàn hàng",
     return_accepted: "Hoàn hàng được chấp nhận",
     return_rejected: "Hoàn hàng bị từ chối",
-    returned: "Đã trả hàng",
+    returned_received: "Đã trả hàng",
     canceled: "Đã hủy",
+    returned: ''
 };
 
 const paymentStatusLabels: Record<NonNullable<IOrder["payment_status"]>, string> = {
@@ -506,9 +508,27 @@ const OrderDetail = () => {
                                     Xác nhận đã nhận hàng
                                 </Button>
                             )}
-                            <Button size="small" onClick={() => handleReturn(order._id)}>
-                                Hoàn đơn
-                            </Button>
+                            {order?.updatedAt && (() => {
+                                const now = new Date();
+                                const updatedAt = new Date(order.updatedAt);
+
+                                const diffMs = now.getTime() - updatedAt.getTime();
+                                const diffDays = diffMs / (1000 * 60 * 60 * 24); // đổi ra ngày
+
+                                console.log("⏰ Hiện tại:", now.toISOString());
+                                console.log("📌 updatedAt:", order.updatedAt);
+                                console.log(`🔎 Chênh lệch: ${diffDays.toFixed(2)} ngày`);
+
+                                // Chỉ hiển thị nút nếu <= 3 ngày
+                                return diffDays <= 3 ? (
+                                    <div className="flex items-center gap-2">
+                                        <Button size="small" onClick={() => handleReturn(order._id)}>
+                                            Hoàn đơn
+                                        </Button>
+                                    </div>
+                                ) : null;
+                            })()}
+
                         </Space>
                     )}
 
