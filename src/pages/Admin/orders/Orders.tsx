@@ -193,7 +193,7 @@ const Orders = () => {
     const formData = new FormData();
     formData.append("payment_status", "refunded");
     refundImages.forEach((file) => {
-      formData.append("files", file.originFileObj);
+      formData.append("images", file.originFileObj);
     });
 
     updatePaymentStatus(

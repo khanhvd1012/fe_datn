@@ -68,7 +68,7 @@ export const updatePaymentStatus = async (
 ): Promise<IOrder> => {
   const res = await axios.put(
     `${API_URL}/orders/${id}/update-payment`,
-    { formData },
+    formData,
     {
       headers: {
         ...authHeader(),
