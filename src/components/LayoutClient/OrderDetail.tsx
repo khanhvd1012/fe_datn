@@ -49,16 +49,9 @@ const statusLabels: Record<IOrder["status"], string> = {
 };
 
 const paymentStatusLabels: Record<NonNullable<IOrder["payment_status"]>, string> = {
-    // unpaid: "Chưa thanh toán",
-    // paid: "Đã thanh toán",
-    // failed: "Thanh toán thất bại",
-    // canceled: "Thanh toán bị hủy",
-    // refunded: "Đã hoàn tiền",
-
     unpaid: "Chưa thanh toán",
     paid: "Đã thanh toán",
     refund_processing: "Đang hoàn tiền",
-    pending: "Đang chờ thanh toán",
     canceled: "Hủy thanh toán",
     refunded: "Đã hoàn tiền",
 };
@@ -440,6 +433,27 @@ const OrderDetail = () => {
                                 : "Không rõ"}
                         </Tag>
                     </Descriptions.Item>
+
+                    {order.return_images?.length > 0 && (
+                        <Descriptions.Item label="Ảnh hoàn tiền">
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                {order.return_images.map((img: string, idx: number) => (
+                                    <Image
+                                        key={idx}
+                                        src={img}
+                                        alt={`refund-proof-${idx}`}
+                                        width={120}
+                                        height={120}
+                                        style={{
+                                            objectFit: 'cover',
+                                            borderRadius: 8,
+                                            border: '1px solid #ddd',
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </Descriptions.Item>
+                    )}
 
                     <Descriptions.Item label="Người nhận">
                         {shipping.name}

@@ -38,12 +38,6 @@ const paymentStatusLabels: Record<string, string> = {
 
 };
 
-// unpaid: "Chưa thanh toán",
-// paid: "Đã thanh toán",
-// refund_processing: "Đang hoàn tiền",
-// canceled: "Thanh toán hủy",
-// refunded: "Đã hoàn tiền",
-
 const statusColor: Record<string, string> = {
   pending: 'orange',
   processing: 'blue',
@@ -69,18 +63,6 @@ const statusLabels: Record<string, string> = {
   returned: "Đã hoàn hàng",
   canceled: 'Đã hủy',
 };
-
-
-// pending: "Chờ xử lý",
-//     processing: "Đang xử lý",
-//     shipped: "Đang giao",
-//     delivered: "Đã giao",
-//     return_requested: "Yêu cầu hoàn hàng",
-//     return_accepted: "Chấp nhận hoàn hàng",
-//     return_rejected: "Từ chối hoàn hàng",
-//     returned_received: "Đã nhận hàng hoàn",
-//     returned: "Đã hoàn hàng",
-//     canceled: "Đã hủy",
 
 const OrderHistory = () => {
   const [orders, setOrders] = useState<any[]>([]);
