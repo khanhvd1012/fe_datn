@@ -414,8 +414,8 @@ const Orders = () => {
       render: (status: IOrder["payment_status"], order: IOrder) => {
         if (!status) return <Tag color="default">Không rõ</Tag>;
 
-        // Nếu đang hoàn tiền → hiển thị nút xác nhận
-        if (status === "refund_processing") {
+        // Chỉ hiển thị nút khi đơn đã nhận hàng hoàn + đang hoàn tiền
+        if (order.status === "returned_received" && status === "refund_processing") {
           return (
             <Button
               type="primary"
@@ -470,7 +470,7 @@ const Orders = () => {
         const currentIndex = statusOrder.indexOf(order.status);
 
         // Nếu đơn đã giao, hủy, hoặc hoàn hàng -> chỉ hiển thị tag
-        if (["delivered", "canceled", "returned", "return_rejected", "returned_received"].includes(order.status)) {
+        if (["delivered", "canceled", "returned", "return_rejected"].includes(order.status)) {
           return (
             <Tag color={statusColorMap[order.status]}>
               {statusLabelMap[order.status]}
@@ -516,6 +516,19 @@ const Orders = () => {
               onClick={() => handleUpdateStatus(order._id, "returned_received")}
             >
               {statusLabelMap["returned_received"]}
+            </Button>
+          );
+        }
+
+        // Trường hợp đặc biệt: returned_received
+        if (order.status === "returned_received") {
+          return (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => handleUpdateStatus(order._id, "returned")}
+            >
+              {statusLabelMap["returned"]}
             </Button>
           );
         }
