@@ -1,4 +1,4 @@
-import { Card, Row, Col, Statistic, Table, DatePicker, Spin, Button } from "antd";
+import { Card, Row, Col, Statistic, Table, DatePicker, Spin, Button, message } from "antd";
 import { Column, Line } from "@ant-design/charts";
 import {
   ShoppingOutlined,
@@ -20,12 +20,18 @@ const Dashboard = () => {
 
   const currentYear = new Date().getFullYear();
   const [yearRange, setYearRange] = useState({ startYear: currentYear - 4, endYear: currentYear });
+  const [dayRange, setDayRange] = useState({
+    start: dayjs().subtract(4, 'day'),
+    end: dayjs()
+  });
 
   const { data: stats, isLoading } = useDashboardStats({
     startDate: dateRange ? dateRange[0].format("YYYY-MM-DD") : undefined,
     endDate: dateRange ? dateRange[1].format("YYYY-MM-DD") : undefined,
     startYear: yearRange.startYear,
     endYear: yearRange.endYear,
+    startSingle: dayRange.start.format("YYYY-MM-DD"),
+    endSingle: dayRange.end.format("YYYY-MM-DD")
   });
 
   const columns = [
@@ -123,6 +129,7 @@ const Dashboard = () => {
 
       {/* Biểu đồ */}
       <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
+        {/* Thống kê đơn hàng */}
         <Col xs={24} md={12}>
           <Card
             title="Thống kê đơn hàng"
@@ -153,39 +160,34 @@ const Dashboard = () => {
 
         <Col xs={24} md={12}>
           <Card
-            title="Doanh thu theo năm"
+            title="Doanh thu 5 ngày gần nhất"
             extra={
-              <div>
-                <Button
-                  icon={<LeftOutlined />}
-                  size="small"
-                  onClick={() =>
-                    setYearRange((prev) => ({
-                      startYear: prev.startYear - 5,
-                      endYear: prev.endYear - 5,
-                    }))
+              <RangePicker
+                size="small"
+                value={[dayRange.start, dayRange.end]}
+                onChange={(dates) => {
+                  if (dates && dates[0] && dates[1]) {
+                    const diff = dates[1].diff(dates[0], "day");
+                    if (diff > 4) {
+                      message.warning({
+                        content: "Khoảng thời gian không được vượt quá 5 ngày!",
+                        key: "range-limit"
+                      }); return;
+                    }
+                    setDayRange({
+                      start: dates[0],
+                      end: dates[1],
+                    });
                   }
-                />
-                <Button
-                  icon={<RightOutlined />}
-                  size="small"
-                  style={{ marginLeft: 8 }}
-                  onClick={() =>
-                    setYearRange((prev) => ({
-                      startYear: prev.startYear + 5,
-                      endYear: prev.endYear + 5,
-                    }))
-                  }
-                />
-              </div>
+                }}
+              />
             }
           >
             <Column
-              data={stats?.revenueByYear || []}
-              xField="year"
+              data={stats?.revenueLast5Days || []}
+              xField="date"
               yField="revenue"
               height={250}
-              autoFit
               label={{
                 position: "top",
                 formatter: (val: number | string) =>
@@ -195,6 +197,50 @@ const Dashboard = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Doanh thu năm */}
+      <Col xs={1000} md={500} style={{ marginTop: "16px" }}>
+        <Card
+          title="Doanh thu theo năm"
+          extra={
+            <div>
+              <Button
+                icon={<LeftOutlined />}
+                size="small"
+                onClick={() =>
+                  setYearRange((prev) => ({
+                    startYear: prev.startYear - 5,
+                    endYear: prev.endYear - 5,
+                  }))
+                }
+              />
+              <Button
+                icon={<RightOutlined />}
+                size="small"
+                style={{ marginLeft: 8 }}
+                onClick={() =>
+                  setYearRange((prev) => ({
+                    startYear: prev.startYear + 5,
+                    endYear: prev.endYear + 5,
+                  }))
+                }
+              />
+            </div>
+          }
+        >
+          <Column
+            data={stats?.revenueByYear || []}
+            xField="year"
+            yField="revenue"
+            height={250}
+            label={{
+              position: "top",
+              formatter: (val: number | string) =>
+                `${Number(val).toLocaleString("vi-VN")} đ`,
+            }}
+          />
+        </Card>
+      </Col>
 
       {/* Bảng top sản phẩm */}
       <Card

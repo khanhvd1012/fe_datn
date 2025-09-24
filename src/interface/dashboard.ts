@@ -30,7 +30,8 @@ export interface IDashboardStats {
   totalUsers: number;                    // tổng số user
   ordersByDate: IOrdersByDate[];         // thống kê đơn theo ngày
   revenue: number;    
-  revenueByYear: IRevenueByYear[];           
+  revenueByYear: IRevenueByYear[];    
+  revenueLast5Days?: number;       
 }
 
 // API Response
