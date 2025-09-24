@@ -33,7 +33,6 @@ const Dashboard = () => {
     startSingle: dayRange.start.format("YYYY-MM-DD"),
     endSingle: dayRange.end.format("YYYY-MM-DD")
   });
-
   const columns = [
     {
       title: "Tên sản phẩm",
@@ -149,7 +148,7 @@ const Dashboard = () => {
 
       <Col xs={1000} md={500} style={{ marginTop: "16px" }}>
         <Card
-          title="Doanh thu 5 ngày gần nhất"
+          title="Doanh thu 7 ngày gần nhất"
           extra={
             <RangePicker
               size="small"
@@ -157,9 +156,9 @@ const Dashboard = () => {
               onChange={(dates) => {
                 if (dates && dates[0] && dates[1]) {
                   const diff = dates[1].diff(dates[0], "day");
-                  if (diff > 4) {
+                  if (diff > 6) {
                     message.warning({
-                      content: "Khoảng thời gian không được vượt quá 5 ngày!",
+                      content: "Khoảng thời gian không được vượt quá 7 ngày!",
                       key: "range-limit"
                     }); return;
                   }
@@ -173,7 +172,7 @@ const Dashboard = () => {
           }
         >
           <Column
-            data={stats?.revenueLast5Days || []}
+            data={stats?.dailyRevenue?.slice(-7) || []} // lấy 7 ngày gần nhất
             xField="date"
             yField="revenue"
             height={250}
