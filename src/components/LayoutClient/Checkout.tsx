@@ -545,6 +545,7 @@ const Checkout = () => {
       axios.get("http://localhost:3000/api/vouchers")
         .then(res => {
           const allVouchers = res.data || [];
+          console.log("📌 Active vouchers trước khi set:", allVouchers);
           const now = new Date();
           const orderTotal = buyNowItem
             ? buyNowItem.variant.data.price * buyNowItem.quantity
@@ -553,7 +554,8 @@ const Checkout = () => {
             new Date(voucher.startDate) <= now &&
             now <= new Date(voucher.endDate) &&
             voucher.quantity > 0
-            && orderTotal >= (voucher.minOrderValue || 0)
+            && orderTotal >= (voucher.minOrderValue || 0) &&
+           (voucher.status === "active")
           );
           setVouchers(activeVouchers);
           setShowVouchers(true);
