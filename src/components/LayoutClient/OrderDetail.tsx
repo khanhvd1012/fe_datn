@@ -98,7 +98,7 @@ const OrderDetail = () => {
                             fileList = newList;
                         }}
                     >
-                        <Button icon={<UploadOutlined />}>Ảnh chứng minh</Button>
+                        <Button icon={<UploadOutlined />}>Ảnh</Button>
                     </Upload>
                     <div style={{ marginTop: 12 }}>
                         <span style={{ color: "red", fontSize: 13, display: "block" }}>
