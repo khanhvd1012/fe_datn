@@ -197,7 +197,7 @@ const Orders = () => {
     });
 
     updatePaymentStatus(
-      { id: refundOrderId, formData }, 
+      { id: refundOrderId, formData },
       {
         onSuccess: () => {
           messageApi.success("Cập nhật thành công: Đã hoàn tiền");
@@ -437,23 +437,8 @@ const Orders = () => {
           style={{ color: filters.paymentStatus ? "#1890ff" : undefined }}
         />
       ),
-      render: (status: IOrder["payment_status"], order: IOrder) => {
+      render: (status: IOrder["payment_status"]) => {
         if (!status) return <Tag color="default">Không rõ</Tag>;
-
-        // Chỉ hiển thị nút khi đơn đã nhận hàng hoàn + đang hoàn tiền
-        if (order.status === "returned_received" && ["refund_processing", "paid"].includes(status)) {
-          return (
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => openRefundModal(order._id!)}
-            >
-              Xác nhận đã hoàn tiền
-            </Button>
-          );
-        }
-
-        // Trường hợp khác: chỉ hiển thị tag
         return (
           <Tag color={paymentStatusColorMap[status]}>
             {paymentStatusLabelMap[status]}
