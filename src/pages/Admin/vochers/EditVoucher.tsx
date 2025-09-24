@@ -23,6 +23,7 @@ const EditVoucher = () => {
             form.setFieldsValue({
                 ...voucherData,
                 duration: [dayjs(voucherData.startDate), dayjs(voucherData.endDate)],
+                isActive: voucherData.isActive,
             });
         }
     }, [voucherData, form]);
@@ -97,13 +98,13 @@ const EditVoucher = () => {
                     <InputNumber min={1} style={{ width: "100%" }} />
                 </Form.Item>
 
-                <Form.Item
+                {/* <Form.Item
                     label="Giảm tối đa"
                     name="maxDiscount"
                     tooltip="Để trống nếu không giới hạn"
                 >
                     <InputNumber min={0} style={{ width: "100%" }} placeholder="Không bắt buộc" />
-                </Form.Item>
+                </Form.Item> */}
 
                 <Form.Item
                     label="Đơn hàng tối thiểu"
@@ -128,6 +129,15 @@ const EditVoucher = () => {
                 >
                     <InputNumber min={1} style={{ width: "100%" }} />
                 </Form.Item>
+
+                <Form.Item
+                    label="Trạng thái"
+                    name="isActive"
+                    valuePropName="checked" 
+                >
+                    <Switch checkedChildren="Hoạt động" unCheckedChildren="Ngừng" />
+                </Form.Item>
+
 
                 <Form.Item>
                     <div className="flex justify-end gap-4">

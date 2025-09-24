@@ -56,6 +56,7 @@ const CreateVoucher = () => {
           value: 0,
           maxDiscount: null,
           minOrderValue: 0,
+          isActive: true,
         }}
       >
         <Form.Item
@@ -86,12 +87,17 @@ const CreateVoucher = () => {
         </Form.Item>
 
         <Form.Item
-          label="Giảm tối đa"
-          name="maxDiscount"
-          tooltip="Để trống nếu không giới hạn"
+          label="Trạng thái"
+          name="isActive"
+          rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+          initialValue={true}
         >
-          <InputNumber min={0} style={{ width: "100%" }} placeholder="Không bắt buộc" />
+          <Select>
+            <Option value={true}>Hoạt động</Option>
+            <Option value={false}>Ngừng hoạt động</Option>
+          </Select>
         </Form.Item>
+
 
         <Form.Item
           label="Đơn hàng tối thiểu"
