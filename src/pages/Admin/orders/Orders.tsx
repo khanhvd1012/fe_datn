@@ -415,7 +415,7 @@ const Orders = () => {
         if (!status) return <Tag color="default">Không rõ</Tag>;
 
         // Chỉ hiển thị nút khi đơn đã nhận hàng hoàn + đang hoàn tiền
-        if (order.status === "returned_received" && ["refund_processing","paid"].includes(status)) {
+        if (order.status === "returned_received" && ["refund_processing", "paid"].includes(status)) {
           return (
             <Button
               type="primary"
@@ -559,8 +559,44 @@ const Orders = () => {
           </Select>
         );
       },
-    }
-    ,
+    },
+    {
+      title: "Cập nhật thanh toán",
+      key: "updatePaymentStatus",
+      render: (_: any, order: IOrder) => {
+        // Chỉ admin mới thấy
+        if (role !== "admin") return null;
+
+        return (
+          <Select
+            style={{ width: 180 }}
+            value={order.payment_status}
+            onChange={(value: IOrder["payment_status"]) => {
+              updatePaymentStatus(
+                { id: order._id!, payment_status: value },
+                {
+                  onSuccess: () => {
+                    messageApi.success("Cập nhật trạng thái thanh toán thành công");
+                    queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+                  },
+                  onError: (err: any) => {
+                    messageApi.error(
+                      err?.response?.data?.message || "Cập nhật trạng thái thanh toán thất bại"
+                    );
+                  },
+                }
+              );
+            }}
+          >
+            {Object.entries(paymentStatusLabelMap).map(([key, label]) => (
+              <Select.Option key={key} value={key}>
+                {label}
+              </Select.Option>
+            ))}
+          </Select>
+        );
+      },
+    },
     {
       title: "Thao tác",
       key: "actions",
