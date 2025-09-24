@@ -35,14 +35,14 @@ const paymentStatusLabels: Record<string, string> = {
   pending: "Đang chờ thanh toán",
   canceled: "Hủy thanh toán",
   refunded: "Đã hoàn tiền",
-  
+
 };
 
 // unpaid: "Chưa thanh toán",
-    // paid: "Đã thanh toán",
-    // refund_processing: "Đang hoàn tiền",
-    // canceled: "Thanh toán hủy",
-    // refunded: "Đã hoàn tiền",
+// paid: "Đã thanh toán",
+// refund_processing: "Đang hoàn tiền",
+// canceled: "Thanh toán hủy",
+// refunded: "Đã hoàn tiền",
 
 const statusColor: Record<string, string> = {
   pending: 'orange',
@@ -186,6 +186,11 @@ const OrderHistory = () => {
       async onOk() {
         if (!returnReason.trim()) {
           message.warning('Vui lòng nhập lý do hoàn hàng');
+          return Promise.reject();
+        }
+
+        if (fileList.length === 0) {
+          message.warning('Vui lòng tải lên ít nhất 1 ảnh');
           return Promise.reject();
         }
 
