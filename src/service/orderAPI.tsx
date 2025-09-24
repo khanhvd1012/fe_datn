@@ -23,7 +23,7 @@ export const getAllOrders = async (): Promise<IOrder[]> => {
 export const getUserOrders = async (): Promise<IOrder[]> => {
   try {
     const token = localStorage.getItem("token");
-    const res = await axios.get(`${API_URL}/orders/list`, {
+    const res = await axios.get(`${API_URL}/orders/user`, {
       headers: { Authorization: `Bearer ${token}` },
     });
     return res.data || [];
@@ -60,6 +60,18 @@ export const updateOrderStatus = async (
     { headers: authHeader() }
   );
   return res.data?.data;
+};
+
+export const updatePaymentStatus = async (
+  id: string,
+  payment_status: IOrder["payment_status"]
+): Promise<IOrder> => {
+  const res = await axios.put(
+    `${API_URL}/orders/${id}/update-payment`,
+    { payment_status },
+    { headers: authHeader() }
+  );
+  return res.data?.order;
 };
 
 // Hủy đơn hàng

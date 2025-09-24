@@ -49,6 +49,15 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   return_requested: { label: "Yêu cầu hoàn hàng", color: "gold" },
   return_accepted: { label: "Chấp nhận hoàn hàng", color: "geekblue" },
   return_rejected: { label: "Từ chối hoàn hàng", color: "volcano" },
+  returned_received: { label: "Đã nhận hàng hoàn", color: "cyan" },
+};
+
+const PAYMENT_STATUS_MAP: Record<string, { label: string; color: string }> = {
+  unpaid: { label: "Chưa thanh toán", color: "orange" },
+  paid: { label: "Đã thanh toán", color: "green" },
+  canceled: { label: "Thanh toán hủy", color: "red" },
+  refund_processing: { label: "Đang hoàn tiền", color: "gold" },
+  refunded: { label: "Đã hoàn tiền", color: "blue" },
 };
 
 const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => {
@@ -62,6 +71,12 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
 
   const renderStatus = (status: string) => {
     const info = STATUS_MAP[status];
+    return info ? <Tag color={info.color}>{info.label}</Tag> : <Tag>Không rõ</Tag>;
+  };
+
+  const renderPaymentStatus = (status?: string) => {
+    if (!status) return <Tag>Không rõ</Tag>;
+    const info = PAYMENT_STATUS_MAP[status];
     return info ? <Tag color={info.color}>{info.label}</Tag> : <Tag>Không rõ</Tag>;
   };
 
@@ -140,8 +155,11 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
               <Descriptions.Item label="Mã đơn hàng">
                 {order.order_code}
               </Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
+              <Descriptions.Item label="Trạng thái đơn hàng">
                 {renderStatus(order.status)}
+              </Descriptions.Item>
+              <Descriptions.Item label="Trạng thái thanh toán">
+                {renderPaymentStatus(order.payment_status)}
               </Descriptions.Item>
 
               {order.status === "canceled" && (
@@ -155,6 +173,32 @@ const DrawerOrder = ({ visible, order, onClose, loading }: DrawerOrderProps) => 
                       : "---"}
                   </Descriptions.Item>
                 </>
+              )}
+
+              {order.return_reason && (
+                <Descriptions.Item label="Lý do hoàn">
+                  <div style={{ lineHeight: 1.6 }}>
+                    <div style={{ marginBottom: 8 }}>{order.return_reason}</div>
+                    {order.images && order.images.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                        {order.images.map((img, index) => (
+                          <img
+                            key={index}
+                            src={img}
+                            alt={`return-proof-${index}`}
+                            style={{
+                              width: 120,
+                              height: 120,
+                              objectFit: 'cover',
+                              borderRadius: 8,
+                              border: '1px solid #ddd',
+                            }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </Descriptions.Item>
               )}
 
               <Descriptions.Item label="Phương thức thanh toán">

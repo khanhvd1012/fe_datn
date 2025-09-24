@@ -6,7 +6,8 @@ import {
   getOrderById,
   createOrder,
   updateOrderStatus,
-  cancelOrder
+  cancelOrder,
+  updatePaymentStatus
 } from '../service/orderAPI';
 
 type OrderStatus = NonNullable<IOrder['status']>;
@@ -55,6 +56,19 @@ export const useUpdateOrderStatus = () => {
   return useMutation({
     mutationFn: (data: { id: string; status: OrderStatus; reject_reason?: string }) =>
       updateOrderStatus(data.id, { status: data.status, reject_reason: data.reject_reason }),
+    onSuccess: (_, data) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['order-detail', data.id] });
+    },
+  });
+};
+
+export const useUpdatePaymentStatus = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { id: string; payment_status: IOrder["payment_status"] }) =>
+      updatePaymentStatus(data.id, data.payment_status),
     onSuccess: (_, data) => {
       queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
       queryClient.invalidateQueries({ queryKey: ['order-detail', data.id] });

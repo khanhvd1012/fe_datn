@@ -1,7 +1,7 @@
 import { Table, Tag, Select, message, Popconfirm, Button, Skeleton, Empty, Modal } from "antd";
 import { DatePicker, Input } from "antd";
 import { useState } from "react";
-import { useAdminOrders, useCancelOrder, useUpdateOrderStatus } from "../../../hooks/useOrder";
+import { useAdminOrders, useCancelOrder, useUpdateOrderStatus, useUpdatePaymentStatus } from "../../../hooks/useOrder";
 import { useUsers } from "../../../hooks/useUser";
 import { DeleteOutlined, EyeOutlined, FilterOutlined, SearchOutlined } from "@ant-design/icons";
 import type { IOrder, IUser, IOrderItem } from "../../../interface/order";
@@ -26,6 +26,7 @@ const Orders = () => {
   const [rejectModalVisible, setRejectModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [rejectOrderId, setRejectOrderId] = useState<string | null>(null);
+  const { mutate: updatePaymentStatus } = useUpdatePaymentStatus();
 
   const [filters, setFilters] = useState({
     user: "",
@@ -189,7 +190,7 @@ const Orders = () => {
   const paymentStatusColorMap: Record<NonNullable<IOrder["payment_status"]>, string> = {
     unpaid: "orange",
     paid: "green",
-    failed: "volcano",
+    refund_processing: "gold",
     canceled: "red",
     refunded: "blue",
   };
@@ -197,7 +198,7 @@ const Orders = () => {
   const paymentStatusLabelMap: Record<NonNullable<IOrder["payment_status"]>, string> = {
     unpaid: "Chưa thanh toán",
     paid: "Đã thanh toán",
-    failed: "Thanh toán thất bại",
+    refund_processing: "Đang hoàn tiền",
     canceled: "Thanh toán hủy",
     refunded: "Đã hoàn tiền",
   };
@@ -210,6 +211,7 @@ const Orders = () => {
     return_requested: "gold",
     return_accepted: "geekblue",
     return_rejected: "volcano",
+    returned_received: "cyan",
     returned: "magenta",
     canceled: "red",
   };
@@ -222,6 +224,7 @@ const Orders = () => {
     return_requested: "Yêu cầu hoàn hàng",
     return_accepted: "Chấp nhận hoàn hàng",
     return_rejected: "Từ chối hoàn hàng",
+    returned_received: "Đã nhận hàng hoàn",
     returned: "Đã hoàn hàng",
     canceled: "Đã hủy",
   };
@@ -408,8 +411,38 @@ const Orders = () => {
           style={{ color: filters.paymentStatus ? "#1890ff" : undefined }}
         />
       ),
-      render: (status: IOrder["payment_status"]) => {
+      render: (status: IOrder["payment_status"], order: IOrder) => {
         if (!status) return <Tag color="default">Không rõ</Tag>;
+
+        // Nếu đang hoàn tiền → hiển thị nút xác nhận
+        if (status === "refund_processing") {
+          return (
+            <Button
+              type="primary"
+              size="small"
+              onClick={() =>
+                updatePaymentStatus(
+                  { id: order._id!, payment_status: "refunded" },
+                  {
+                    onSuccess: () => {
+                      messageApi.success("Cập nhật thành công: Đã hoàn tiền");
+                      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+                    },
+                    onError: (err: any) => {
+                      messageApi.error(
+                        err?.response?.data?.message || "Cập nhật thất bại"
+                      );
+                    },
+                  }
+                )
+              }
+            >
+              Xác nhận đã hoàn tiền
+            </Button>
+          );
+        }
+
+        // Trường hợp khác: chỉ hiển thị tag
         return (
           <Tag color={paymentStatusColorMap[status]}>
             {paymentStatusLabelMap[status]}
@@ -437,7 +470,7 @@ const Orders = () => {
         const currentIndex = statusOrder.indexOf(order.status);
 
         // Nếu đơn đã giao, hủy, hoặc hoàn hàng -> chỉ hiển thị tag
-        if (["delivered", "canceled", "returned", "return_rejected"].includes(order.status)) {
+        if (["delivered", "canceled", "returned", "return_rejected", "returned_received"].includes(order.status)) {
           return (
             <Tag color={statusColorMap[order.status]}>
               {statusLabelMap[order.status]}
@@ -477,19 +510,13 @@ const Orders = () => {
         // Trường hợp đặc biệt: return_accepted
         if (order.status === "return_accepted") {
           return (
-            <Select
-              labelInValue
-              value={{
-                value: order.status,
-                label: statusLabelMap[order.status] || order.status,
-              }}
-              style={{ width: 180 }}
-              onChange={({ value }) => handleUpdateStatus(order._id, value)}
+            <Button
+              type="primary"
+              size="small"
+              onClick={() => handleUpdateStatus(order._id, "returned_received")}
             >
-              <Select.Option value="returned">
-                {statusLabelMap["returned"]}
-              </Select.Option>
-            </Select>
+              {statusLabelMap["returned_received"]}
+            </Button>
           );
         }
 
@@ -533,7 +560,7 @@ const Orders = () => {
             onClick={() => showOrderDetails(record)}
           />
           {role === "admin" &&
-            !["canceled", "shipped", "delivered", "returned", "return_accepted", "return_rejected", "return_requested"].includes(record.status) && (
+            !["canceled", "shipped", "delivered", "returned", "return_accepted", "return_rejected", "returned_received", "return_requested"].includes(record.status) && (
               <Popconfirm
                 title="Bạn chắc chắn muốn hủy đơn hàng này?"
                 onConfirm={() => handleCancel(record._id!)}

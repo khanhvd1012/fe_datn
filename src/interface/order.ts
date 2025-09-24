@@ -16,11 +16,18 @@ export interface IOrder {
   | "return_requested"
   | "return_accepted"
   | "return_rejected"
+  | "returned_received"
   | "returned"
   | "canceled";
   payment_method: string;
-  payment_status?: "unpaid" | "paid" | "failed" | "canceled" | "refunded";
+  payment_status?:
+  | "unpaid"
+  | "paid"
+  | "canceled"
+  | "refund_processing"
+  | "refunded";
   app_trans_id: string;
+  transaction_id?: string;
 
   // Hủy đơn
   cancel_reason?: string | null;
@@ -37,6 +44,11 @@ export interface IOrder {
   return_reject_reason?: string | null;
   returned_at?: string | null;
   reject_reason?: string;
+
+  refund_processed_at?: string | null;
+  refund_processed_by?: string | null;
+  refunded_at?: string | null;
+  refunded_by?: string | null;
 
   // Xác nhận nhận hàng
   confirmed_received?: boolean;
