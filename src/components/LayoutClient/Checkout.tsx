@@ -308,11 +308,18 @@ const Checkout = () => {
   }, []);
 
   const cartItems = cartData?.cart_items || [];
-  const total = cartData?.total || 0;
+  // const total = 0;
   // const shippingFee = 35000;
+  let total = 0;
+  if (buyNowItem) {
+    total = buyNowItem?.variant?.data?.price || 0;
+    console.log("💰 Giá sản phẩm:", total);
+  } else {
+    total = cartData?.total || 0;
+  }
 
   const discountAmount =
-    formData.voucher_type === 'percentage'
+    formData.voucher_type === "percentage"
       ? Math.round((total * formData.voucher_value) / 100)
       : formData.voucher_value || 0;
 
@@ -539,10 +546,14 @@ const Checkout = () => {
         .then(res => {
           const allVouchers = res.data || [];
           const now = new Date();
+          const orderTotal = buyNowItem
+            ? buyNowItem.variant.data.price * buyNowItem.quantity
+            : cartData?.total || 0;
           const activeVouchers = allVouchers.filter((voucher: any) =>
             new Date(voucher.startDate) <= now &&
             now <= new Date(voucher.endDate) &&
             voucher.quantity > 0
+            && orderTotal >= (voucher.minOrderValue || 0)
           );
           setVouchers(activeVouchers);
           setShowVouchers(true);
@@ -874,8 +885,11 @@ const Checkout = () => {
                       <div className="flex justify-between mt-2">
                         <Text strong className="text-lg">Tổng cộng:</Text>
                         <Text strong className="text-lg text-black">
-                          {(buyNowItem.variant.data.price * buyNowItem.quantity + shippingFee).toLocaleString("vi-VN")} đ
+                          {shippingLoading
+                            ? "Đang tính phí..."
+                            : `${(finalTotal || 0).toLocaleString("vi-VN")} đ`}
                         </Text>
+
                       </div>
                     </div>
 
