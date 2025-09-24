@@ -23,6 +23,7 @@ const EditVoucher = () => {
             form.setFieldsValue({
                 ...voucherData,
                 duration: [dayjs(voucherData.startDate), dayjs(voucherData.endDate)],
+                isActive: voucherData.isActive,
             });
         }
     }, [voucherData, form]);
@@ -96,7 +97,6 @@ const EditVoucher = () => {
                 >
                     <InputNumber min={1} style={{ width: "100%" }} />
                 </Form.Item>
-
                 <Form.Item
                     label="Đơn hàng tối thiểu"
                     name="minOrderValue"
@@ -132,7 +132,6 @@ const EditVoucher = () => {
                         <Option value="paused">Tạm dừng</Option>
                     </Select>
                 </Form.Item>
-
                 <Form.Item>
                     <div className="flex justify-end gap-4">
                         <Button onClick={() => navigate('/admin/vouchers')}>Hủy</Button>

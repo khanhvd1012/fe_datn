@@ -23,36 +23,43 @@ import type { IOrder } from '../../interface/order';
 const { Title, Text } = Typography;
 
 const statusColor: Record<IOrder["status"], string> = {
-    pending: "orange",
-    processing: "blue",
-    shipped: "purple",
-    delivered: "green",
-    return_requested: "gold",
-    return_accepted: "cyan",
-    return_rejected: "volcano",
-    returned_received: "gray",
-    canceled: "red",
-    returned: ''
+    pending: 'orange',
+    processing: 'blue',
+    shipped: 'purple',
+    delivered: 'green',
+    return_requested: 'gold',
+    return_accepted: 'cyan',
+    return_rejected: 'volcano',
+    returned_received: 'gray',
+    returned: "magenta",
+    canceled: 'red',
 };
 
 const statusLabels: Record<IOrder["status"], string> = {
-    pending: "Chờ xác nhận",
-    processing: "Đang xử lý",
-    shipped: "Đang giao",
-    delivered: "Đã giao",
-    return_requested: "Yêu cầu hoàn hàng",
-    return_accepted: "Hoàn hàng được chấp nhận",
-    return_rejected: "Hoàn hàng bị từ chối",
-    returned_received: "Đã trả hàng",
-    canceled: "Đã hủy",
-    returned: ''
+    pending: 'Chờ xác nhận',
+    processing: 'Đang xử lý',
+    shipped: 'Đang giao',
+    delivered: 'Đã giao',
+    return_requested: 'Yêu cầu hoàn hàng',
+    return_accepted: 'Yêu cầu hoàn được chấp nhận',
+    return_rejected: 'Yêu cầu hoàn bị từ chối',
+    returned_received: 'Đã trả hàng',
+    returned: "Đã hoàn hàng",
+    canceled: 'Đã hủy',
 };
 
 const paymentStatusLabels: Record<NonNullable<IOrder["payment_status"]>, string> = {
+    // unpaid: "Chưa thanh toán",
+    // paid: "Đã thanh toán",
+    // failed: "Thanh toán thất bại",
+    // canceled: "Thanh toán bị hủy",
+    // refunded: "Đã hoàn tiền",
+
     unpaid: "Chưa thanh toán",
     paid: "Đã thanh toán",
-    failed: "Thanh toán thất bại",
-    canceled: "Thanh toán bị hủy",
+    refund_processing: "Đang hoàn tiền",
+    pending: "Đang chờ thanh toán",
+    canceled: "Hủy thanh toán",
     refunded: "Đã hoàn tiền",
 };
 
