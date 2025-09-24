@@ -43,7 +43,7 @@ const statusLabels: Record<IOrder["status"], string> = {
     return_requested: 'Yêu cầu hoàn hàng',
     return_accepted: 'Yêu cầu hoàn được chấp nhận',
     return_rejected: 'Yêu cầu hoàn bị từ chối',
-    returned_received: 'Đã trả hàng',
+    returned_received: 'xác nhận đơn hàng',
     returned: "Đã hoàn hàng",
     canceled: 'Đã hủy',
 };
