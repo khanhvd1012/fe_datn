@@ -23,6 +23,7 @@ export interface IOrdersByDate {
 
 // Tổng quan Dashboard
 export interface IDashboardStats {
+  
   totalProducts: number;                 // tổng sản phẩm
   productsByCategory: IProductsByCategory[]; // danh sách sản phẩm theo category
   topProducts: ITopProduct[];            // top sản phẩm bán chạy

@@ -149,27 +149,27 @@ const Dashboard = () => {
       <Col xs={1000} md={500} style={{ marginTop: "16px" }}>
         <Card
           title="Doanh thu 7 ngày gần nhất"
-          extra={
-            <RangePicker
-              size="small"
-              value={[dayRange.start, dayRange.end]}
-              onChange={(dates) => {
-                if (dates && dates[0] && dates[1]) {
-                  const diff = dates[1].diff(dates[0], "day");
-                  if (diff > 6) {
-                    message.warning({
-                      content: "Khoảng thời gian không được vượt quá 7 ngày!",
-                      key: "range-limit"
-                    }); return;
-                  }
-                  setDayRange({
-                    start: dates[0],
-                    end: dates[1],
-                  });
-                }
-              }}
-            />
-          }
+          // extra={
+          //   <RangePicker
+          //     size="small"
+          //     value={[dayRange.start, dayRange.end]}
+          //     onChange={(dates) => {
+          //       if (dates && dates[0] && dates[1]) {
+          //         const diff = dates[1].diff(dates[0], "day");
+          //         if (diff > 6) {
+          //           message.warning({
+          //             content: "Khoảng thời gian không được vượt quá 7 ngày!",
+          //             key: "range-limit"
+          //           }); return;
+          //         }
+          //         setDayRange({
+          //           start: dates[0],
+          //           end: dates[1],
+          //         });
+          //       }
+          //     }}
+          //   />
+          // }
         >
           <Column
             data={stats?.dailyRevenue?.slice(-7) || []} // lấy 7 ngày gần nhất
