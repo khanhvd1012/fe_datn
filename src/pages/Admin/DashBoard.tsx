@@ -1,4 +1,14 @@
-import { Card, Row, Col, Statistic, Table, DatePicker, Spin, Button, message } from "antd";
+import {
+  Card,
+  Row,
+  Col,
+  Statistic,
+  Table,
+  DatePicker,
+  Spin,
+  Button,
+  message,
+} from "antd";
 import { Column, Line } from "@ant-design/charts";
 import {
   ShoppingOutlined,
@@ -13,51 +23,18 @@ import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import type { ITopProduct } from "../../interface/dashboard";
 import { useDashboardStats } from "../../hooks/useDasboard";
+import "../../components/css/dashboard.css";
 
 const { RangePicker } = DatePicker;
-
-interface IRevenueData {
-  date: string;
-  orderRevenue: number;
-  actualRevenue: number;
-  difference: number;
-}
-
-interface IMonthlyRevenueData {
-  yearMonth: string;
-  orderRevenue: number;
-  actualRevenue: number;
-  difference: number;
-}
-
-interface IYearlyRevenueData {
-  year: number;
-  orderRevenue: number;
-  actualRevenue: number;
-  difference: number;
-}
-
-interface IDashboardStats {
-  totalProducts: number;
-  totalOrders: number;
-  totalUsers: number;
-  ordersByDate: { date: string; orders: number }[];
-  revenueByDate: IRevenueData[];
-  totalOrderRevenue: number;
-  totalActualRevenue: number;
-  revenueLast7Days: IRevenueData[];
-  revenueByYear: IYearlyRevenueData[];
-  productsByCategory: { categoryName: string; count: number }[];
-  topProducts: ITopProduct[];
-  deliveredPaidOrders: number;
-  revenueByMonth: IMonthlyRevenueData[];
-}
 
 const Dashboard = () => {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const [monthRange, setMonthRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
   const currentYear = new Date().getFullYear();
-  const [yearRange, setYearRange] = useState({ startYear: currentYear - 4, endYear: currentYear });
+  const [yearRange, setYearRange] = useState({
+    startYear: currentYear - 4,
+    endYear: currentYear,
+  });
   const [dayRange, setDayRange] = useState({
     start: dayjs().subtract(6, "day"),
     end: dayjs(),
@@ -74,17 +51,9 @@ const Dashboard = () => {
     endMonth: monthRange ? monthRange[1].format("YYYY-MM") : undefined,
   });
 
-  // Debug: Log dữ liệu để kiểm tra
   useEffect(() => {
-    if (stats) {
-      console.log("Stats data:", stats);
-      console.log("Revenue by Date:", stats.revenueByDate);
-      console.log("Revenue by Month:", stats.revenueByMonth);
-      console.log("Revenue by Year:", stats.revenueByYear);
-    }
-    if (error) {
-      console.error("Error fetching stats:", error);
-    }
+    if (stats) console.log("Stats:", stats);
+    if (error) console.error("Error fetching stats:", error);
   }, [stats, error]);
 
   const columns = [
@@ -93,7 +62,7 @@ const Dashboard = () => {
       dataIndex: "name",
       key: "name",
       ellipsis: true,
-      width: "20%",
+      width: "25%",
     },
     {
       title: "SKU",
@@ -109,145 +78,101 @@ const Dashboard = () => {
       width: "20%",
       sorter: (a: ITopProduct, b: ITopProduct) => a.totalSales - b.totalSales,
     },
-    {
-      title: "Doanh thu",
-      dataIndex: "totalRevenue",
-      key: "totalRevenue",
-      width: "20%",
-      render: (value: number) => `${value.toLocaleString("vi-VN")} đ`,
-      sorter: (a: ITopProduct, b: ITopProduct) => a.totalRevenue - b.totalRevenue,
-    },
   ];
 
-  // Hàm xử lý chung để hiển thị orderRevenue, actualRevenue và difference
   const transformRevenueData = (
     data: any[],
     type: "day" | "month" | "year" = "day"
   ) => {
-    if (!data || data.length === 0) return [];
-    const result: any[] = [];
-    data.forEach((item: any) => {
-      const orderRev = Number(item.orderRevenue) || 0;
-      const actualRev = Number(item.actualRevenue) || 0;
-      const diffRev = Number(item.difference) || 0;
-
-      let dateField = "date";
-      if (type === "month") dateField = "yearMonth";
-      if (type === "year") dateField = "year";
-
-      result.push(
-        { [dateField]: item[dateField], revenue: orderRev, type: "Doanh thu đơn hàng" },
-        { [dateField]: item[dateField], revenue: actualRev, type: "Doanh thu thực tế" },
-        { [dateField]: item[dateField], revenue: diffRev, type: "Chênh lệch" }
-      );
-    });
-    return result;
+    if (!data?.length) return [];
+    const field = type === "month" ? "yearMonth" : type === "year" ? "year" : "date";
+    return data.flatMap((item: any) => [
+      { [field]: item[field], revenue: Number(item.orderRevenue) || 0, type: "Doanh thu đơn hàng" },
+      { [field]: item[field], revenue: Number(item.actualRevenue) || 0, type: "Doanh thu thực tế" },
+      { [field]: item[field], revenue: Number(item.difference) || 0, type: "Chênh lệch" },
+    ]);
   };
 
-  if (isLoading) {
+  if (isLoading)
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100%",
-        }}
-      >
+      <div className="dashboard-loading">
         <Spin size="large" />
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
-      <div style={{ padding: "16px", textAlign: "center", color: "red" }}>
+      <div className="dashboard-error">
         Lỗi khi tải dữ liệu: {error.message}
       </div>
     );
-  }
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "16px" }}>
-      {/* Thống kê số liệu - 6 ô ngang nhau */}
-      <Row gutter={[16, 16]}>
-        <Col xs={12} sm={8} md={4} lg={4}>
-          <Card>
-            <Statistic
-              title="Tổng sản phẩm"
-              value={stats?.totalProducts || 0}
-              prefix={<ShoppingOutlined style={{ color: "#1890ff" }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} md={4} lg={4}>
-          <Card>
-            <Statistic
-              title="Tổng đơn hàng"
-              value={stats?.totalOrders || 0}
-              prefix={<ShoppingCartOutlined style={{ color: "#52c41a" }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} md={4} lg={4}>
-          <Card>
-            <Statistic
-              title="Doanh thu đơn hàng"
-              value={stats?.totalOrderRevenue || 0}
-              prefix={<DollarOutlined style={{ color: "#faad14" }} />}
-              suffix="đ"
-              formatter={(val) => Number(val).toLocaleString("vi-VN")}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={12} sm={8} md={4} lg={4}>
-          <Card>
-            <Statistic
-              title="Doanh thu thực tế"
-              value={stats?.totalActualRevenue || 0}
-              prefix={<DollarOutlined style={{ color: "#faad14" }} />}
-              suffix="đ"
-              formatter={(val) => Number(val).toLocaleString("vi-VN")}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} md={4} lg={4}>
-          <Card>
-            <Statistic
-              title="Đã giao - thanh toán"
-              value={stats?.deliveredPaidOrders || 0}
-              prefix={<CheckCircleOutlined style={{ color: "#52c41a" }} />}
-            />
-          </Card>
-        </Col>
-        <Col xs={12} sm={8} md={4} lg={4}>
-          <Card>
-            <Statistic
-              title="Người dùng"
-              value={stats?.totalUsers || 0}
-              prefix={<UsergroupAddOutlined style={{ color: "#eb2f96" }} />}
-            />
-          </Card>
-        </Col>
+    <div className="dashboard-container">
+      {/* ===== Thống kê tổng quan ===== */}
+      <Row gutter={[24, 24]}>
+        {[
+          {
+            title: "Tổng sản phẩm",
+            value: stats?.totalProducts,
+            icon: <ShoppingOutlined style={{ color: "#4f9cf9" }} />,
+          },
+          {
+            title: "Tổng đơn hàng",
+            value: stats?.totalOrders,
+            icon: <ShoppingCartOutlined style={{ color: "#52c41a" }} />,
+          },
+          {
+            title: "Doanh thu đơn hàng",
+            value: stats?.totalOrderRevenue,
+            icon: <DollarOutlined style={{ color: "#faad14" }} />,
+            suffix: "đ",
+          },
+          {
+            title: "Doanh thu thực tế",
+            value: stats?.totalActualRevenue,
+            icon: <DollarOutlined style={{ color: "#faad14" }} />,
+            suffix: "đ",
+          },
+          {
+            title: "Đã giao - thanh toán",
+            value: stats?.deliveredPaidOrders,
+            icon: <CheckCircleOutlined style={{ color: "#52c41a" }} />,
+          },
+          {
+            title: "Người dùng",
+            value: stats?.totalUsers,
+            icon: <UsergroupAddOutlined style={{ color: "#eb2f96" }} />,
+          },
+        ].map((item, i) => (
+          <Col xs={12} sm={8} md={4} key={i}>
+            <Card className="dashboard-card" hoverable>
+              <Statistic
+                title={<span className="stat-title">{item.title}</span>}
+                value={item.value || 0}
+                prefix={item.icon}
+                suffix={item.suffix}
+                formatter={(val) =>
+                  item.suffix ? Number(val).toLocaleString("vi-VN") : val
+                }
+              />
+            </Card>
+          </Col>
+        ))}
       </Row>
 
-      {/* Biểu đồ */}
-      <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
-        {/* Thống kê đơn hàng */}
-        <Col xs={24} md={12}>
+      {/* ===== Biểu đồ ===== */}
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col xs={24} md={24}>
           <Card
+            className="dashboard-card"
             title="Thống kê đơn hàng"
             extra={
               <RangePicker
-                size="small"
                 value={dateRange}
-                onChange={(dates) => {
-                  if (dates && dates[0] && dates[1]) {
-                    setDateRange([dates[0], dates[1]]);
-                  } else {
-                    setDateRange(null);
-                  }
+                onChange={(d) => {
+                  if (d && d[0] && d[1]) setDateRange([d[0], d[1]]);
+                  else setDateRange(null);
                 }}
               />
             }
@@ -256,9 +181,9 @@ const Dashboard = () => {
               data={stats?.ordersByDate || []}
               xField="date"
               yField="orders"
-              height={250}
+              height={260}
               point={{ size: 4, shape: "diamond" }}
-              autoFit
+              legend={{ position: "bottom" }}
               meta={{
                 orders: { alias: "Số đơn hàng" },
                 date: { formatter: (v: string) => dayjs(v).format("DD/MM") },
@@ -266,10 +191,12 @@ const Dashboard = () => {
             />
           </Card>
         </Col>
+      </Row>
 
-        {/* Doanh thu ngày */}
-        <Col xs={24} md={12}>
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col xs={24} md={24}>
           <Card
+            className="dashboard-card"
             title="Doanh thu ngày"
             extra={
               <RangePicker
@@ -277,12 +204,8 @@ const Dashboard = () => {
                 value={[dayRange.start, dayRange.end]}
                 onChange={(dates) => {
                   if (dates && dates[0] && dates[1]) {
-                    const diff = dates[1].diff(dates[0], "day");
-                    if (diff > 6) {
-                      message.warning({
-                        content: "Khoảng thời gian không được vượt quá 6 ngày!",
-                        key: "range-limit",
-                      });
+                    if (dates[1].diff(dates[0], "day") > 6) {
+                      message.warning("Khoảng thời gian không quá 6 ngày!");
                       return;
                     }
                     setDayRange({ start: dates[0], end: dates[1] });
@@ -297,16 +220,15 @@ const Dashboard = () => {
               yField="revenue"
               seriesField="type"
               isGroup
-              height={250}
-              columnWidthRatio={0.15}
+              height={260}
+              columnWidthRatio={0.25}
+              legend={{ position: "bottom" }}
+              columnStyle={{ radius: [4, 4, 0, 0] }}
               label={{
                 position: "top",
                 formatter: (v: any) => `${Number(v).toLocaleString("vi-VN")}đ`,
               }}
-              legend={{ position: "top" }}
-              columnStyle={{ radius: [4, 4, 0, 0] }}
               meta={{
-                revenue: { alias: "Doanh thu" },
                 date: { formatter: (v: string) => dayjs(v).format("DD/MM") },
               }}
             />
@@ -314,22 +236,19 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      <Row gutter={[16, 16]} style={{ marginTop: "16px" }}>
-        {/* Doanh thu theo tháng */}
-        <Col xs={24} md={12}>
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col xs={24} md={24}>
           <Card
+            className="dashboard-card"
             title="Doanh thu theo tháng"
             extra={
               <RangePicker
                 picker="month"
                 size="small"
                 value={monthRange}
-                onChange={(dates) => {
-                  if (dates && dates[0] && dates[1]) {
-                    setMonthRange([dates[0], dates[1]]);
-                  } else {
-                    setMonthRange(null);
-                  }
+                onChange={(d) => {
+                  if (d && d[0] && d[1]) setMonthRange([d[0], d[1]]);
+                  else setMonthRange(null);
                 }}
               />
             }
@@ -340,25 +259,28 @@ const Dashboard = () => {
               yField="revenue"
               seriesField="type"
               isGroup
-              height={250}
-              columnWidthRatio={0.5}
+              height={260}
+              columnWidthRatio={0.4}
+              legend={{ position: "bottom" }}
+              columnStyle={{ radius: [4, 4, 0, 0] }}
               label={{
                 position: "top",
                 formatter: (v: any) => `${Number(v).toLocaleString("vi-VN")}đ`,
               }}
-              legend={{ position: "top" }}
-              columnStyle={{ radius: [4, 4, 0, 0] }}
               meta={{
-                revenue: { alias: "Doanh thu" },
-                yearMonth: { formatter: (v: string) => dayjs(v + "-01").format("MM/YYYY") },
+                yearMonth: {
+                  formatter: (v: string) => dayjs(v + "-01").format("MM/YYYY"),
+                },
               }}
             />
           </Card>
         </Col>
+      </Row>
 
-        {/* Doanh thu theo năm */}
-        <Col xs={24} md={12}>
+      <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+        <Col xs={24} md={24}>
           <Card
+            className="dashboard-card"
             title="Doanh thu theo năm"
             extra={
               <div>
@@ -366,9 +288,9 @@ const Dashboard = () => {
                   icon={<LeftOutlined />}
                   size="small"
                   onClick={() =>
-                    setYearRange((prev) => ({
-                      startYear: prev.startYear - 5,
-                      endYear: prev.endYear - 5,
+                    setYearRange((p) => ({
+                      startYear: p.startYear - 5,
+                      endYear: p.endYear - 5,
                     }))
                   }
                 />
@@ -377,9 +299,9 @@ const Dashboard = () => {
                   size="small"
                   style={{ marginLeft: 8 }}
                   onClick={() =>
-                    setYearRange((prev) => ({
-                      startYear: prev.startYear + 5,
-                      endYear: prev.endYear + 5,
+                    setYearRange((p) => ({
+                      startYear: p.startYear + 5,
+                      endYear: p.endYear + 5,
                     }))
                   }
                 />
@@ -392,29 +314,35 @@ const Dashboard = () => {
               yField="revenue"
               seriesField="type"
               isGroup
-              height={250}
+              height={260}
+              columnWidthRatio={0.4}
+              legend={{ position: "bottom" }}
+              columnStyle={{ radius: [4, 4, 0, 0] }}
               label={{
                 position: "top",
                 formatter: (v: any) => `${Number(v).toLocaleString("vi-VN")}đ`,
-              }}
-              legend={{ position: "top" }}
-              columnStyle={{ radius: [4, 4, 0, 0] }}
-              meta={{
-                revenue: { alias: "Doanh thu" },
               }}
             />
           </Card>
         </Col>
       </Row>
 
-      {/* Bảng top sản phẩm */}
-      <Card size="small" title="Top sản phẩm bán chạy" style={{ marginTop: "16px" }}>
+
+      {/* ===== Top sản phẩm ===== */}
+      <Card
+        className="dashboard-card"
+        size="small"
+        title="Top sản phẩm bán chạy"
+        style={{ marginTop: 24 }}
+      >
         <Table
           rowKey="variantId"
           columns={columns}
           dataSource={stats?.topProducts || []}
           pagination={{ pageSize: 5, showSizeChanger: false }}
           size="small"
+          scroll={{ x: 600 }}
+          rowClassName={(_, index) => (index % 2 === 0 ? "table-row-light" : "")}
         />
       </Card>
     </div>
