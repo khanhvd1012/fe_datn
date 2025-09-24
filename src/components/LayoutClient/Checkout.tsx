@@ -553,7 +553,8 @@ const Checkout = () => {
             new Date(voucher.startDate) <= now &&
             now <= new Date(voucher.endDate) &&
             voucher.quantity > 0
-            && orderTotal >= (voucher.minOrderValue || 0)
+            && orderTotal >= (voucher.minOrderValue || 0)&&
+          (voucher.isActive === true || voucher.status === "active")
           );
           setVouchers(activeVouchers);
           setShowVouchers(true);
