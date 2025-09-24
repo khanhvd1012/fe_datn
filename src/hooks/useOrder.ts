@@ -67,11 +67,11 @@ export const useUpdatePaymentStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { id: string; payment_status: IOrder["payment_status"] }) =>
-      updatePaymentStatus(data.id, data.payment_status),
+    mutationFn: (data: { id: string; formData: FormData }) =>
+      updatePaymentStatus(data.id, data.formData),
     onSuccess: (_, data) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-orders'] });
-      queryClient.invalidateQueries({ queryKey: ['order-detail', data.id] });
+      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["order-detail", data.id] });
     },
   });
 };

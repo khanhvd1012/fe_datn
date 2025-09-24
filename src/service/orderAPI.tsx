@@ -64,12 +64,17 @@ export const updateOrderStatus = async (
 
 export const updatePaymentStatus = async (
   id: string,
-  payment_status: IOrder["payment_status"]
+  formData: FormData
 ): Promise<IOrder> => {
   const res = await axios.put(
     `${API_URL}/orders/${id}/update-payment`,
-    { payment_status },
-    { headers: authHeader() }
+    { formData },
+    {
+      headers: {
+        ...authHeader(),
+        "Content-Type": "multipart/form-data",
+      },
+    }
   );
   return res.data?.order;
 };

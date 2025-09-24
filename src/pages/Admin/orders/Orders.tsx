@@ -1,4 +1,4 @@
-import { Table, Tag, Select, message, Popconfirm, Button, Skeleton, Empty, Modal } from "antd";
+import { Table, Tag, Select, message, Popconfirm, Button, Skeleton, Empty, Modal, Upload } from "antd";
 import { DatePicker, Input } from "antd";
 import { useState } from "react";
 import { useAdminOrders, useCancelOrder, useUpdateOrderStatus, useUpdatePaymentStatus } from "../../../hooks/useOrder";
@@ -27,6 +27,10 @@ const Orders = () => {
   const [rejectReason, setRejectReason] = useState("");
   const [rejectOrderId, setRejectOrderId] = useState<string | null>(null);
   const { mutate: updatePaymentStatus } = useUpdatePaymentStatus();
+  const [refundModalVisible, setRefundModalVisible] = useState(false);
+  const [refundImages, setRefundImages] = useState<any[]>([]);
+  const [refundOrderId, setRefundOrderId] = useState<string | null>(null);
+
 
   const [filters, setFilters] = useState({
     user: "",
@@ -159,19 +163,6 @@ const Orders = () => {
     setSelectedOrder(order);
   };
 
-  const showCancelReason = (reason: string) => {
-    setSelectedReason(reason);
-    setReasonType("cancel");
-    setReasonModalVisible(true);
-  };
-
-  const showReturnReason = (reason: string, images: string[] = []) => {
-    setSelectedReason(reason);
-    setSelectedImages(images);
-    setReasonType("return");
-    setReasonModalVisible(true);
-  };
-
   const handleCancel = (id: string) => {
     cancelOrder(
       { id, cancel_reason: "Người quản trị hủy đơn" },
@@ -182,6 +173,41 @@ const Orders = () => {
         },
         onError: () => {
           messageApi.error("Hủy đơn hàng thất bại");
+        },
+      }
+    );
+  };
+
+  const openRefundModal = (orderId: string) => {
+    setRefundOrderId(orderId);
+    setRefundModalVisible(true);
+  };
+
+  const handleRefundSubmit = () => {
+    if (!refundOrderId) return;
+    if (refundImages.length === 0) {
+      messageApi.warning("Vui lòng chọn ít nhất 1 ảnh");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("payment_status", "refunded");
+    refundImages.forEach((file) => {
+      formData.append("files", file.originFileObj);
+    });
+
+    updatePaymentStatus(
+      { id: refundOrderId, formData }, 
+      {
+        onSuccess: () => {
+          messageApi.success("Cập nhật thành công: Đã hoàn tiền");
+          queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
+          setRefundModalVisible(false);
+          setRefundImages([]);
+          setRefundOrderId(null);
+        },
+        onError: (err: any) => {
+          messageApi.error(err?.response?.data?.message || "Cập nhật thất bại");
         },
       }
     );
@@ -420,22 +446,7 @@ const Orders = () => {
             <Button
               type="primary"
               size="small"
-              onClick={() =>
-                updatePaymentStatus(
-                  { id: order._id!, payment_status: "refunded" },
-                  {
-                    onSuccess: () => {
-                      messageApi.success("Cập nhật thành công: Đã hoàn tiền");
-                      queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-                    },
-                    onError: (err: any) => {
-                      messageApi.error(
-                        err?.response?.data?.message || "Cập nhật thất bại"
-                      );
-                    },
-                  }
-                )
-              }
+              onClick={() => openRefundModal(order._id!)}
             >
               Xác nhận đã hoàn tiền
             </Button>
@@ -561,43 +572,6 @@ const Orders = () => {
       },
     },
     {
-      title: "Cập nhật thanh toán",
-      key: "updatePaymentStatus",
-      render: (_: any, order: IOrder) => {
-        // Chỉ admin mới thấy
-        if (role !== "admin") return null;
-
-        return (
-          <Select
-            style={{ width: 180 }}
-            value={order.payment_status}
-            onChange={(value: IOrder["payment_status"]) => {
-              updatePaymentStatus(
-                { id: order._id!, payment_status: value },
-                {
-                  onSuccess: () => {
-                    messageApi.success("Cập nhật trạng thái thanh toán thành công");
-                    queryClient.invalidateQueries({ queryKey: ["admin-orders"] });
-                  },
-                  onError: (err: any) => {
-                    messageApi.error(
-                      err?.response?.data?.message || "Cập nhật trạng thái thanh toán thất bại"
-                    );
-                  },
-                }
-              );
-            }}
-          >
-            {Object.entries(paymentStatusLabelMap).map(([key, label]) => (
-              <Select.Option key={key} value={key}>
-                {label}
-              </Select.Option>
-            ))}
-          </Select>
-        );
-      },
-    },
-    {
       title: "Thao tác",
       key: "actions",
       render: (_: any, record: IOrder) => (
@@ -621,30 +595,6 @@ const Orders = () => {
             )}
         </div>
       ),
-    },
-    {
-      title: "Lý do hủy",
-      key: "cancelReason",
-      render: (_: any, record: IOrder) =>
-        record.status === "canceled" && record.cancel_reason ? (
-          <Button type="link" onClick={() => showCancelReason(record.cancel_reason!)}>
-            Xem lý do hủy
-          </Button>
-        ) : null,
-    },
-    {
-      title: "Lý do hoàn hàng",
-      key: "returnReason",
-      render: (_: any, record: IOrder) =>
-        (["return_requested", "return_accepted", "return_rejected", "returned"].includes(record.status)) &&
-          record.return_reason ? (
-          <Button
-            type="link"
-            onClick={() => showReturnReason(record.return_reason!, record.images || [])}
-          >
-            Xem lý do hoàn hàng
-          </Button>
-        ) : null,
     },
   ];
 
@@ -726,6 +676,35 @@ const Orders = () => {
             </div>
           )}
         </div>
+      </Modal>
+      <Modal
+        title="Xác nhận đã hoàn tiền"
+        open={refundModalVisible}
+        onOk={handleRefundSubmit}
+        onCancel={() => {
+          setRefundModalVisible(false);
+          setRefundImages([]);
+          setRefundOrderId(null);
+        }}
+        okText="Xác nhận"
+        cancelText="Hủy"
+      >
+        <p>Vui lòng tải lên ảnh chứng minh hoàn tiền (tối đa 5 ảnh):</p>
+        <Upload
+          listType="picture-card"
+          fileList={refundImages}
+          beforeUpload={() => false} // không auto upload
+          onChange={({ fileList }) => {
+            if (fileList.length > 5) {
+              messageApi.warning("Chỉ được tải tối đa 5 ảnh");
+              return;
+            }
+            setRefundImages(fileList);
+          }}
+          multiple
+        >
+          {refundImages.length < 5 && "+ Tải ảnh"}
+        </Upload>
       </Modal>
     </div>
   );

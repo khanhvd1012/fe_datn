@@ -21,45 +21,17 @@ export interface IOrdersByDate {
   orders: number;          // số đơn trong ngày
 }
 
-// Doanh thu theo ngày (BE trả về orderRevenue, actualRevenue, difference)
-export interface IRevenueByDate {
-  date: string;            // yyyy-mm-dd
-  orderRevenue: number;    // doanh thu theo ngày đặt
-  actualRevenue: number;   // doanh thu thực tế
-  difference: number;      // chênh lệch
-}
-
-// Doanh thu theo tháng
-export interface IRevenueByMonth {
-  yearMonth: string;       // format: YYYY-MM
-  orderRevenue: number;    // doanh thu theo tháng đặt
-  actualRevenue: number;   // doanh thu thực tế
-  difference: number;      // chênh lệch
-}
-
-// Doanh thu theo năm
-export interface IRevenueByYear {
-  year: number;           // năm
-  orderRevenue: number;   // doanh thu theo năm đặt
-  actualRevenue: number;  // doanh thu thực tế
-  difference: number;     // chênh lệch
-}
-
 // Tổng quan Dashboard
 export interface IDashboardStats {
-  totalProducts: number;                    // tổng sản phẩm
-  totalOrders: number;                      // tổng số đơn hàng
-  totalUsers: number;                       // tổng số user
-  deliveredPaidOrders: number;              // số đơn đã giao và thanh toán
-  productsByCategory: IProductsByCategory[];// sản phẩm theo danh mục
-  topProducts: ITopProduct[];               // top sản phẩm bán chạy
-  ordersByDate: IOrdersByDate[];            // thống kê đơn theo ngày
-  revenueByDate: IRevenueByDate[];         // doanh thu theo ngày
-  revenueByMonth: IRevenueByMonth[];       // doanh thu theo tháng
-  revenueByYear: IRevenueByYear[];         // doanh thu theo năm
-  revenueLast7Days: IRevenueByDate[];      // doanh thu 7 ngày gần nhất
-  totalOrderRevenue: number;                // tổng doanh thu theo đơn đặt
-  totalActualRevenue: number;               // tổng doanh thu thực tế
+  totalProducts: number;                 // tổng sản phẩm
+  productsByCategory: IProductsByCategory[]; // danh sách sản phẩm theo category
+  topProducts: ITopProduct[];            // top sản phẩm bán chạy
+  totalOrders: number;                   // tổng số đơn hàng
+  totalUsers: number;                    // tổng số user
+  ordersByDate: IOrdersByDate[];         // thống kê đơn theo ngày
+  revenue: number;    
+  revenueByYear: IRevenueByYear[];    
+  revenueLast5Days?: number;       
 }
 
 // API Response
@@ -68,4 +40,9 @@ export interface IDashboardResponse {
   data: IDashboardStats;
   message?: string;
   error?: string;
+}
+
+export interface IRevenueByYear {
+  year: number;
+  revenue: number;
 }
