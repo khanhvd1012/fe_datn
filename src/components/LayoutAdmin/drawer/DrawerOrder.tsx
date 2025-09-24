@@ -45,7 +45,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
   shipped: { label: "Đang giao", color: "purple" },
   delivered: { label: "Đã giao", color: "green" },
   canceled: { label: "Đã hủy", color: "red" },
-  returned: { label: "Đã hoàn hàng", color: "magenta" },
+  returned: { label: "Hoàn hàng", color: "magenta" },
   return_requested: { label: "Yêu cầu hoàn hàng", color: "gold" },
   return_accepted: { label: "Chấp nhận hoàn hàng", color: "geekblue" },
   return_rejected: { label: "Từ chối hoàn hàng", color: "volcano" },

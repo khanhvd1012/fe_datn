@@ -20,7 +20,6 @@ const CreateVoucher = () => {
       startDate: duration?.[0]?.toDate(),
       endDate: duration?.[1]?.toDate(),
       usedCount: 0,
-      isActive: true,
     };
 
     mutate(payload, {
@@ -54,8 +53,8 @@ const CreateVoucher = () => {
           type: "percentage",
           quantity: 1,
           value: 0,
-          maxDiscount: null,
           minOrderValue: 0,
+          status: "active",
         }}
       >
         <Form.Item
@@ -83,14 +82,6 @@ const CreateVoucher = () => {
           rules={[{ required: true, message: "Vui lòng nhập giá trị!" }]}
         >
           <InputNumber min={1} style={{ width: "100%" }} />
-        </Form.Item>
-
-        <Form.Item
-          label="Giảm tối đa"
-          name="maxDiscount"
-          tooltip="Để trống nếu không giới hạn"
-        >
-          <InputNumber min={0} style={{ width: "100%" }} placeholder="Không bắt buộc" />
         </Form.Item>
 
         <Form.Item

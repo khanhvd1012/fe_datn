@@ -19,10 +19,9 @@ const Vouchers = () => {
         code: '',
         type: '',
         value: '',
-        maxDiscount: '',
         minOrderValue: '',
         quantity: '',
-        isActive: '',
+        status: '',
     });
 
     const normalizeText = (value: any) =>
@@ -44,12 +43,6 @@ const Vouchers = () => {
             return false;
         }
         if (
-            filters.maxDiscount &&
-            String(stocks_history.maxDiscount).toLowerCase().indexOf(filters.maxDiscount.toLowerCase()) === -1
-        ) {
-            return false;
-        }
-        if (
             filters.minOrderValue &&
             String(stocks_history.minOrderValue).toLowerCase().indexOf(filters.minOrderValue.toLowerCase()) === -1
         ) {
@@ -61,9 +54,8 @@ const Vouchers = () => {
         ) {
             return false;
         }
-        if (filters.isActive !== '') {
-            const isActiveBool = filters.isActive === 'true';
-            if (stocks_history.isActive !== isActiveBool) return false;
+        if (filters.status && stocks_history.status !== filters.status) {
+            return false;
         }
 
         return true;
@@ -173,30 +165,6 @@ const Vouchers = () => {
                     }),
         },
         {
-            title: "Giảm tối đa",
-            dataIndex: "maxDiscount",
-            key: "maxDiscount",
-            filterDropdown: () => (
-                <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
-                    <Input
-                        placeholder="Tìm theo giá giảm tối đa"
-                        value={filters.maxDiscount}
-                        onChange={(e) => handleFilterChange(e.target.value, 'maxDiscount')}
-                        prefix={<SearchOutlined />}
-                        allowClear
-                    />
-                </div>
-            ),
-            filterIcon: () => <FilterOutlined style={{ color: filters.maxDiscount ? '#1890ff' : undefined }} />,
-            render: (max: number | null) =>
-                max !== null
-                    ? max.toLocaleString("vn-VN", {
-                        style: "currency",
-                        currency: "VND",
-                    })
-                    : "Không giới hạn",
-        },
-        {
             title: "Đơn tối thiểu",
             dataIndex: "minOrderValue",
             key: "minOrderValue",
@@ -247,29 +215,34 @@ const Vouchers = () => {
         },
         {
             title: "Trạng thái",
-            dataIndex: "isActive",
-            key: "isActive",
+            dataIndex: "status",
+            key: "status",
             filterDropdown: () => (
                 <div style={{ padding: 8, backgroundColor: 'white', borderRadius: 6 }}>
                     <Select
                         style={{ width: '200px' }}
-                        placeholder="Chọn loại voucher"
+                        placeholder="Chọn trạng thái"
                         allowClear
-                        value={filters.isActive}
-                        onChange={(value) => handleFilterChange(value || '', 'isActive')}
+                        value={filters.status}
+                        onChange={(value) => handleFilterChange(value || '', 'status')}
                     >
-                        <Select.Option value="true">Đang hoạt động</Select.Option>
-                        <Select.Option value="false">Không hoạt động</Select.Option>
+                        <Select.Option value="active">Đang hoạt động</Select.Option>
+                        <Select.Option value="inactive">Không hoạt động</Select.Option>
+                        <Select.Option value="paused">Tạm dừng</Select.Option>
                     </Select>
                 </div>
             ),
-            filterIcon: () => <FilterOutlined style={{ color: filters.isActive ? '#1890ff' : undefined }} />,
-            render: (isActive: boolean) =>
-                isActive ? (
-                    <Tag color="green">Đang hoạt động</Tag>
-                ) : (
-                    <Tag color="red">Không hoạt động</Tag>
-                ),
+            filterIcon: () => <FilterOutlined style={{ color: filters.status ? '#1890ff' : undefined }} />,
+            render: (status: IVoucher["status"]) => {
+                switch (status) {
+                    case "active":
+                        return <Tag color="green">Đang hoạt động</Tag>;
+                    case "paused":
+                        return <Tag color="orange">Tạm dừng</Tag>;
+                    default:
+                        return <Tag color="red">Không hoạt động</Tag>;
+                }
+            },
         },
         {
             title: "Thao tác",

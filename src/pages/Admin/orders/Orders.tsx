@@ -225,7 +225,7 @@ const Orders = () => {
     return_accepted: "Chấp nhận hoàn hàng",
     return_rejected: "Từ chối hoàn hàng",
     returned_received: "Đã nhận hàng hoàn",
-    returned: "Đã hoàn hàng",
+    returned: "Hoàn hàng",
     canceled: "Đã hủy",
   };
 

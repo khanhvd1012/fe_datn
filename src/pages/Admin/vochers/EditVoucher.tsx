@@ -1,8 +1,8 @@
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, DatePicker, Form, Input, InputNumber, message, Select, Skeleton, Switch } from 'antd';
+import { Button, DatePicker, Form, Input, InputNumber, message, Select, Skeleton } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
-import { useVoucher, useUpdateVoucher } from '../../../hooks/useVouchers'; // bạn cần định nghĩa 2 hook này
+import { useVoucher, useUpdateVoucher } from '../../../hooks/useVouchers';
 import { useEffect } from 'react';
 
 const { Option } = Select;
@@ -98,14 +98,6 @@ const EditVoucher = () => {
                 </Form.Item>
 
                 <Form.Item
-                    label="Giảm tối đa"
-                    name="maxDiscount"
-                    tooltip="Để trống nếu không giới hạn"
-                >
-                    <InputNumber min={0} style={{ width: "100%" }} placeholder="Không bắt buộc" />
-                </Form.Item>
-
-                <Form.Item
                     label="Đơn hàng tối thiểu"
                     name="minOrderValue"
                     rules={[{ required: true, message: "Vui lòng nhập giá trị tối thiểu!" }]}
@@ -127,6 +119,18 @@ const EditVoucher = () => {
                     rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
                 >
                     <InputNumber min={1} style={{ width: "100%" }} />
+                </Form.Item>
+
+                <Form.Item
+                    label="Trạng thái"
+                    name="status"
+                    rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}
+                >
+                    <Select>
+                        <Option value="active">Đang hoạt động</Option>
+                        <Option value="inactive">Không hoạt động</Option>
+                        <Option value="paused">Tạm dừng</Option>
+                    </Select>
                 </Form.Item>
 
                 <Form.Item>
