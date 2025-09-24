@@ -22,8 +22,7 @@ const EditVoucher = () => {
             console.log("Voucher Data:", voucherData);
             form.setFieldsValue({
                 ...voucherData,
-                duration: [dayjs(voucherData.startDate), dayjs(voucherData.endDate)],
-                isActive: voucherData.isActive,
+                duration: [dayjs(voucherData.startDate), dayjs(voucherData.endDate)]
             });
         }
     }, [voucherData, form]);

@@ -415,7 +415,7 @@ const Orders = () => {
         if (!status) return <Tag color="default">Không rõ</Tag>;
 
         // Chỉ hiển thị nút khi đơn đã nhận hàng hoàn + đang hoàn tiền
-        if (order.status === "returned_received" && status === "refund_processing") {
+        if (order.status === "returned_received" && ["refund_processing","paid"].includes(status)) {
           return (
             <Button
               type="primary"
